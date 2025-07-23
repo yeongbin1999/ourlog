@@ -21,7 +21,7 @@ jobs:
 
       # 라벨 자동 추가 (opened, synchronize, reopened 이벤트에만)
       - name: Add labels based on paths
-        if: or(github.event.action == 'opened', github.event.action == 'synchronize', github.event.action == 'reopened')
+        if: github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.action == 'reopened'
         uses: actions-ecosystem/action-add-labels@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
