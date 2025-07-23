@@ -1,0 +1,47 @@
+name: Auto PR Title from Issue
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  set-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set PR title same as issue title + number
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const branch = pr.head.ref; // e.g. feat/be/5
+
+            // 브랜치명에서 issueNumber 추출
+            const match = branch.match(/(\d+)$/);
+            if (!match) {
+              console.log(`❌ Branch ${branch} has no issue number`);
+              return;
+            }
+            const issueNumber = match[1];
+
+            // 이슈 제목 가져오기
+            const issue = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber
+            });
+
+            const issueTitle = issue.data.title; // ex) feat(be): 로그인 API 추가
+            const newTitle = `${issueTitle} (#${issueNumber})`;
+
+            if (newTitle !== pr.title) {
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                title: newTitle
+              });
+              console.log(`✅ PR title updated → ${newTitle}`);
+            } else {
+              console.log(`ℹ️ PR title already correct`);
+            }

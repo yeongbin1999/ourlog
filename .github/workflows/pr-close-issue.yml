@@ -1,0 +1,36 @@
+name: Close linked issues on dev merge
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  close-issues:
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'dev'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close linked issues
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const text = `${pr.title}\n${pr.body || ''}`;
+
+            // PR 제목/본문에서 (#123) 패턴 찾기
+            const issueMatches = [...text.matchAll(/\(#(\d+)\)/g)].map(m => m[1]);
+
+            if (issueMatches.length === 0) {
+              console.log('ℹ️ No linked issues found in PR');
+              return;
+            }
+
+            for (const issueNumber of issueMatches) {
+              console.log(`✅ Closing issue #${issueNumber}`);
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                state: "closed"
+              });
+            }
