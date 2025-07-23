@@ -1,0 +1,30 @@
+name: PR Title Lint
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  lint-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          echo "Checking PR title: $TITLE"
+
+          if [[ "$TITLE" =~ ^infra: ]]; then
+            echo "✅ infra 타입이고 스코프 없음, 통과"
+          elif [[ "$TITLE" =~ ^(feat|fix|chore|refactor|docs)\((fe|be)\):\  ]]; then
+            echo "✅ PR title is valid"
+          else
+            echo "❌ PR title must follow the convention:"
+            echo "   - <type>(<scope>): <subject> (feat|fix|chore/refactor/docs with scope fe|be)"
+            echo "   - infra: <subject> (infra는 scope 없이)"
+            echo "예: feat(fe): 로그인 페이지 UI 추가"
+            echo "예: infra: AWS 인프라 변경"
+            exit 1
+          fi
