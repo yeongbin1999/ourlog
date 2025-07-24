@@ -32,8 +32,8 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     // --- Database ---
-    runtimeOnly("com.h2database:h2")                   // 개발용 H2
-    runtimeOnly("com.mysql:mysql-connector-j")         // MySQL 드라이버
+    runtimeOnly("com.h2database:h2")
+    runtimeOnly("com.mysql:mysql-connector-j")
 
     // --- Redis ---
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
@@ -41,10 +41,9 @@ dependencies {
     // --- JWT ---
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
-    implementation("io.jsonwebtoken:jjwt-jackson:0.11.5") // JSON 파싱
+    implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
 
     // --- OpenAPI 문서 ---
-//    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.10")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
 
     // --- Lombok ---
@@ -56,11 +55,15 @@ dependencies {
     // --- Jakarta 추가 어노테이션 ---
     implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
 
-    // --- Test ---
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    // --- Test (JUnit5 버전 통일) ---
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
+    }
+    testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.2")
     testImplementation("org.springframework.security:spring-security-test")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
+
 
 tasks.withType<Test> {
     useJUnitPlatform()

@@ -27,7 +27,7 @@ public class Diary {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true) // User 완성되면 false 활성화
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
