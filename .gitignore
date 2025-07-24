@@ -41,12 +41,9 @@ out/
 .gradle/
 build/
 
-# 환경 변수
-application.properties
-application.yml
-
 # 로그 파일
 *.log
 
 # OS별 파일
 Thumbs.db
+
