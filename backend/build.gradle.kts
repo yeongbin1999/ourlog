@@ -44,7 +44,8 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-jackson:0.11.5") // JSON 파싱
 
     // --- OpenAPI 문서 ---
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.10")
+//    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.10")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
 
     // --- Lombok ---
     compileOnly("org.projectlombok:lombok")
