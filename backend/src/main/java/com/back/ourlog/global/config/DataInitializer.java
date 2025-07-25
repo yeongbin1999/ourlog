@@ -46,7 +46,7 @@ public class DataInitializer implements CommandLineRunner {
     private final GenreRepository genreRepository;
     private final PasswordEncoder passwordEncoder;
 
-    private final Random random = new Random();
+    private final Random random = new Random(42); // 항상 동일한 랜덤 패턴
 
     @Override
     @Transactional
