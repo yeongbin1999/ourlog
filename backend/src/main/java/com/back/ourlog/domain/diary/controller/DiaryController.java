@@ -5,7 +5,6 @@ import com.back.ourlog.domain.diary.dto.DiaryResponseDto;
 import com.back.ourlog.domain.diary.dto.DiaryWriteRequestDto;
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.diary.service.DiaryService;
-import com.back.ourlog.domain.tag.entity.DiaryTag;
 import com.back.ourlog.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

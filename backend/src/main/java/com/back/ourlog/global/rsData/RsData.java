@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RsData<T> {
 
-    private String resultCode; // ex) 200-1, 400-2
-    private String msg;        // 사용자 메시지
+    private String resultCode; // ErrorCode
+    private String msg;        // 메시지
     private T data;            // 응답 데이터
 
     public static <T> RsData<T> of(String resultCode, String msg, T data) {
