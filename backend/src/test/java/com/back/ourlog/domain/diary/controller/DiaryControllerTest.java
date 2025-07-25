@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler;
@@ -67,5 +68,24 @@ class DiaryControllerTest {
                 .andExpect(handler().methodName("writeDiary"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.title").value("인생 영화"));
+    }
+
+    @Test
+    @DisplayName("감성일기 조회")
+    void t2() throws Exception {
+        int id = 1;
+        ResultActions resultActions = mvc.perform(
+                get("/api/v1/diaries/" + id)
+        ).andDo(print());
+
+
+        resultActions
+                .andExpect(handler().handlerType(DiaryController.class))
+                .andExpect(handler().methodName("getDiary"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("다이어리 1"))
+                .andExpect(jsonPath("$.rating").value(3.0))
+                .andExpect(jsonPath("$.contentText").value("이것은 다이어리 1의 본문 내용입니다."))
+                .andExpect(jsonPath("$.tagNames[0]").isNotEmpty());
     }
 }
