@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class FavoriteGenreAndCountDto {
-    private String favoriteGenre;
-    private long favoriteGenreCount;
+public class FavoriteTypeAndCountDto {
+    private String favoriteType;
+    private long favoriteTypeCount;
 }
