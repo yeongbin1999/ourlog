@@ -1,5 +1,6 @@
-package com.back.ourlog.global.common.dto;
+package com.back.ourlog.global.RsData;
 
+import com.back.ourlog.global.common.dto.PageResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
