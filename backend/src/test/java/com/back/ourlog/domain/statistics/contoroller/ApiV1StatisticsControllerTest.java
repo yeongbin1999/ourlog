@@ -46,8 +46,8 @@ public class ApiV1StatisticsControllerTest {
                 .andExpect(status().isOk());
 
         resultActions
-                .andExpect(jsonPath("$.totalDiaryCount").value(0))
-                .andExpect(jsonPath("$.averageRating").value(0.0))
+                .andExpect(jsonPath("$.totalDiaryCount").value(1))
+                .andExpect(jsonPath("$.averageRating").value(4.5))
                 .andExpect(jsonPath("$.favoriteGenre").value("없음"))
                 .andExpect(jsonPath("$.favoriteGenreCount").value(0))
                 .andExpect(jsonPath("$.favoriteEmotion").value("없음"))
