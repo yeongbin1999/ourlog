@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -76,4 +77,11 @@ public class DiaryService {
         return diaryRepository.findById(id);
     }
 
+    public List<String> getTagNames(Diary diary) {
+        List<DiaryTag> diaryTags = diary.getDiaryTags();
+
+        return diaryTags.stream()
+                .map(diaryTag -> diaryTag.getTag().getName())
+                .toList();
+    }
 }

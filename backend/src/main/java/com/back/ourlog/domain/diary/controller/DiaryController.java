@@ -5,6 +5,7 @@ import com.back.ourlog.domain.diary.dto.DiaryResponseDto;
 import com.back.ourlog.domain.diary.dto.DiaryWriteRequestDto;
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.diary.service.DiaryService;
+import com.back.ourlog.domain.tag.entity.DiaryTag;
 import com.back.ourlog.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,7 +45,9 @@ public class DiaryController {
     @GetMapping("/{id}")
     public ResponseEntity<DiaryDetailDto> getDiary(@PathVariable("id") int id) {
         Diary diary = diaryService.findById(id).get();
-        DiaryDetailDto diaryDetailDto = new DiaryDetailDto(diary);
+        List<String> TagNames = diaryService.getTagNames(diary);
+
+        DiaryDetailDto diaryDetailDto = new DiaryDetailDto(diary, TagNames);
 
         return new ResponseEntity<>(diaryDetailDto, HttpStatus.OK);
     }

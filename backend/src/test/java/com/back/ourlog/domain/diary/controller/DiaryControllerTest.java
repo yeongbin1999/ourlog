@@ -85,6 +85,7 @@ class DiaryControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("다이어리 1"))
                 .andExpect(jsonPath("$.rating").value(3.0))
-                .andExpect(jsonPath("$.contentText").value("이것은 다이어리 1의 본문 내용입니다."));
+                .andExpect(jsonPath("$.contentText").value("이것은 다이어리 1의 본문 내용입니다."))
+                .andExpect(jsonPath("$.tagNames[0]").isNotEmpty());
     }
 }
