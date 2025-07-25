@@ -16,7 +16,7 @@ public class TimelineController {
 
     private final TimelineService timelineService;
 
-    @GetMapping("/timeline")
+    @GetMapping("/v1/timeline")
     public ResponseEntity<List<TimelineResponse>> getPublicTimeline() {
         return ResponseEntity.ok(timelineService.getPublicTimeline());
     }
