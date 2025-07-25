@@ -25,8 +25,8 @@ public enum ErrorCode {
     FORBIDDEN("COMMON_403", "접근 권한이 없습니다."),
     NOT_FOUND("COMMON_404", "요청하신 리소스를 찾을 수 없습니다.");
 
-    // 게시판, 게시글 등 도메인별 추가 가능
-    // 추가
+    // 도메인별 추가
+    // 일관된 사용과 에러 코드 공유를 위해 각자 에러를 코드를 등록해서 사용해주세요!
 
     private final String code;
     private final String message;
