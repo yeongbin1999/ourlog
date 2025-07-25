@@ -3,8 +3,11 @@ package com.back.ourlog.domain.diary.controller;
 import com.back.ourlog.domain.diary.dto.DiaryWriteRequestDto;
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.diary.repository.DiaryRepository;
+<<<<<<< HEAD
 import com.back.ourlog.domain.diary.service.DiaryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+=======
+>>>>>>> 85afc25 (Test: 댓글 작성 테스트 코드 구현)
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -37,9 +38,6 @@ class DiaryControllerTest {
 
     @Autowired
     private DiaryRepository diaryRepository;
-
-    @Autowired
-    private DiaryService diaryService;
 
     @Test
     @DisplayName("감상일기 등록 성공")
@@ -101,6 +99,7 @@ class DiaryControllerTest {
 
     @Test
     @DisplayName("감성일기 조회")
+    @Transactional(readOnly = true)
     void t4() throws Exception {
         int id = 1;
         ResultActions resultActions = mvc.perform(
