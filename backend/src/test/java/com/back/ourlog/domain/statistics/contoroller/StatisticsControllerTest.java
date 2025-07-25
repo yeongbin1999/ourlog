@@ -1,6 +1,7 @@
 package com.back.ourlog.domain.statistics.contoroller;
 
-import com.back.ourlog.domain.statistics.controller.ApiV1StatisticsController;
+import com.back.ourlog.domain.statistics.controller.StatisticsController;
+import com.back.ourlog.domain.statistics.dto.StatisticsCardDto;
 import com.back.ourlog.domain.statistics.service.StatisticsService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @Transactional
 @AutoConfigureMockMvc
-public class ApiV1StatisticsControllerTest {
+public class StatisticsControllerTest {
 
     @Autowired
     private MockMvc mvc;
@@ -41,19 +42,19 @@ public class ApiV1StatisticsControllerTest {
         ).andDo(print());
 
         resultActions
-                .andExpect(handler().handlerType(ApiV1StatisticsController.class))
+                .andExpect(handler().handlerType(StatisticsController.class))
                 .andExpect(handler().methodName("getStatisticsCard"))
                 .andExpect(status().isOk());
 
-        resultActions
-                .andExpect(jsonPath("$.totalDiaryCount").exists())
-                .andExpect(jsonPath("$.averageRating").exists())
-                .andExpect(jsonPath("$.favoriteGenre").exists())
-                .andExpect(jsonPath("$.favoriteGenreCount").exists())
-                .andExpect(jsonPath("$.favoriteEmotion").exists())
-                .andExpect(jsonPath("$.favoriteEmotionCount").exists());
+        StatisticsCardDto statisticsCardDto = statisticsService.getStatisticsCardByUserId(1);
 
-        // 필요에 따라 응답값 추가 검증
+        resultActions
+                .andExpect(jsonPath("$.totalDiaryCount").value(statisticsCardDto.getTotalDiaryCount()))
+                .andExpect(jsonPath("$.averageRating").value(statisticsCardDto.getAverageRating()))
+                .andExpect(jsonPath("$.favoriteType").value(statisticsCardDto.getFavoriteType()))
+                .andExpect(jsonPath("$.favoriteTypeCount").value(statisticsCardDto.getFavoriteTypeCount()))
+                .andExpect(jsonPath("$.favoriteEmotion").value(statisticsCardDto.getFavoriteEmotion()))
+                .andExpect(jsonPath("$.favoriteEmotionCount").value(statisticsCardDto.getFavoriteEmotionCount()));
 
     }
 }
