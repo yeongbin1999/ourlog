@@ -25,6 +25,7 @@ import com.back.ourlog.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -43,6 +44,7 @@ public class DataInitializer implements CommandLineRunner {
     private final TagRepository tagRepository;
     private final OttRepository ottRepository;
     private final GenreRepository genreRepository;
+    private final PasswordEncoder passwordEncoder;
 
     private final Random random = new Random();
 
@@ -114,7 +116,7 @@ public class DataInitializer implements CommandLineRunner {
         List<User> users = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
             String email = "user" + i + "@test.com";
-            String password = "password" + i;
+            String password = passwordEncoder.encode("password" + i);
             String nickname = "유저" + i;
             String profile = "https://picsum.photos/200?random=" + i;
             String bio = "안녕하세요! 저는 " + nickname + " 입니다.";
