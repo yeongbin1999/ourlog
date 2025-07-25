@@ -5,10 +5,6 @@ spring:
   config:
     import: optional:file:.env
 
-  sql:
-    init:
-      mode: always          # 애플리케이션이 항상 실행될 때 schema.sql, data.sql 등을 실행함
-
   jpa:
     hibernate:
       ddl-auto: update      # [none | validate | update | create | create-drop]
@@ -19,7 +15,6 @@ spring:
         highlight_sql: true
         use_sql_comments: true
         use-new-id-generator-mappings: true
-    defer-datasource-initialization: true # data.sql 실행 전에 테이블이 미리 생성되도록 보장하기 위해 사용하는 설정
 
   datasource:
     url: jdbc:h2:./db_dev;MODE=MySQL
