@@ -1,0 +1,42 @@
+package com.back.ourlog.global.exception;
+
+import lombok.Getter;
+
+@Getter
+public enum ErrorCode {
+
+    // 인증/인가 관련
+    AUTH_INVALID_TOKEN("AUTH_001", "유효하지 않은 토큰입니다."),
+    AUTH_EXPIRED_TOKEN("AUTH_002", "토큰이 만료되었습니다."),
+    AUTH_UNAUTHORIZED("AUTH_003", "인증이 필요합니다."),
+    AUTH_FORBIDDEN("AUTH_004", "접근 권한이 없습니다."),
+
+    // 사용자 관련
+    USER_NOT_FOUND("USER_001", "존재하지 않는 사용자입니다."),
+    USER_DUPLICATE_EMAIL("USER_002", "이미 존재하는 이메일입니다."),
+    USER_BANNED("USER_003", "차단된 사용자입니다."),
+
+    // 다이어리 관련
+    DIARY_NOT_FOUND("DIARY_001", "존재하지 않는 다이어리입니다."),
+
+    // 서버/시스템 관련 (HTTP 500)
+    SERVER_ERROR("SERVER_500", "서버 내부 오류가 발생했습니다."),
+    DATABASE_ERROR("SERVER_501", "데이터베이스 오류가 발생했습니다."),
+
+    // 공통 에러 (HTTP 400~499 범위, 주로 프레임워크 레벨)
+    BAD_REQUEST("COMMON_400", "잘못된 요청입니다."),
+    FORBIDDEN("COMMON_403", "접근 권한이 없습니다."),
+    NOT_FOUND("COMMON_404", "요청하신 리소스를 찾을 수 없습니다.");
+
+    // 도메인별 추가
+    // 일관된 사용과 에러 코드 공유를 위해 각자 에러를 코드를 등록해서 사용해주세요!
+
+    private final String code;
+    private final String message;
+
+    ErrorCode(String code, String message) {
+        this.code = code;
+        this.message = message;
+    }
+}
+
