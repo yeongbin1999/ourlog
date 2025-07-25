@@ -6,8 +6,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record DiaryWriteRequestDto(
-        @NotBlank String title,
-        @NotBlank String contentText,
+        @NotBlank(message = "제목을 입력해주세요.")
+        String title,
+
+        @NotBlank(message = "내용을 입력해주세요.")
+        String contentText,
+
         @NotNull Boolean isPublic,
         @NotNull Double rating,
         @NotBlank String externalId,
@@ -15,4 +19,21 @@ public record DiaryWriteRequestDto(
         List<Integer> tagIds,
         List<Integer> genreIds,
         List<Integer> ottIds
-) {}
+) {
+
+    // 테스트용 생성자
+    public DiaryWriteRequestDto(String title, String contentText) {
+        this(
+                title,
+                contentText,
+                true,
+                4.5,
+                "external-id-test",
+                ContentType.MOVIE,
+                List.of(1, 2),
+                List.of(1, 2),
+                List.of(1, 2)
+        );
+    }
+
+}
