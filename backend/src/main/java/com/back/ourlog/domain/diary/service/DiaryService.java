@@ -19,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class DiaryService {
@@ -69,4 +71,9 @@ public class DiaryService {
 
         return diaryRepository.save(diary);
     }
+
+    public Optional<Diary> findById(int id) {
+        return diaryRepository.findById(id);
+    }
+
 }

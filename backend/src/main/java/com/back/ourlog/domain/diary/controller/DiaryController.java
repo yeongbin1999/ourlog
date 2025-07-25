@@ -1,5 +1,6 @@
 package com.back.ourlog.domain.diary.controller;
 
+import com.back.ourlog.domain.diary.dto.DiaryDetailDto;
 import com.back.ourlog.domain.diary.dto.DiaryResponseDto;
 import com.back.ourlog.domain.diary.dto.DiaryWriteRequestDto;
 import com.back.ourlog.domain.diary.entity.Diary;
@@ -11,10 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -41,4 +39,11 @@ public class DiaryController {
 
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<DiaryDetailDto> getDiary(@PathVariable("id") int id) {
+        Diary diary = diaryService.findById(id).get();
+        DiaryDetailDto diaryDetailDto = new DiaryDetailDto(diary);
+
+        return new ResponseEntity<>(diaryDetailDto, HttpStatus.OK);
+    }
 }
