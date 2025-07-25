@@ -174,5 +174,5 @@ class DiaryControllerTest {
                 .andExpect(jsonPath("$.resultCode").value("DIARY_001"))
                 .andExpect(jsonPath("$.msg").value("존재하지 않는 다이어리입니다."));
     }
-
+    
 }

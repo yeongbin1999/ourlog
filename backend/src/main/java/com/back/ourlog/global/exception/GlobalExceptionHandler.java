@@ -76,5 +76,5 @@ public class GlobalExceptionHandler {
 
         return HttpStatus.BAD_REQUEST;
     }
-}
 
+}

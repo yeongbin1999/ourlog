@@ -4,8 +4,9 @@ updates:
     directory: "/frontend"
     schedule:
       interval: "weekly"
-      day: "sunday"
-      time: "19:00"
+      day: "monday"
+      time: "04:00"
+      timezone: "Asia/Seoul"
     commit-message:
       prefix: "deps(frontend)"
     groups:
@@ -17,8 +18,9 @@ updates:
     directory: "/backend"
     schedule:
       interval: "weekly"
-      day: "sunday"
-      time: "19:00"
+      day: "monday"
+      time: "04:00"
+      timezone: "Asia/Seoul"
     commit-message:
       prefix: "deps(backend)"
     groups:

@@ -11,7 +11,6 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class Ott {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -21,6 +20,10 @@ public class Ott {
 
     @OneToMany(mappedBy = "ott", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiaryOtt> diaryOtts = new ArrayList<>();
+
+    public Ott(String name) {
+        this.name = name;
+    }
 
     public Ott(String name, String logoUrl) {
         this.name = name;
