@@ -10,7 +10,7 @@ import java.util.List;
 
 // 프론트에서 이 API를 호출하면 공개된 일기 카드들을 받아올 수 있게 해줌..
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class TimelineController {
 
