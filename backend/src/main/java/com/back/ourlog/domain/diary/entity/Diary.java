@@ -21,7 +21,6 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class Diary {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
