@@ -1,7 +1,7 @@
 package com.back.ourlog.domain.statistics.service;
 
 import com.back.ourlog.domain.statistics.dto.FavoriteEmotionAndCountDto;
-import com.back.ourlog.domain.statistics.dto.FavoriteGenreAndCountDto;
+import com.back.ourlog.domain.statistics.dto.FavoriteTypeAndCountDto;
 import com.back.ourlog.domain.statistics.dto.StatisticsCardDto;
 import com.back.ourlog.domain.statistics.repository.StatisticsRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +25,9 @@ public class StatisticsService {
 
         dto.setAverageRating(getAverageRating(userId));
 
-        FavoriteGenreAndCountDto favoriteGenre = getFavoriteGenreAndCount(userId);
-        dto.setFavoriteGenre(favoriteGenre.getFavoriteGenre());
-        dto.setFavoriteGenreCount(favoriteGenre.getFavoriteGenreCount());
+        FavoriteTypeAndCountDto favoriteGenre = getFavoriteGenreAndCount(userId);
+        dto.setFavoriteType(favoriteGenre.getFavoriteType());
+        dto.setFavoriteTypeCount(favoriteGenre.getFavoriteTypeCount());
 
         FavoriteEmotionAndCountDto favoriteEmotion = getFavoriteEmotionAndCount(userId);
         dto.setFavoriteEmotion(favoriteEmotion.getFavoriteEmotion());
@@ -47,10 +47,10 @@ public class StatisticsService {
                 .orElse(0.0);
     }
 
-    /** 좋아하는 장르 및 개수 (없으면 new(없음, 0L)) */
-    private FavoriteGenreAndCountDto getFavoriteGenreAndCount(int userId) {
-        return statisticsRepository.findFavoriteGenreAndCountByUserId(userId)
-                .orElse(new FavoriteGenreAndCountDto("없음", 0L));
+    /** 좋아하는 타입 및 개수 (없으면 new(없음, 0L)) */
+    private FavoriteTypeAndCountDto getFavoriteGenreAndCount(int userId) {
+        return statisticsRepository.findFavoriteTypeAndCountByUserId(userId)
+                .orElse(new FavoriteTypeAndCountDto("없음", 0L));
     }
 
     /** 좋아하는 감정(Tag) 및 개수 (없으면 new(없음, 0L)) */

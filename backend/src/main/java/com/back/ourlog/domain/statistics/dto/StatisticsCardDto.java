@@ -8,8 +8,8 @@ import lombok.Setter;
 public class StatisticsCardDto {
     private long totalDiaryCount;
     private double averageRating;
-    private String favoriteGenre;
-    private long favoriteGenreCount;
+    private String favoriteType;
+    private long favoriteTypeCount;
     private String favoriteEmotion;
     private long favoriteEmotionCount;
 }

@@ -2,7 +2,7 @@ package com.back.ourlog.domain.statistics.repository;
 
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.statistics.dto.FavoriteEmotionAndCountDto;
-import com.back.ourlog.domain.statistics.dto.FavoriteGenreAndCountDto;
+import com.back.ourlog.domain.statistics.dto.FavoriteTypeAndCountDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,16 +19,16 @@ public interface StatisticsRepository extends JpaRepository<Diary, Integer> {
     @Query("SELECT AVG(d.rating) FROM Diary d WHERE d.user.id = :userId")
     Optional<Double> getAverageRatingByUserId(@Param("userId") int userId);
 
-    @Query(value =""" 
-        SELECT g.name AS favoriteGenre, COUNT(*) AS favoriteGenreCount 
-        FROM diary_genre dg
-        JOIN diary d ON dg.diary_id = d.id
-        JOIN genre g ON dg.genre_id = g.id
+    @Query(value = """
+        SELECT c.type AS favoriteContentType, COUNT(*) AS contentTypeCount
+        FROM diary d
+        JOIN content c ON d.content_id = c.id
         WHERE d.user_id = :userId
-        GROUP BY g.name
-        ORDER BY favoriteGenreCount DESC
-        LIMIT 1""", nativeQuery = true)
-    Optional<FavoriteGenreAndCountDto> findFavoriteGenreAndCountByUserId(@Param("userId") int userId);
+        GROUP BY c.type
+        ORDER BY contentTypeCount DESC
+        LIMIT 1
+        """, nativeQuery = true)
+    Optional<FavoriteTypeAndCountDto> findFavoriteTypeAndCountByUserId(@Param("userId") int userId);
 
     @Query(value = """
         SELECT t.name AS favoriteEmotion, COUNT(*) AS favoriteEmotionCount
