@@ -7,7 +7,6 @@ import com.back.ourlog.domain.like.entity.Like;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -29,6 +28,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false, length = 100)
     private String password;
 
     @Column(nullable = false, length = 50)
@@ -46,7 +46,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;
+    private Role role = Role.USER; // 일반 유저 기본값
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Diary> diaries = new ArrayList<>();
@@ -57,18 +57,42 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like> likes = new ArrayList<>();
 
-    @OneToMany(mappedBy = "following", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Follow> followingList = new ArrayList<>();
+    // 내가 팔로우 한 사람 (팔로잉)
+    @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private final List<Follow> followings = new ArrayList<>();
 
-    @OneToMany(mappedBy = "followee", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Follow> followeeList = new ArrayList<>();
+    // 나를 팔로우 한 사람 (팔로워)
+    @OneToMany(mappedBy = "followee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private final List<Follow> followers = new ArrayList<>();
 
-    public User(String email, String password, String nickname, String profileImageUrl, String bio, Role role) {
+    @Column(nullable = false)
+    private Integer followersCount = 0;  // 나를 팔로우하는 사람 수
+
+    @Column(nullable = false)
+    private Integer followingsCount = 0; // 내가 팔로우하는 사람 수
+
+    public void increaseFollowersCount() {
+        this.followersCount++;
+    }
+
+    public void decreaseFollowersCount() {
+        if (this.followersCount > 0) this.followersCount--;
+    }
+
+    public void increaseFollowingsCount() {
+        this.followingsCount++;
+    }
+
+    public void decreaseFollowingsCount() {
+        if (this.followingsCount > 0) this.followingsCount--;
+    }
+
+    public User(String email, String password, String nickname, String profileImageUrl, String bio) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
         this.profileImageUrl = profileImageUrl;
         this.bio = bio;
-        this.role = role;
     }
+
 }
