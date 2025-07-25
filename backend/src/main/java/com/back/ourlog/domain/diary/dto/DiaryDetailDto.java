@@ -9,10 +9,10 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class DiaryDetailDto {
-    String title;
-    float rating;
-    String contentText;
-    List<String> tagNames;
+    private String title;
+    private float rating;
+    private String contentText;
+    private List<String> tagNames;
 
     public DiaryDetailDto(Diary diary, List<String> tagNames) {
         title = diary.getTitle();

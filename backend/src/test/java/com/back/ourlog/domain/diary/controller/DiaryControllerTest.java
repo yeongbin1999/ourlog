@@ -3,8 +3,9 @@ package com.back.ourlog.domain.diary.controller;
 import com.back.ourlog.domain.diary.dto.DiaryWriteRequestDto;
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.diary.repository.DiaryRepository;
-import com.back.ourlog.domain.diary.service.DiaryService;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -37,9 +36,6 @@ class DiaryControllerTest {
 
     @Autowired
     private DiaryRepository diaryRepository;
-
-    @Autowired
-    private DiaryService diaryService;
 
     @Test
     @DisplayName("감상일기 등록 성공")
@@ -101,6 +97,7 @@ class DiaryControllerTest {
 
     @Test
     @DisplayName("감성일기 조회")
+    @Transactional(readOnly = true)
     void t4() throws Exception {
         int id = 1;
         ResultActions resultActions = mvc.perform(
@@ -112,9 +109,9 @@ class DiaryControllerTest {
                 .andExpect(handler().handlerType(DiaryController.class))
                 .andExpect(handler().methodName("getDiary"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("다이어리 1"))
-                .andExpect(jsonPath("$.rating").value(3.0))
-                .andExpect(jsonPath("$.contentText").value("이것은 다이어리 1의 본문 내용입니다."))
-                .andExpect(jsonPath("$.tagNames[0]").isNotEmpty());
+                .andExpect(jsonPath("$.data.title").value("다이어리 1"))
+                .andExpect(jsonPath("$.data.rating").value(3.0))
+                .andExpect(jsonPath("$.data.contentText").value("이것은 다이어리 1의 본문 내용입니다."))
+                .andExpect(jsonPath("$.data.tagNames[0]").isNotEmpty());
     }
 }
