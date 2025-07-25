@@ -3,6 +3,9 @@ package com.back.ourlog.domain.diary.repository;
 import com.back.ourlog.domain.diary.entity.Diary;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface DiaryRepository  extends JpaRepository<Diary, Integer> {
+import java.util.Optional;
+
+public interface DiaryRepository extends JpaRepository<Diary, Integer> {
+    Optional<Diary> findTopByOrderByIdDesc(); // 가장 최근에 작성된 일기 조회
 
 }
