@@ -37,12 +37,13 @@ public class DiaryController {
     }
 
     @GetMapping("/{diaryId}")
-    public ResponseEntity<DiaryDetailDto> getDiary(@PathVariable("diaryId") int diaryId) {
-        Diary diary = diaryService.findById(diaryId).get();
+    public ResponseEntity<RsData<DiaryDetailDto>> getDiary(@PathVariable("diaryId") int diaryId) {
+        Diary diary = diaryService.findById(diaryId).orElseThrow();
         List<String> TagNames = diaryService.getTagNames(diary);
 
         DiaryDetailDto diaryDetailDto = new DiaryDetailDto(diary, TagNames);
 
-        return new ResponseEntity<>(diaryDetailDto, HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(RsData.of("200-1", "%d번 감상일기가 조회되었습니다.".formatted(diaryId), diaryDetailDto));
     }
 }

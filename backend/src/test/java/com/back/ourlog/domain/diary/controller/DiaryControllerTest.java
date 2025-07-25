@@ -109,9 +109,9 @@ class DiaryControllerTest {
                 .andExpect(handler().handlerType(DiaryController.class))
                 .andExpect(handler().methodName("getDiary"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("다이어리 1"))
-                .andExpect(jsonPath("$.rating").value(3.0))
-                .andExpect(jsonPath("$.contentText").value("이것은 다이어리 1의 본문 내용입니다."))
-                .andExpect(jsonPath("$.tagNames[0]").isNotEmpty());
+                .andExpect(jsonPath("$.data.title").value("다이어리 1"))
+                .andExpect(jsonPath("$.data.rating").value(3.0))
+                .andExpect(jsonPath("$.data.contentText").value("이것은 다이어리 1의 본문 내용입니다."))
+                .andExpect(jsonPath("$.data.tagNames[0]").isNotEmpty());
     }
 }
