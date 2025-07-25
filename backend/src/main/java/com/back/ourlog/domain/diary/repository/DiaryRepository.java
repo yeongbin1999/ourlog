@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface DiaryRepository extends JpaRepository<Diary, Integer> {
     Optional<Diary> findTopByOrderByIdDesc(); // 가장 최근에 작성된 일기 조회
+
 }

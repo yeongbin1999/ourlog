@@ -23,15 +23,15 @@ public class Follow {
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @JoinColumn(name = "following_id", nullable = false)
-    private User following;
+    @JoinColumn(name = "follower_id", nullable = false)
+    private User follower;
 
     @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
     @JoinColumn(name = "followee_id", nullable = false)
     private User followee;
 
     public Follow(User following, User followee) {
-        this.following = following;
+        this.follower = following;
         this.followee = followee;
     }
 }
