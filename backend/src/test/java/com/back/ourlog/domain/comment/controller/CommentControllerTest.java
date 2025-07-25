@@ -18,8 +18,7 @@ import java.util.Map;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -31,23 +30,24 @@ class CommentControllerTest {
 
     @Test
     @DisplayName("댓글 작성")
-    void t1() throws Exception{
+    void t1() throws Exception {
         Map<String, Object> data = new HashMap<>();
+        data.put("diaryId", 1);
         data.put("content", "안녕하시렵니까?");
 
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writeValueAsString(data);
 
         ResultActions resultActions = mvc.perform(
-                post("api/v1/comments")
+                post("/api/v1/comments")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
         ).andDo(print());
 
-
         resultActions
                 .andExpect(handler().handlerType(CommentController.class))
                 .andExpect(handler().methodName("writeComment"))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.content").value("안녕하시렵니까?"));
     }
 }

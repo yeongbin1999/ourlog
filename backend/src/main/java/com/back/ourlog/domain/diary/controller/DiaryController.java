@@ -36,9 +36,9 @@ public class DiaryController {
 
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<DiaryDetailDto> getDiary(@PathVariable("id") int id) {
-        Diary diary = diaryService.findById(id).get();
+    @GetMapping("/{diaryId}")
+    public ResponseEntity<DiaryDetailDto> getDiary(@PathVariable("diaryId") int diaryId) {
+        Diary diary = diaryService.findById(diaryId).get();
         List<String> TagNames = diaryService.getTagNames(diary);
 
         DiaryDetailDto diaryDetailDto = new DiaryDetailDto(diary, TagNames);

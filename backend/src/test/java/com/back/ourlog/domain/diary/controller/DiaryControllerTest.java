@@ -3,11 +3,9 @@ package com.back.ourlog.domain.diary.controller;
 import com.back.ourlog.domain.diary.dto.DiaryWriteRequestDto;
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.diary.repository.DiaryRepository;
-<<<<<<< HEAD
-import com.back.ourlog.domain.diary.service.DiaryService;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-=======
->>>>>>> 85afc25 (Test: 댓글 작성 테스트 코드 구현)
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
