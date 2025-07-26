@@ -56,13 +56,13 @@ class CommentControllerTest {
     void t2() throws Exception {
         int id = 1;
         ResultActions resultActions = mvc.perform(
-                get("/api/v1//comments" + id)
+                get("/api/v1/comments/" + id)
         ).andDo(print());
 
         resultActions
                 .andExpect(handler().handlerType(CommentController.class))
                 .andExpect(handler().methodName("getComments"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.msg").value("1번 감성일기 댓글 조회가 되었습니다."));
+                .andExpect(jsonPath("$.msg").value("1번 다이어리 댓글이 조회되었습니다."));
     }
 }
