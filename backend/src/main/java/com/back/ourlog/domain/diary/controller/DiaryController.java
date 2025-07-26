@@ -15,8 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/diaries")
@@ -39,10 +37,7 @@ public class DiaryController {
 
     @GetMapping("/{diaryId}")
     public ResponseEntity<RsData<DiaryDetailDto>> getDiary(@PathVariable("diaryId") int diaryId) {
-        Diary diary = diaryService.findById(diaryId).orElseThrow();
-        List<String> TagNames = diaryService.getTagNames(diary);
-
-        DiaryDetailDto diaryDetailDto = new DiaryDetailDto(diary, TagNames);
+        DiaryDetailDto diaryDetailDto = diaryService.getDiaryDetail(diaryId);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(RsData.of("200-1", "%d번 감상일기가 조회되었습니다.".formatted(diaryId), diaryDetailDto));
