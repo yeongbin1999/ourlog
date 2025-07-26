@@ -14,6 +14,7 @@ public class TimelineResponse {
     private String imageUrl;
     private int likeCount;
     private int commentCount;
+    private boolean isLiked;
     private UserSummary user;
 
     @Getter

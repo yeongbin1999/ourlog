@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Row, Col } from "react-bootstrap";
 import { useEffect, useState } from "react";
@@ -10,8 +10,9 @@ export default function TimelinePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // timeline 데이터 가져오기
   useEffect(() => {
-    fetch("/api/timeline")
+    fetch("/api/v1/timeline")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch timeline");
         return res.json();
@@ -34,14 +35,14 @@ export default function TimelinePage() {
       {error && <p className="text-danger">{error}</p>}
 
       {!loading && !error && (
-            <Row className="g-4">
-              {items.map((item) => (
-                <Col key={item.id} xs={12} sm={6} md={4}>
-                  <TimelineCard item={item} />
-                </Col>
-              ))}
-            </Row>
-          )}
+        <Row className="g-4">
+          {items.map((item) => (
+            <Col key={item.id} xs={12} sm={6} md={4}>
+              <TimelineCard item={item} />
+            </Col>
+          ))}
+        </Row>
+      )}
     </main>
   );
 }
