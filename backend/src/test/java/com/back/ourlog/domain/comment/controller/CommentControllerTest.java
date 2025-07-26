@@ -33,7 +33,7 @@ class CommentControllerTest {
     void t1() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("diaryId", 1);
-        data.put("content", "안녕하시렵니까?");
+        data.put("content", "안녕하세요");
 
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writeValueAsString(data);
@@ -48,7 +48,7 @@ class CommentControllerTest {
                 .andExpect(handler().handlerType(CommentController.class))
                 .andExpect(handler().methodName("writeComment"))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.data.content").value("안녕하시렵니까?"));
+                .andExpect(jsonPath("$.data.content").value("안녕하세요"));
     }
 
     @Test
