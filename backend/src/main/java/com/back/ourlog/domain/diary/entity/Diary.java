@@ -100,4 +100,10 @@ public class Diary {
         otts.forEach(ott -> this.diaryOtts.add(new DiaryOtt(this, ott)));
     }
 
+    public Comment addComment(User user, String content) {
+        Comment comment = new Comment(this, user, content);
+        comments.add(comment);
+
+        return comment;
+    }
 }

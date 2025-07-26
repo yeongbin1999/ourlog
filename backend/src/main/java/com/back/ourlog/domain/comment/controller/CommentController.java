@@ -24,9 +24,16 @@ public class CommentController {
     public ResponseEntity<RsData<CommentResponseDto>> writeComment(@RequestBody CommentRequestDto req) {
         // 테스트 ver (우선 User가 있다고 가정)
         Comment comment = commentService.write(req.getDiaryId(),null, req.getContent());
+        commentService.flush();
+
         CommentResponseDto res = new CommentResponseDto(comment);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(RsData.of("201-1", "댓글이 등록되었습니다.", res));
     }
+
+//    @GetMapping("/{diaryId}")
+//    public ResponseEntity<RsData<Void>> getComments(@PathVariable("diaryId") int diaryId) {
+//
+//    }
 }

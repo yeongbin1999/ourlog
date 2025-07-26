@@ -63,6 +63,6 @@ class CommentControllerTest {
                 .andExpect(handler().handlerType(CommentController.class))
                 .andExpect(handler().methodName("getComments"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.msg").value("%d번 감성일기 댓글 조회가 되었습니다."));
+                .andExpect(jsonPath("$.data.msg").value("1번 감성일기 댓글 조회가 되었습니다."));
     }
 }

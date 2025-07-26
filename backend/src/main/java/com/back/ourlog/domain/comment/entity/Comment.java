@@ -38,8 +38,8 @@ public class Comment {
     private User user;
 
     public Comment(Diary diary, User user, String content) {
-        this.diary = diary;
         this.user = user;
         this.content = content;
+        this.diary = diary;
     }
 }
