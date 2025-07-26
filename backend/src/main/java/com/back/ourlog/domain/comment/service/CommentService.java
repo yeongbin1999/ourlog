@@ -18,14 +18,15 @@ public class CommentService {
     private final DiaryRepository diaryRepository;
 
     @Transactional
-    public Comment write(int diaryId, User user, String content) {
+    public CommentResponseDto write(int diaryId, User user, String content) {
         Diary diary = diaryRepository.findById(diaryId).orElseThrow();
         Comment comment = diary.addComment(user, content);
         diaryRepository.flush();
 
-        return comment;
+        return new CommentResponseDto(comment);
     }
 
+    @Transactional(readOnly = true)
     public List<CommentResponseDto> getComments(int diaryId) {
         Diary diary = diaryRepository.findById(diaryId).orElseThrow();
         List<Comment> comments = diary.getComments();
