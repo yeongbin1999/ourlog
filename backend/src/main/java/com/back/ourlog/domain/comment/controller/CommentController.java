@@ -2,9 +2,7 @@ package com.back.ourlog.domain.comment.controller;
 
 import com.back.ourlog.domain.comment.dto.CommentRequestDto;
 import com.back.ourlog.domain.comment.dto.CommentResponseDto;
-import com.back.ourlog.domain.comment.entity.Comment;
 import com.back.ourlog.domain.comment.service.CommentService;
-import com.back.ourlog.domain.diary.service.DiaryService;
 import com.back.ourlog.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -20,13 +18,10 @@ import java.util.List;
 @Log4j2
 public class CommentController {
     private final CommentService commentService;
-    private final DiaryService diaryService;
     @PostMapping
     public ResponseEntity<RsData<CommentResponseDto>> writeComment(@RequestBody CommentRequestDto req) {
         // 테스트 ver (우선 User가 있다고 가정)
-        Comment comment = commentService.write(req.getDiaryId(),null, req.getContent());
-
-        CommentResponseDto res = new CommentResponseDto(comment);
+        CommentResponseDto res = commentService.write(req.getDiaryId(),null, req.getContent());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(RsData.of("201-1", "댓글이 등록되었습니다.", res));
