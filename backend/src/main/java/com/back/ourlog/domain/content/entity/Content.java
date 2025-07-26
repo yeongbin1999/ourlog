@@ -51,4 +51,10 @@ public class Content {
         this.releasedAt = releasedAt;
         this.externalId = externalId;
     }
+
+    public void update(String externalId, ContentType type) {
+        this.externalId = externalId;
+        this.type = type;
+    }
+
 }

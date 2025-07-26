@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -114,4 +115,64 @@ class DiaryControllerTest {
                 .andExpect(jsonPath("$.data.contentText").value("이것은 다이어리 1의 본문 내용입니다."))
                 .andExpect(jsonPath("$.data.tagNames[0]").isNotEmpty());
     }
+
+    @Test
+    @DisplayName("감성일기 수정 성공")
+    void t5() throws Exception {
+        int id = 1; // 존재하는 다이어리 ID
+        String body = """
+        {
+            "title": "수정된 다이어리",
+            "contentText": "수정된 내용입니다.",
+            "rating": 4.0,
+            "isPublic": true,
+            "externalId": "MOV123456",
+            "type": "MOVIE",
+            "tagIds": [1, 2],
+            "genreIds": [3],
+            "ottIds": [1]
+        }
+    """;
+
+        mvc.perform(
+                        put("/api/v1/diaries/" + id)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                //.header("Authorization", "Bearer MOCK_ACCESS_TOKEN")
+                                .content(body)
+                ).andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.title").value("수정된 다이어리"))
+                .andExpect(jsonPath("$.data.contentText").value("수정된 내용입니다."))
+                .andExpect(jsonPath("$.data.rating").value(4.0));
+    }
+
+    @Test
+    @DisplayName("감성일기 수정 실패 - 존재하지 않는 ID")
+    void t6() throws Exception {
+        int id = 9999; // 존재하지 않는 ID
+        String body = """
+        {
+            "title": "수정된 다이어리",
+            "contentText": "수정된 내용입니다.",
+            "rating": 4.0,
+            "isPublic": true,
+            "externalId": "MOV123456",
+            "type": "MOVIE",
+            "tagIds": [1, 2],
+            "genreIds": [3],
+            "ottIds": [1]
+        }
+    """;
+
+        mvc.perform(
+                        put("/api/v1/diaries/" + id)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                //.header("Authorization", "Bearer MOCK_ACCESS_TOKEN")
+                                .content(body)
+                ).andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultCode").value("DIARY_001"))
+                .andExpect(jsonPath("$.msg").value("존재하지 않는 다이어리입니다."));
+    }
+    
 }

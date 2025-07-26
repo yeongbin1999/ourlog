@@ -2,19 +2,26 @@ package com.back.ourlog.domain.diary.service;
 
 import com.back.ourlog.domain.content.entity.Content;
 import com.back.ourlog.domain.content.service.ContentService;
+import com.back.ourlog.domain.diary.dto.DiaryResponseDto;
+import com.back.ourlog.domain.diary.dto.DiaryUpdateRequestDto;
 import com.back.ourlog.domain.diary.dto.DiaryWriteRequestDto;
 import com.back.ourlog.domain.diary.entity.Diary;
+import com.back.ourlog.domain.diary.exception.DiaryNotFoundException;
 import com.back.ourlog.domain.diary.repository.DiaryRepository;
 import com.back.ourlog.domain.genre.entity.DiaryGenre;
 import com.back.ourlog.domain.genre.entity.Genre;
 import com.back.ourlog.domain.genre.repository.GenreRepository;
+import com.back.ourlog.domain.genre.service.GenreService;
 import com.back.ourlog.domain.ott.entity.DiaryOtt;
 import com.back.ourlog.domain.ott.entity.Ott;
 import com.back.ourlog.domain.ott.repository.OttRepository;
+import com.back.ourlog.domain.ott.service.OttService;
 import com.back.ourlog.domain.tag.entity.DiaryTag;
 import com.back.ourlog.domain.tag.entity.Tag;
 import com.back.ourlog.domain.tag.repository.TagRepository;
+import com.back.ourlog.domain.tag.service.TagService;
 import com.back.ourlog.domain.user.entity.User;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +38,9 @@ public class DiaryService {
     private final TagRepository tagRepository;
     private final GenreRepository genreRepository;
     private final OttRepository ottRepository;
+    private final TagService tagService;
+    private final GenreService genreService;
+    private final OttService ottService;
 
     @Transactional
     public Diary write(DiaryWriteRequestDto req, User user) {
@@ -84,4 +94,23 @@ public class DiaryService {
                 .map(diaryTag -> diaryTag.getTag().getName())
                 .toList();
     }
+
+    public DiaryResponseDto update(int id, DiaryUpdateRequestDto dto) {
+        Diary diary = diaryRepository.findById(id)
+                .orElseThrow(DiaryNotFoundException::new);
+
+        // TODO: 유저 인증 로직은 이후에 추가 예정
+
+        // 연관 필드 업데이트
+        diary.update(dto.title(), dto.contentText(), dto.rating(),
+                dto.isPublic(), dto.externalId(), dto.type());
+
+        // N:N 관계 업데이트
+        diary.updateTags(tagService.getTagsByIds(dto.tagIds()));
+        diary.updateGenres(genreService.getGenresByIds(dto.genreIds()));
+        diary.updateOtts(ottService.getOttsByIds(dto.ottIds()));
+
+        return DiaryResponseDto.from(diary);
+    }
+
 }

@@ -2,10 +2,14 @@ package com.back.ourlog.domain.diary.entity;
 
 import com.back.ourlog.domain.comment.entity.Comment;
 import com.back.ourlog.domain.content.entity.Content;
+import com.back.ourlog.domain.content.entity.ContentType;
 import com.back.ourlog.domain.genre.entity.DiaryGenre;
+import com.back.ourlog.domain.genre.entity.Genre;
 import com.back.ourlog.domain.like.entity.Like;
 import com.back.ourlog.domain.ott.entity.DiaryOtt;
+import com.back.ourlog.domain.ott.entity.Ott;
 import com.back.ourlog.domain.tag.entity.DiaryTag;
+import com.back.ourlog.domain.tag.entity.Tag;
 import com.back.ourlog.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -69,6 +73,31 @@ public class Diary {
         this.contentText = contentText;
         this.rating = rating;
         this.isPublic = isPublic;
+    }
+
+    public void update(String title, String contentText, Float rating, Boolean isPublic, String externalId, ContentType type) {
+        this.title = title;
+        this.contentText = contentText;
+        this.rating = rating;
+        this.isPublic = isPublic;
+
+        // Content 내 필드 업데이트
+        this.content.update(externalId, type);
+    }
+
+    public void updateTags(List<Tag> tags) {
+        this.diaryTags.removeIf(diaryTag -> true);
+        tags.forEach(tag -> this.diaryTags.add(new DiaryTag(this, tag)));
+    }
+
+    public void updateGenres(List<Genre> genres) {
+        this.diaryGenres.removeIf(diaryGenre -> true);
+        genres.forEach(genre -> this.diaryGenres.add(new DiaryGenre(this, genre)));
+    }
+
+    public void updateOtts(List<Ott> otts) {
+        this.diaryOtts.removeIf(diaryOtt -> true);
+        otts.forEach(ott -> this.diaryOtts.add(new DiaryOtt(this, ott)));
     }
 
 }
