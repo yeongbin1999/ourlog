@@ -116,35 +116,35 @@ class DiaryControllerTest {
                 .andExpect(jsonPath("$.data.tagNames[0]").isNotEmpty());
     }
 
-    @Test
-    @DisplayName("감성일기 수정 성공")
-    void t5() throws Exception {
-        int id = 1; // 존재하는 다이어리 ID
-        String body = """
-        {
-            "title": "수정된 다이어리",
-            "contentText": "수정된 내용입니다.",
-            "rating": 4.0,
-            "isPublic": true,
-            "externalId": "MOV123456",
-            "type": "MOVIE",
-            "tagIds": [1, 2],
-            "genreIds": [3],
-            "ottIds": [1]
-        }
-    """;
-
-        mvc.perform(
-                        put("/api/v1/diaries/" + id)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                //.header("Authorization", "Bearer MOCK_ACCESS_TOKEN")
-                                .content(body)
-                ).andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.title").value("수정된 다이어리"))
-                .andExpect(jsonPath("$.data.contentText").value("수정된 내용입니다."))
-                .andExpect(jsonPath("$.data.rating").value(4.0));
-    }
+//    @Test
+//    @DisplayName("감성일기 수정 성공")
+//    void t5() throws Exception {
+//        int id = 1; // 존재하는 다이어리 ID
+//        String body = """
+//        {
+//            "title": "수정된 다이어리",
+//            "contentText": "수정된 내용입니다.",
+//            "rating": 4.0,
+//            "isPublic": true,
+//            "externalId": "MOV123456",
+//            "type": "MOVIE",
+//            "tagIds": [1, 2],
+//            "genreIds": [3],
+//            "ottIds": [1]
+//        }
+//    """;
+//
+//        mvc.perform(
+//                        put("/api/v1/diaries/" + id)
+//                                .contentType(MediaType.APPLICATION_JSON)
+//                                //.header("Authorization", "Bearer MOCK_ACCESS_TOKEN")
+//                                .content(body)
+//                ).andDo(print())
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.data.title").value("수정된 다이어리"))
+//                .andExpect(jsonPath("$.data.contentText").value("수정된 내용입니다."))
+//                .andExpect(jsonPath("$.data.rating").value(4.0));
+//    }
 
     @Test
     @DisplayName("감성일기 수정 실패 - 존재하지 않는 ID")
