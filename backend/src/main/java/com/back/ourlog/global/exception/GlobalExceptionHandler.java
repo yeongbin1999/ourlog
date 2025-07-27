@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
                 .status(resolveHttpStatus(errorCode))
                 .body(RsData.fail(errorCode, message));
     }
-
+    
     // IllegalArgumentException → BAD_REQUEST로 통일
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<RsData<Void>> handleIllegalArgument(IllegalArgumentException e) {
@@ -67,7 +67,6 @@ public class GlobalExceptionHandler {
         }
 
         if (code.startsWith("DIARY_")) return HttpStatus.NOT_FOUND;
-
         if (code.startsWith("COMMON_400")) return HttpStatus.BAD_REQUEST;
         if (code.startsWith("COMMON_403")) return HttpStatus.FORBIDDEN;
         if (code.startsWith("COMMON_404")) return HttpStatus.NOT_FOUND;
@@ -76,5 +75,5 @@ public class GlobalExceptionHandler {
 
         return HttpStatus.BAD_REQUEST;
     }
-
+    
 }

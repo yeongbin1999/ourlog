@@ -15,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -49,5 +49,20 @@ class CommentControllerTest {
                 .andExpect(handler().methodName("writeComment"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.content").value("안녕하시렵니까?"));
+    }
+
+    @Test
+    @DisplayName("DiaryId에 해당하는 댓글 조회")
+    void t2() throws Exception {
+        int id = 1;
+        ResultActions resultActions = mvc.perform(
+                get("/api/v1/comments/" + id)
+        ).andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(CommentController.class))
+                .andExpect(handler().methodName("getComments"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.msg").value("1번 다이어리 댓글이 조회되었습니다."));
     }
 }
