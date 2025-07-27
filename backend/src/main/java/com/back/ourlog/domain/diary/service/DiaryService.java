@@ -2,6 +2,7 @@ package com.back.ourlog.domain.diary.service;
 
 import com.back.ourlog.domain.content.entity.Content;
 import com.back.ourlog.domain.content.service.ContentService;
+import com.back.ourlog.domain.diary.dto.DiaryDetailDto;
 import com.back.ourlog.domain.diary.dto.DiaryResponseDto;
 import com.back.ourlog.domain.diary.dto.DiaryUpdateRequestDto;
 import com.back.ourlog.domain.diary.dto.DiaryWriteRequestDto;
@@ -21,13 +22,11 @@ import com.back.ourlog.domain.tag.entity.Tag;
 import com.back.ourlog.domain.tag.repository.TagRepository;
 import com.back.ourlog.domain.tag.service.TagService;
 import com.back.ourlog.domain.user.entity.User;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -83,18 +82,6 @@ public class DiaryService {
         return diaryRepository.save(diary);
     }
 
-    public Optional<Diary> findById(int id) {
-        return diaryRepository.findById(id);
-    }
-
-    public List<String> getTagNames(Diary diary) {
-        List<DiaryTag> diaryTags = diary.getDiaryTags();
-
-        return diaryTags.stream()
-                .map(diaryTag -> diaryTag.getTag().getName())
-                .toList();
-    }
-
     public DiaryResponseDto update(int id, DiaryUpdateRequestDto dto) {
         Diary diary = diaryRepository.findById(id)
                 .orElseThrow(DiaryNotFoundException::new);
@@ -113,4 +100,13 @@ public class DiaryService {
         return DiaryResponseDto.from(diary);
     }
 
+    public DiaryDetailDto getDiaryDetail(int diaryId) {
+        Diary diary = diaryRepository.findById(diaryId).orElseThrow();
+
+        List<String> TagNames = diary.getDiaryTags().stream()
+                .map(diaryTag -> diaryTag.getTag().getName())
+                .toList();
+
+        return new DiaryDetailDto(diary, TagNames);
+    }
 }
