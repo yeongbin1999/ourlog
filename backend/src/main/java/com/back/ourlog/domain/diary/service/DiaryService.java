@@ -82,6 +82,7 @@ public class DiaryService {
         return diaryRepository.save(diary);
     }
 
+    @Transactional
     public DiaryResponseDto update(int id, DiaryUpdateRequestDto dto) {
         Diary diary = diaryRepository.findById(id)
                 .orElseThrow(DiaryNotFoundException::new);
