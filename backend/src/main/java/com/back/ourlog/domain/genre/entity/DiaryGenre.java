@@ -8,20 +8,24 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-@IdClass(DiaryGenreId.class)
 public class DiaryGenre {
-    @Id
+
+    @EmbeddedId
+    private DiaryGenreId id;
+
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("diaryId")  // DiaryGenreId.diaryId와 매핑
     @JoinColumn(name = "diary_id", nullable = false)
     private Diary diary;
 
-    @Id
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("genreId")  // DiaryGenreId.genreId와 매핑
     @JoinColumn(name = "genre_id", nullable = false)
     private Genre genre;
 
     public DiaryGenre(Diary diary, Genre genre) {
         this.diary = diary;
         this.genre = genre;
+        this.id = new DiaryGenreId(diary.getId(), genre.getId()); // PK 세팅
     }
 }
