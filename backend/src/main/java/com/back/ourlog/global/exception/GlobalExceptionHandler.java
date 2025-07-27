@@ -20,6 +20,7 @@ public class GlobalExceptionHandler {
                 .status(resolveHttpStatus(errorCode))
                 .body(RsData.fail(errorCode, message));
     }
+    
     // IllegalArgumentException → BAD_REQUEST로 통일
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<RsData<Void>> handleIllegalArgument(IllegalArgumentException e) {
@@ -74,4 +75,5 @@ public class GlobalExceptionHandler {
 
         return HttpStatus.BAD_REQUEST;
     }
+    
 }
