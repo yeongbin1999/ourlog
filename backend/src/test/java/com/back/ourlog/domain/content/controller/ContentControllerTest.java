@@ -12,8 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -29,12 +28,13 @@ class ContentControllerTest {
         int diaryId = 1;
 
         ResultActions resultActions = mvc.perform(
-            get("api/v1/contents/" + diaryId)
+            get("/api/v1/contents/" + diaryId)
         ).andDo(print());
 
         resultActions
                 .andExpect(handler().handlerType(ContentController.class))
-                .andExpect(handler().methodName("getContents"))
-                .andExpect(status().isOk());
+                .andExpect(handler().methodName("getContent"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.msg").value("%d번 다이어리의 조회 컨텐츠가 조회되었습니다.".formatted(diaryId)));
     }
 }
