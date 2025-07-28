@@ -4,6 +4,7 @@ import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.statistics.dto.FavoriteEmotionAndCountDto;
 import com.back.ourlog.domain.statistics.dto.FavoriteTypeAndCountDto;
 import com.back.ourlog.domain.statistics.dto.MonthlyDiaryCount;
+import com.back.ourlog.domain.statistics.dto.TypeCountDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -53,4 +54,15 @@ public interface StatisticsRepository extends JpaRepository<Diary, Integer> {
             nativeQuery = true)
     List<MonthlyDiaryCount> countMonthlyDiaryByUserId(@Param("userId") Integer userId,
                                                       @Param("startDate") LocalDateTime startDate);
+
+    @Query(value = "SELECT c.type as type, COUNT(d.id) as count " +
+            "FROM diary d JOIN content c ON d.content_id = c.id " +
+            "WHERE d.user_id = :userId " +
+            "GROUP BY c.type " +
+            "ORDER BY count DESC",
+            nativeQuery = true)
+    Optional<List<TypeCountDto>> findTypeCountsByUserId(@Param("userId") Integer userId);
+
+
+
 }

@@ -1,9 +1,6 @@
 package com.back.ourlog.domain.statistics.service;
 
-import com.back.ourlog.domain.statistics.dto.FavoriteEmotionAndCountDto;
-import com.back.ourlog.domain.statistics.dto.FavoriteTypeAndCountDto;
-import com.back.ourlog.domain.statistics.dto.MonthlyDiaryCount;
-import com.back.ourlog.domain.statistics.dto.StatisticsCardDto;
+import com.back.ourlog.domain.statistics.dto.*;
 import com.back.ourlog.domain.statistics.repository.StatisticsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,10 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -83,5 +77,11 @@ public class StatisticsService {
             result.add(new MonthlyDiaryCount(period, views));
         }
         return result;
+    }
+
+    public List<TypeCountDto> getTypeDistributionByUser(int userId) {
+        return statisticsRepository.findTypeCountsByUserId(userId)
+                .filter(list -> !list.isEmpty())  // 값 있으면 그대로 반환
+                .orElseGet(() -> Collections.singletonList(new TypeCountDto("없음", 1L)));
     }
 }

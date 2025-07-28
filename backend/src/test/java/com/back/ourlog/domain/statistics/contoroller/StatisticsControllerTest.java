@@ -3,6 +3,7 @@ package com.back.ourlog.domain.statistics.contoroller;
 import com.back.ourlog.domain.statistics.controller.StatisticsController;
 import com.back.ourlog.domain.statistics.dto.MonthlyDiaryCount;
 import com.back.ourlog.domain.statistics.dto.StatisticsCardDto;
+import com.back.ourlog.domain.statistics.dto.TypeCountDto;
 import com.back.ourlog.domain.statistics.service.StatisticsService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,6 +60,13 @@ public class StatisticsControllerTest {
                 .andExpect(jsonPath("$.favoriteEmotion").value(statisticsCardDto.getFavoriteEmotion()))
                 .andExpect(jsonPath("$.favoriteEmotionCount").value(statisticsCardDto.getFavoriteEmotionCount()));
 
+        System.out.println("Total Diary Count: " + statisticsCardDto.getTotalDiaryCount());
+        System.out.println("Average Rating: " + statisticsCardDto.getAverageRating());
+        System.out.println("Favorite Type: " + statisticsCardDto.getFavoriteType());
+        System.out.println("Favorite Type Count: " + statisticsCardDto.getFavoriteTypeCount());
+        System.out.println("Favorite Emotion: " + statisticsCardDto.getFavoriteEmotion());
+        System.out.println("Favorite Emotion Count: " + statisticsCardDto.getFavoriteEmotionCount());
+
     }
 
     @Test
@@ -82,6 +90,30 @@ public class StatisticsControllerTest {
             resultActions
                     .andExpect(jsonPath("$.[%d].period".formatted(i)).value(monthlyDiaryCount.getPeriod()))
                     .andExpect(jsonPath("$.[%d].views".formatted(i)).value(monthlyDiaryCount.getViews()));
+        }
+    }
+
+    @Test
+    @DisplayName("콘텐츠 타입 분포 조회")
+    void 콘텐츠_타입_분포_조회() throws Exception {
+
+        ResultActions resultActions = mvc.perform(
+                get("/api/v1/statistics/type-distribution")
+        ).andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(StatisticsController.class))
+                .andExpect(handler().methodName("getTypeDistribution"))
+                .andExpect(status().isOk());
+
+        List<TypeCountDto> typeCountDtos = statisticsService.getTypeDistributionByUser(1);
+
+        for(int i = 0; i < typeCountDtos.size(); i++) {
+            TypeCountDto typeCountDto = typeCountDtos.get(i);
+            System.out.println("Type: " + typeCountDto.getType() + ", Count: " + typeCountDto.getCount());
+            resultActions
+                    .andExpect(jsonPath("$.[%d].type".formatted(i)).value(typeCountDto.getType()))
+                    .andExpect(jsonPath("$.[%d].count".formatted(i)).value(typeCountDto.getCount()));
         }
     }
 }
