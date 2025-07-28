@@ -88,11 +88,19 @@ public class DiaryService {
 
         // TODO: 유저 인증 로직은 이후에 추가 예정
 
+        // 기존 연관관계 완전 삭제
+        diary.getDiaryTags().clear();
+        diary.getDiaryGenres().clear();
+        diary.getDiaryOtts().clear();
+
+        // flush로 영속성 컨텍스트에서 제거
+        diaryRepository.flush();
+
         // 연관 필드 업데이트
         diary.update(dto.title(), dto.contentText(), dto.rating(),
                 dto.isPublic(), dto.externalId(), dto.type());
 
-        // N:N 관계 업데이트
+        // 연관관계 다시 설정
         diary.updateTags(tagService.getTagsByIds(dto.tagIds()));
         diary.updateGenres(genreService.getGenresByIds(dto.genreIds()));
         diary.updateOtts(ottService.getOttsByIds(dto.ottIds()));
