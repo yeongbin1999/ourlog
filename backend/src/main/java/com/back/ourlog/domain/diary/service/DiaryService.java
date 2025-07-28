@@ -22,6 +22,8 @@ import com.back.ourlog.domain.tag.entity.Tag;
 import com.back.ourlog.domain.tag.repository.TagRepository;
 import com.back.ourlog.domain.tag.service.TagService;
 import com.back.ourlog.domain.user.entity.User;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +42,9 @@ public class DiaryService {
     private final TagService tagService;
     private final GenreService genreService;
     private final OttService ottService;
+
+    @PersistenceContext
+    private EntityManager em;
 
     @Transactional
     public Diary write(DiaryWriteRequestDto req, User user) {
@@ -100,6 +105,30 @@ public class DiaryService {
 
         return DiaryResponseDto.from(diary);
     }
+
+//    @Transactional
+//    public DiaryResponseDto update(int id, DiaryUpdateRequestDto dto) {
+//        Diary diary = diaryRepository.findById(id)
+//                .orElseThrow(DiaryNotFoundException::new);
+//
+//        // 1. 기본 필드 업데이트
+//        diary.update(dto.title(), dto.contentText(), dto.rating(),
+//                dto.isPublic(), dto.externalId(), dto.type());
+//
+//        // 2. 기존 관계 제거 + flush
+//        diary.getDiaryTags().clear();
+//        diary.getDiaryGenres().clear();
+//        diary.getDiaryOtts().clear();
+//        em.flush();  // 즉시 DELETE SQL 실행 + 영속성 컨텍스트에서 detach
+//
+//        // 3. 새 관계 추가
+//        diary.updateTags(tagService.getTagsByIds(dto.tagIds()));
+//        diary.updateGenres(genreService.getGenresByIds(dto.genreIds()));
+//        diary.updateOtts(ottService.getOttsByIds(dto.ottIds()));
+//
+//        return DiaryResponseDto.from(diary);
+//    }
+
 
     public DiaryDetailDto getDiaryDetail(int diaryId) {
         Diary diary = diaryRepository.findById(diaryId).orElseThrow();
