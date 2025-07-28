@@ -86,17 +86,17 @@ public class Diary {
     }
 
     public void updateTags(List<Tag> tags) {
-        this.diaryTags.removeIf(diaryTag -> true);
+        this.diaryTags.clear(); // orphanRemoval = true 이므로 DB에서도 삭제됨
         tags.forEach(tag -> this.diaryTags.add(new DiaryTag(this, tag)));
     }
 
     public void updateGenres(List<Genre> genres) {
-        this.diaryGenres.removeIf(diaryGenre -> true);
+        this.diaryGenres.clear();
         genres.forEach(genre -> this.diaryGenres.add(new DiaryGenre(this, genre)));
     }
 
     public void updateOtts(List<Ott> otts) {
-        this.diaryOtts.removeIf(diaryOtt -> true);
+        this.diaryOtts.clear();
         otts.forEach(ott -> this.diaryOtts.add(new DiaryOtt(this, ott)));
     }
 
