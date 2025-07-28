@@ -36,8 +36,8 @@ public class ContentController {
                 .body(RsData.of("200-1", "%d번 다이어리의 조회 컨텐츠가 조회되었습니다.".formatted(diaryId), res));
     }
 
-    @GetMapping("/store")
-    public List<LibraryApiResponseDto> callLibraryApi() throws Exception {
+    @GetMapping("/library")
+    public ResponseEntity<RsData<List<LibraryApiResponseDto>>> callLibraryApi() throws Exception {
         RestTemplate restTemplate = new RestTemplate();
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -74,6 +74,7 @@ public class ContentController {
                 })
                 .toList();
 
-        return res;
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(RsData.of("200-2", "도서관 자료가 조회되었습니다.", res));
     }
 }
