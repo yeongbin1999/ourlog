@@ -12,6 +12,7 @@ import com.back.ourlog.domain.tag.entity.DiaryTag;
 import com.back.ourlog.domain.tag.entity.Tag;
 import com.back.ourlog.domain.user.entity.User;
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -26,6 +27,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Diary {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -91,4 +93,5 @@ public class Diary {
 
         return comment;
     }
+
 }
