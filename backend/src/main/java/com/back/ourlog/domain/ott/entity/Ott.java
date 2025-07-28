@@ -1,6 +1,7 @@
 package com.back.ourlog.domain.ott.entity;
 
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +11,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Ott {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,19 +30,6 @@ public class Ott {
     public Ott(String name, String logoUrl) {
         this.name = name;
         this.logoUrl = logoUrl;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Ott)) return false;
-        Ott ott = (Ott) o;
-        return id != null && id.equals(ott.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
     }
 
 }
