@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class DiaryService {
 
@@ -43,7 +44,6 @@ public class DiaryService {
     private final GenreService genreService;
     private final OttService ottService;
 
-    @Transactional
     public Diary write(DiaryWriteRequestDto req, User user) {
         Content content = contentService.getOrCreateContent(req.externalId(), req.type());
 
@@ -90,24 +90,81 @@ public class DiaryService {
 
         // TODO: 유저 인증 로직은 이후에 추가 예정
 
-        // 기존 연관관계 완전 삭제
-        diary.getDiaryTags().clear();
-        diary.getDiaryGenres().clear();
-        diary.getDiaryOtts().clear();
-
-        // flush로 영속성 컨텍스트에서 제거
-        diaryRepository.flush();
-
         // 연관 필드 업데이트
         diary.update(dto.title(), dto.contentText(), dto.rating(),
                 dto.isPublic(), dto.externalId(), dto.type());
 
-        // 연관관계 다시 설정
-        diary.updateTags(tagService.getTagsByIds(dto.tagIds()));
-        diary.updateGenres(genreService.getGenresByIds(dto.genreIds()));
-        diary.updateOtts(ottService.getOttsByIds(dto.ottIds()));
+        // 변경된 연관관계만 처리
+        updateTags(diary, dto.tagIds());
+        updateGenres(diary, dto.genreIds());
+        updateOtts(diary, dto.ottIds());
 
         return DiaryResponseDto.from(diary);
+    }
+
+    private void updateTags(Diary diary, List<Integer> newTagIds) {
+        List<DiaryTag> current = diary.getDiaryTags();
+        List<Integer> currentTagIds = current.stream()
+                .map(dt -> dt.getTag().getId())
+                .toList();
+
+        // 제거할 항목
+        List<DiaryTag> toRemove = current.stream()
+                .filter(dt -> !newTagIds.contains(dt.getTag().getId()))
+                .toList();
+        diary.getDiaryTags().removeAll(toRemove);
+
+        // 추가할 항목
+        List<Integer> toAdd = newTagIds.stream()
+                .filter(id -> !currentTagIds.contains(id))
+                .toList();
+        toAdd.forEach(tagId -> {
+            Tag tag = tagRepository.findById(tagId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.TAG_NOT_FOUND));
+            diary.getDiaryTags().add(new DiaryTag(diary, tag));
+        });
+    }
+
+    private void updateGenres(Diary diary, List<Integer> newGenreIds) {
+        List<DiaryGenre> current = diary.getDiaryGenres();
+        List<Integer> currentIds = current.stream()
+                .map(dg -> dg.getGenre().getId())
+                .toList();
+
+        List<DiaryGenre> toRemove = current.stream()
+                .filter(dg -> !newGenreIds.contains(dg.getGenre().getId()))
+                .toList();
+        diary.getDiaryGenres().removeAll(toRemove);
+
+        List<Integer> toAdd = newGenreIds.stream()
+                .filter(id -> !currentIds.contains(id))
+                .toList();
+        toAdd.forEach(id -> {
+            Genre genre = genreRepository.findById(id)
+                    .orElseThrow(() -> new CustomException(ErrorCode.GENRE_NOT_FOUND));
+            diary.getDiaryGenres().add(new DiaryGenre(diary, genre));
+        });
+    }
+
+    private void updateOtts(Diary diary, List<Integer> newOttIds) {
+        List<DiaryOtt> current = diary.getDiaryOtts();
+        List<Integer> currentIds = current.stream()
+                .map(doo -> doo.getOtt().getId())
+                .toList();
+
+        List<DiaryOtt> toRemove = current.stream()
+                .filter(doo -> !newOttIds.contains(doo.getOtt().getId()))
+                .toList();
+        diary.getDiaryOtts().removeAll(toRemove);
+
+        List<Integer> toAdd = newOttIds.stream()
+                .filter(id -> !currentIds.contains(id))
+                .toList();
+        toAdd.forEach(id -> {
+            Ott ott = ottRepository.findById(id)
+                    .orElseThrow(() -> new CustomException(ErrorCode.OTT_NOT_FOUND));
+            diary.getDiaryOtts().add(new DiaryOtt(diary, ott));
+        });
     }
 
     public DiaryDetailDto getDiaryDetail(int diaryId) {

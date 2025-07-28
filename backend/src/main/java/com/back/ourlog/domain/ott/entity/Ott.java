@@ -29,4 +29,18 @@ public class Ott {
         this.name = name;
         this.logoUrl = logoUrl;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Ott)) return false;
+        Ott ott = (Ott) o;
+        return id != null && id.equals(ott.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
 }
