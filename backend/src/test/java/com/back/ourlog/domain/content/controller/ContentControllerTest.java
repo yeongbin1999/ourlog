@@ -35,6 +35,7 @@ class ContentControllerTest {
                 .andExpect(handler().handlerType(ContentController.class))
                 .andExpect(handler().methodName("getContent"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.msg").value("%d번 다이어리의 조회 컨텐츠가 조회되었습니다.".formatted(diaryId)));
+                .andExpect(jsonPath("$.msg").value("%d번 다이어리의 조회 컨텐츠가 조회되었습니다.".formatted(diaryId)))
+                .andExpect(jsonPath("$.data.title").value("콘텐츠 30"));
     }
 }
