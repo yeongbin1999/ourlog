@@ -53,4 +53,11 @@ public class DiaryController {
         return ResponseEntity.ok(RsData.of("200-0", "일기 수정 완료", result));
     }
 
+    @DeleteMapping("/{diaryId}")
+    @Operation(summary = "감상일기 삭제", description = "감상일기를 삭제합니다.")
+    public ResponseEntity<RsData<Void>> deleteDiary(@PathVariable("diaryId") int diaryId) {
+        diaryService.delete(diaryId); // TODO: 유저 인증 붙으면 유저 추가
+        return ResponseEntity.ok(RsData.of("200-0", "일기 삭제 완료", null));
+    }
+
 }

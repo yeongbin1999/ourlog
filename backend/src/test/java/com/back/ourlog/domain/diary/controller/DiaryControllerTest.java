@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -174,5 +175,27 @@ class DiaryControllerTest {
                 .andExpect(jsonPath("$.resultCode").value("DIARY_001"))
                 .andExpect(jsonPath("$.msg").value("존재하지 않는 다이어리입니다."));
     }
-    
+
+    @DisplayName("감상일기 삭제 성공")
+    @Test
+    void t7() throws Exception {
+        int id = 1;
+        mvc.perform(delete("/api/v1/diaries/" + id))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.msg").value("일기 삭제 완료"))
+                .andExpect(jsonPath("$.resultCode").value("200-0"));
+    }
+
+    @DisplayName("감상일기 삭제 실패 - 존재하지 않는 ID")
+    @Test
+    void t8() throws Exception {
+        int id = 9999;
+        mvc.perform(delete("/api/v1/diaries/" + id))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultCode").value("DIARY_001"))
+                .andExpect(jsonPath("$.msg").value("존재하지 않는 다이어리입니다."));
+    }
+
 }
