@@ -22,6 +22,8 @@ import com.back.ourlog.domain.tag.entity.Tag;
 import com.back.ourlog.domain.tag.repository.TagRepository;
 import com.back.ourlog.domain.tag.service.TagService;
 import com.back.ourlog.domain.user.entity.User;
+import com.back.ourlog.global.exception.CustomException;
+import com.back.ourlog.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -116,5 +118,12 @@ public class DiaryService {
                 .toList();
 
         return new DiaryDetailDto(diary, TagNames);
+    }
+
+    public void delete(int diaryId) {
+        Diary diary = diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
+
+        diaryRepository.delete(diary);
     }
 }
