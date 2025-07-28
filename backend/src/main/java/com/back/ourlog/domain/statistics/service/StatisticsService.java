@@ -2,13 +2,21 @@ package com.back.ourlog.domain.statistics.service;
 
 import com.back.ourlog.domain.statistics.dto.FavoriteEmotionAndCountDto;
 import com.back.ourlog.domain.statistics.dto.FavoriteTypeAndCountDto;
+import com.back.ourlog.domain.statistics.dto.MonthlyDiaryCount;
 import com.back.ourlog.domain.statistics.dto.StatisticsCardDto;
 import com.back.ourlog.domain.statistics.repository.StatisticsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,21 +27,17 @@ public class StatisticsService {
     /** 통계 카드 조회 */
     @Transactional(readOnly = true)
     public StatisticsCardDto getStatisticsCardByUserId(int userId) {
-        StatisticsCardDto dto = new StatisticsCardDto();
-
-        dto.setTotalDiaryCount(getTotalDiaryCount(userId));
-
-        dto.setAverageRating(getAverageRating(userId));
-
         FavoriteTypeAndCountDto favoriteGenre = getFavoriteGenreAndCount(userId);
-        dto.setFavoriteType(favoriteGenre.getFavoriteType());
-        dto.setFavoriteTypeCount(favoriteGenre.getFavoriteTypeCount());
-
         FavoriteEmotionAndCountDto favoriteEmotion = getFavoriteEmotionAndCount(userId);
-        dto.setFavoriteEmotion(favoriteEmotion.getFavoriteEmotion());
-        dto.setFavoriteEmotionCount(favoriteEmotion.getFavoriteEmotionCount());
 
-        return dto;
+        return StatisticsCardDto.builder()
+                .totalDiaryCount(getTotalDiaryCount(userId))
+                .averageRating(getAverageRating(userId))
+                .favoriteType(favoriteGenre.getFavoriteType())
+                .favoriteTypeCount(favoriteGenre.getFavoriteTypeCount())
+                .favoriteEmotion(favoriteEmotion.getFavoriteEmotion())
+                .favoriteEmotionCount(favoriteEmotion.getFavoriteEmotionCount())
+                .build();
     }
 
     /** 총 다이어리 개수 */
@@ -57,5 +61,27 @@ public class StatisticsService {
     private FavoriteEmotionAndCountDto getFavoriteEmotionAndCount(int userId) {
         return statisticsRepository.findFavoriteEmotionAndCountByUserId(userId)
                 .orElse(new FavoriteEmotionAndCountDto("없음", 0L));
+    }
+
+    public List<MonthlyDiaryCount> getLast6MonthsDiaryCountsByUser(Integer userId) {
+        // 6개월 전 첫날
+        LocalDate now = LocalDate.now();
+        LocalDate startMonth = now.minusMonths(5).withDayOfMonth(1);
+
+        // DB조회: 결과는 작성된 달에만 존재
+        List<MonthlyDiaryCount> counts = statisticsRepository.countMonthlyDiaryByUserId(userId, startMonth.atStartOfDay());
+
+        // Map으로 매핑 (period -> views)
+        Map<String, Long> countMap = counts.stream()
+                .collect(Collectors.toMap(MonthlyDiaryCount::getPeriod, MonthlyDiaryCount::getViews));
+
+        List<MonthlyDiaryCount> result = new ArrayList<>();
+        for (int i = 0; i < 6; i++) {
+            LocalDate month = startMonth.plusMonths(i);
+            String period = month.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            Long views = countMap.getOrDefault(period, 0L);
+            result.add(new MonthlyDiaryCount(period, views));
+        }
+        return result;
     }
 }

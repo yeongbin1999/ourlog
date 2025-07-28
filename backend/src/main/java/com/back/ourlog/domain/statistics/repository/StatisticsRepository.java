@@ -3,11 +3,14 @@ package com.back.ourlog.domain.statistics.repository;
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.statistics.dto.FavoriteEmotionAndCountDto;
 import com.back.ourlog.domain.statistics.dto.FavoriteTypeAndCountDto;
+import com.back.ourlog.domain.statistics.dto.MonthlyDiaryCount;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -41,4 +44,13 @@ public interface StatisticsRepository extends JpaRepository<Diary, Integer> {
         LIMIT 1""", nativeQuery = true)
     Optional<FavoriteEmotionAndCountDto> findFavoriteEmotionAndCountByUserId(@Param("userId") int userId);
 
+
+    @Query(value = "SELECT FORMATDATETIME(created_at, 'yyyy-MM') AS period, COUNT(*) AS views " +
+            "FROM diary " +
+            "WHERE user_id = :userId AND created_at >= :startDate " +
+            "GROUP BY FORMATDATETIME(created_at, 'yyyy-MM') " +
+            "ORDER BY FORMATDATETIME(created_at, 'yyyy-MM') ASC",
+            nativeQuery = true)
+    List<MonthlyDiaryCount> countMonthlyDiaryByUserId(@Param("userId") Integer userId,
+                                                      @Param("startDate") LocalDateTime startDate);
 }
