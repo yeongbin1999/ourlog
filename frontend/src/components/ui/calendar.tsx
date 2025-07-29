@@ -29,7 +29,7 @@ export interface CalendarProps {
     disabled?: (date: Date) => boolean
 }
 
-function Calendar({ className, mode = "single", selected, onSelect, disabled, ...props }: CalendarProps) {
+function Calendar({ className, selected, onSelect, disabled, ...props }: CalendarProps) {
     const [currentMonth, setCurrentMonth] = React.useState(selected || new Date())
 
     const monthStart = startOfMonth(currentMonth)
