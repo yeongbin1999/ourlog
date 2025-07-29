@@ -128,27 +128,6 @@ function convertTypeTimeCountsToChartData(timeCounts: TypeLineGraphDto[]): Chart
   return result;
 }
 
-// 커스텀 툴팁 컴포넌트
-const CustomTooltip = ({ active, payload, label }: {
-  active?: boolean;
-  payload?: Array<{ dataKey: string; value: number; color: string }>;
-  label?: string;
-}) => {
-    if (active && payload && payload.length) {
-        return (
-            <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg max-w-xs z-50">
-                <p className="font-semibold text-gray-800 mb-2">{label}</p>
-                {payload.map((entry, index: number) => (
-                    <p key={index} className="text-sm" style={{ color: entry.color }}>
-                        {entry.dataKey}: <span className="font-bold">{entry.value}개</span>
-                    </p>
-                ))}
-            </div>
-        )
-    }
-    return null
-}
-
 export default function Component() {
     const [selectedPeriod, setSelectedPeriod] = useState("전체")
     const [startDate, setStartDate] = useState<Date>()
