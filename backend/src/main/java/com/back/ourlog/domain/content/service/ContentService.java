@@ -65,6 +65,7 @@ public class ContentService {
         return result.stream()
                 .map(item -> {
                     String title = (String) item.get("TITLE");
+                    String creatorName = (String) item.get("AUTHOR");
                     String description = (String) item.get("BOOK_INTRODUCTION");
                     String posterUrl = (String) item.get("TITLE_URL");
                     String releasedAtStr = (String) item.get("PUBLISH_PREDATE");
@@ -79,7 +80,8 @@ public class ContentService {
                         }
                     }
                     // releasedAtStr -> (localDateTime) releasedAt (형 변환 불가능)
-                    return new LibraryApiResponseDto(title, description, posterUrl, releasedAt);
+
+                    return new LibraryApiResponseDto(title, creatorName, description, posterUrl, releasedAt);
                 })
                 .toList();
     }

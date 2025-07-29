@@ -10,14 +10,16 @@ public class LibraryApiResponseDto {
     private String title;
     private ContentType contentType;
 
+    private String creatorName;
     private String description;
     private String posterUrl;
 
     private LocalDateTime releasedAt;
 
-    public LibraryApiResponseDto(String title, String description, String posterUrl, LocalDateTime releasedAt) {
+    public LibraryApiResponseDto(String title, String creatorName, String description, String posterUrl, LocalDateTime releasedAt) {
         this.title = title;
         contentType = ContentType.BOOK;
+        this.creatorName = creatorName;
         this.description = description;
         this.posterUrl = posterUrl;
         this.releasedAt = releasedAt;

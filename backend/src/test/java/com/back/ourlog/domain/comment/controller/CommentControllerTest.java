@@ -27,7 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CommentControllerTest {
     @Autowired
     private MockMvc mvc;
-
+    @Autowired
+    private ObjectMapper objectMapper;
     @Test
     @DisplayName("댓글 작성")
     void t1() throws Exception {
@@ -35,8 +36,7 @@ class CommentControllerTest {
         data.put("diaryId", 1);
         data.put("content", "안녕하시렵니까?");
 
-        ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(data);
+        String json = objectMapper.writeValueAsString(data);
 
         ResultActions resultActions = mvc.perform(
                 post("/api/v1/comments")

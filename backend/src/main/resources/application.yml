@@ -6,7 +6,7 @@ spring:
   profiles:
     include: secret
 
-  # application-secret.yml
+  # 추가 import application-secret.yml (for API KEY)
   config:
     import: optional:file:.env, classpath:application-secret.yml
 

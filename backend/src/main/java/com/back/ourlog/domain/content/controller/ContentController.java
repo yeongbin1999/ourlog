@@ -1,6 +1,7 @@
 package com.back.ourlog.domain.content.controller;
 
 import com.back.ourlog.domain.content.dto.ContentResponseDto;
+import com.back.ourlog.domain.content.dto.LibraryApiRequestDto;
 import com.back.ourlog.domain.content.dto.LibraryApiResponseDto;
 import com.back.ourlog.domain.content.service.ContentService;
 import com.back.ourlog.global.rsData.RsData;
@@ -8,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -31,9 +29,11 @@ public class ContentController {
     }
 
     @GetMapping("/library")
-    public ResponseEntity<RsData<List<LibraryApiResponseDto>>> callLibraryApi() throws Exception {
-        List<LibraryApiResponseDto> res = contentService.searchBooks("가");
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(RsData.of("200-2", "도서관 자료가 조회되었습니다.", res));
+    public ResponseEntity<RsData<List<LibraryApiResponseDto>>> getLibraryInfo(
+            @RequestBody LibraryApiRequestDto libraryApiRequestDto) throws Exception {
+        List<LibraryApiResponseDto> res = contentService.searchBooks(libraryApiRequestDto.getTitle());
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(RsData.of("200-2", "도서 정보가 조회되었습니다.", res));
     }
 }
