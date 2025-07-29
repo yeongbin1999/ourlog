@@ -1,4 +1,4 @@
-package com.back.ourlog.domain.content.dto;
+package com.back.ourlog.external.library.dto;
 
 import lombok.Data;
 

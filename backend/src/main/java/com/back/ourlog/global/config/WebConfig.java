@@ -1,8 +1,6 @@
 package com.back.ourlog.global.config;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -20,11 +18,5 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowedHeaders("*")
                 .allowCredentials(true);
-    }
-
-    // OpenAPI 데이터 사용을 위한 Bean 설정추가 (restTemplate, objectMapper)
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
     }
 }

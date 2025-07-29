@@ -22,7 +22,6 @@ public class Content {
     private Integer id;
 
     private String title;
-    private String creatorName;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
