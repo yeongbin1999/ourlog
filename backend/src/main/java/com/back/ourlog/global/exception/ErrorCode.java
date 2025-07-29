@@ -16,6 +16,9 @@ public enum ErrorCode {
     USER_DUPLICATE_EMAIL("USER_002", "이미 존재하는 이메일입니다."),
     USER_BANNED("USER_003", "차단된 사용자입니다."),
 
+    // 로그인 관련
+    LOGIN_FAILED("AUTH_005", "이메일 또는 비밀번호가 올바르지 않습니다."),
+
     // 다이어리 관련
     DIARY_NOT_FOUND("DIARY_001", "존재하지 않는 다이어리입니다."),
 
@@ -33,9 +36,6 @@ public enum ErrorCode {
     FORBIDDEN("COMMON_403", "접근 권한이 없습니다."),
     NOT_FOUND("COMMON_404", "요청하신 리소스를 찾을 수 없습니다.");
 
-    // 도메인별 추가
-    // 일관된 사용과 에러 코드 공유를 위해 각자 에러를 코드를 등록해서 사용해주세요!
-
     private final String code;
     private final String message;
 
@@ -44,4 +44,3 @@ public enum ErrorCode {
         this.message = message;
     }
 }
-
