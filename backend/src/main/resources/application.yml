@@ -64,3 +64,7 @@ server:
 spotify:
   client-id: ${SPOTIFY_CLIENT_ID}
   client-secret: ${SPOTIFY_CLIENT_SECRET}
+
+tmdb:
+  api:
+    key: ${TMDB_API_KEY}

@@ -1,6 +1,7 @@
 package com.back.ourlog.global.client.spotify;
 
-import com.back.ourlog.global.client.spotify.dto.SpotifySearchResponse;
+import com.back.ourlog.external.spotify.client.SpotifyClient;
+import com.back.ourlog.external.spotify.dto.SpotifySearchResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

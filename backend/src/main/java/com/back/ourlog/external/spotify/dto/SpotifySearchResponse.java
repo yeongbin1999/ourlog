@@ -1,4 +1,4 @@
-package com.back.ourlog.global.client.spotify.dto;
+package com.back.ourlog.external.spotify.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
