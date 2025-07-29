@@ -3,7 +3,7 @@ spring:
     name: springboot-jpa
 
   config:
-    import: optional:file:.env
+    import: optional:file:.env[.properties]
 
   jpa:
     hibernate:
@@ -68,3 +68,6 @@ spotify:
 tmdb:
   api:
     key: ${TMDB_API_KEY}
+
+library:
+  api-key: "${Library_API_KEY}"
