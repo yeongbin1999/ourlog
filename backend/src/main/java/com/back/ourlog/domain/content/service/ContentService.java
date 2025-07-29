@@ -22,11 +22,12 @@ public class ContentService {
         return contentRepository.findByExternalIdAndType(externalId, type)
                 .orElseGet(() -> {
                     Content content = new Content(
-                            "제목 없음",      // title (임시)
+                            "제목 없음",
                             type,
-                            "설명 없음",      // description (임시)
-                            null,             // 포스터 URL
-                            LocalDateTime.now(), // releasedAt
+                            "제작자",
+                            "설명 없음",
+                            null,
+                            LocalDateTime.now(),
                             externalId
                     );
                     return contentRepository.save(content);

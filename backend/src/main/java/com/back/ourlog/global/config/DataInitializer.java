@@ -131,11 +131,12 @@ public class DataInitializer implements CommandLineRunner {
         for (int i = 1; i <= count; i++) {
             String title = "콘텐츠 " + i;
             ContentType type = ContentType.values()[random.nextInt(ContentType.values().length)];
+            String creatorName = "제작자 " + (i % 5 + 1); // 1~5번 제작자
             String description = "이것은 " + title + " 에 대한 설명입니다.";
             String posterUrl = "https://picsum.photos/300?content=" + i;
             LocalDateTime releasedAt = LocalDateTime.now().minusDays(random.nextInt(1000));
             String externalId = "EXT-" + i;
-            contents.add(new Content(title, type, description, posterUrl, releasedAt, externalId));
+            contents.add(new Content(title, type, creatorName, description, posterUrl, releasedAt, externalId));
         }
         return contentRepository.saveAll(contents);
     }
