@@ -2,7 +2,7 @@ name: Auto PR Title from Issue
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize]
+    types: [opened, synchronize, reopened, edited]
 
 jobs:
   set-pr-title:
