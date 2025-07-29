@@ -21,9 +21,9 @@ public class LikeService {
     private static final Integer MOCK_USER_ID = 1; // 테스트용 임시 사용자 ID..
 
     @Transactional  // 좋아요 등록
-    public void like(Integer diaryId) {
+    public boolean like(Integer diaryId) {
         if (likeRepository.existsByUserIdAndDiaryId(MOCK_USER_ID, diaryId)) {
-            return; // 이미 눌렀는지 체크
+            return false; // 이미 눌렀으면 false 반환
         }
 
         User user = userRepository.findById(MOCK_USER_ID)
@@ -33,10 +33,16 @@ public class LikeService {
 
         Like like = new Like(diary, user);
         likeRepository.save(like);
+
+        return true; // 좋아요 성공적으로 저장했으면 true
     }
 
     @Transactional  // 좋아요 삭제
     public void unlike(Integer diaryId) {
         likeRepository.deleteByUserIdAndDiaryId(MOCK_USER_ID, diaryId);
+    }
+
+    public int getLikeCount(Integer diaryId) {
+        return likeRepository.countByDiaryId(diaryId);
     }
 }
