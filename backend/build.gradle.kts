@@ -55,6 +55,7 @@ dependencies {
     // --- Jakarta 추가 어노테이션 ---
     implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
 
+
     // --- Dotenv ---
     implementation("me.paulschwarz:spring-dotenv:4.0.0")
 

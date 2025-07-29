@@ -7,8 +7,9 @@ spring:
     include: secret
 
   # 추가 import application-secret.yml (for API KEY)
+#  , classpath:application-secret.yml
   config:
-    import: optional:file:.env, classpath:application-secret.yml
+    import: optional:file:.env[.properties]
 
   jpa:
     hibernate:
@@ -65,7 +66,6 @@ cookie:
 
 server:
   port: 8080
-<<<<<<< HEAD
 
 spotify:
   client-id: ${SPOTIFY_CLIENT_ID}

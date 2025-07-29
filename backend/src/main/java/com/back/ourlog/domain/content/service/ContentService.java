@@ -87,7 +87,7 @@ public class ContentService {
     }
 
     // 책 제목으로 도서관 API로부터 데이터를 구해온다.
-    public List<Map<String, Object>> getResultFromLibrary(String bookTitle) throws Exception {
+    private List<Map<String, Object>> getResultFromLibrary(String bookTitle) throws Exception {
         String url = "https://www.nl.go.kr/seoji/SearchApi.do?cert_key=%s".formatted(libraryApiKey) +
                 "&result_style=json&page_no=1&page_size=10&title=%s".formatted(bookTitle);
 
