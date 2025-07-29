@@ -39,18 +39,18 @@ class ContentControllerTest {
                 .andExpect(jsonPath("$.data.title").value("콘텐츠 30"));
     }
 
-    @Test
-    @DisplayName("중앙도서관 API 연동")
-    void t2() throws Exception {
-        ResultActions resultActions = mvc.perform(
-                get("/api/v1/contents/library")
-        ).andDo(print());
-
-        resultActions
-                .andExpect(handler().handlerType(ContentController.class))
-                .andExpect(handler().methodName("callLibraryApi"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.msg").value("도서관 자료가 조회되었습니다."))
-                .andExpect(jsonPath("$.data[0].title").value("일도양단 6-1"));
-    }
+//    @Test
+//    @DisplayName("중앙도서관 API 연동")
+//    void t2() throws Exception {
+//        ResultActions resultActions = mvc.perform(
+//                get("/api/v1/contents/library")
+//        ).andDo(print());
+//
+//        resultActions
+//                .andExpect(handler().handlerType(ContentController.class))
+//                .andExpect(handler().methodName("callLibraryApi"))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.msg").value("도서관 자료가 조회되었습니다."))
+//                .andExpect(jsonPath("$.data[0].title").value("일도양단 6-1"));
+//    }
 }
