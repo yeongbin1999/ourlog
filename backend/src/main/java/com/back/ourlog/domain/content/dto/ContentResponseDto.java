@@ -12,15 +12,17 @@ public class ContentResponseDto {
     private ContentType type;
     private String posterUrl;
     private String title;
+    private String creatorName;
     private String description;
     private LocalDateTime releasedAt;
 
     public ContentResponseDto(Content content) {
-        id = content.getId();
-        type = content.getType();
-        posterUrl = content.getPosterUrl();
-        title = content.getTitle();
-        description = content.getDescription();
-        releasedAt = content.getReleasedAt();
+        this.id = content.getId();
+        this.type = content.getType();
+        this.posterUrl = content.getPosterUrl();
+        this.title = content.getTitle();
+        this.creatorName = content.getCreatorName();
+        this.description = content.getDescription();
+        this.releasedAt = content.getReleasedAt();
     }
 }

@@ -27,6 +27,9 @@ public class Content {
     @Column(nullable = false)
     private ContentType type;
 
+    @Column(name = "creator_name")
+    private String creatorName;
+
     private String description;
     private String posterUrl;
 
@@ -43,9 +46,10 @@ public class Content {
     @OneToMany(mappedBy = "content", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Diary> diaries = new ArrayList<>();
 
-    public Content(String title, ContentType type, String description, String posterUrl, LocalDateTime releasedAt, String externalId) {
+    public Content(String title, ContentType type, String creatorName, String description, String posterUrl, LocalDateTime releasedAt, String externalId) {
         this.title = title;
         this.type = type;
+        this.creatorName = creatorName;
         this.description = description;
         this.posterUrl = posterUrl;
         this.releasedAt = releasedAt;

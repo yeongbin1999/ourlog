@@ -55,6 +55,9 @@ dependencies {
     // --- Jakarta 추가 어노테이션 ---
     implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
 
+    // --- Dotenv ---
+    implementation("me.paulschwarz:spring-dotenv:4.0.0")
+
     // --- Test (JUnit5 버전 통일) ---
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
