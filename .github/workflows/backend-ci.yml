@@ -12,11 +12,11 @@ jobs:
   backend-ci:
     runs-on: ubuntu-latest
 
-  env:
-    SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
-    SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-    TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-    LIBRARY_API_KEY: ${{ secrets.LIBRARY_API_KEY }}
+    env:
+      SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+      SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      LIBRARY_API_KEY: ${{ secrets.LIBRARY_API_KEY }}
 
     steps:
       - name: Checkout repository
