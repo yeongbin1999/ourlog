@@ -1,4 +1,4 @@
-package com.back.ourlog.global.security;
+package com.back.ourlog.global.security.authentication;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

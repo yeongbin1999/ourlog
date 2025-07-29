@@ -1,4 +1,4 @@
-package com.back.ourlog.global.security;
+package com.back.ourlog.global.security.exception;
 
 import com.back.ourlog.global.exception.ErrorCode;
 import com.back.ourlog.global.rsData.RsData;

@@ -1,6 +1,7 @@
-package com.back.ourlog.global.security;
+package com.back.ourlog.global.security.authentication;
 
 import com.back.ourlog.global.exception.ErrorCode;
+import com.back.ourlog.global.security.exception.JwtAuthenticationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;

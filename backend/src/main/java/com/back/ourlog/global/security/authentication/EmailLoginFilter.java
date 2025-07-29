@@ -1,7 +1,8 @@
-package com.back.ourlog.global.security;
+package com.back.ourlog.global.security.authentication;
 
 import com.back.ourlog.global.exception.ErrorCode;
 import com.back.ourlog.global.rsData.RsData;
+import com.back.ourlog.global.security.CustomUserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
