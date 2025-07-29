@@ -17,6 +17,7 @@ public class ContentService {
     private final DiaryRepository diaryRepository;
     private final ContentRepository contentRepository;
 
+
     // 외부 API 연동하면 externalId, type 기준으로 정보 갱신하도록 수정
     public Content getOrCreateContent(String externalId, ContentType type) {
         return contentRepository.findByExternalIdAndType(externalId, type)
