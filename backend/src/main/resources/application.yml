@@ -2,8 +2,13 @@ spring:
   application:
     name: springboot-jpa
 
+  # application-secret.yml 을 포함합니다.
+  profiles:
+    include: secret
+
+  # application-secret.yml
   config:
-    import: optional:file:.env[.properties]
+    import: optional:file:.env, classpath:application-secret.yml
 
   jpa:
     hibernate:
@@ -60,6 +65,7 @@ cookie:
 
 server:
   port: 8080
+<<<<<<< HEAD
 
 spotify:
   client-id: ${SPOTIFY_CLIENT_ID}
