@@ -383,12 +383,6 @@ export default function Component() {
                                 </CardHeader>
                                 <CardContent>
                                     <ChartContainer
-                                        config={{
-                                            views: {
-                                                label: "감상 수",
-                                                color: "#3b82f6",
-                                            },
-                                        }}
                                         className="h-[300px] overflow-hidden"
                                     >
                                         <ResponsiveContainer width="100%" height="100%">
@@ -396,7 +390,7 @@ export default function Component() {
                                                 <CartesianGrid strokeDasharray="3 3" />
                                                 <XAxis dataKey="period" />
                                                 <YAxis />
-                                                <ChartTooltip content={<CustomTooltip />} />
+                                                <ChartTooltip />
                                                 <Line
                                                     type="monotone"
                                                     dataKey="감상수"
@@ -417,12 +411,6 @@ export default function Component() {
                                 </CardHeader>
                                 <CardContent>
                                     <ChartContainer
-                                        config={{
-                                            count: {
-                                                label: "감상 수",
-                                                color: "#10b981",
-                                            },
-                                        }}
                                         className="h-[300px] overflow-hidden"
                                     >
                                         <ResponsiveContainer width="100%" height="100%">
@@ -440,7 +428,7 @@ export default function Component() {
                                                         <Cell key={`cell-${index}`} fill={`hsl(${index * 50}, 70%, 50%)`} />
                                                     ))}
                                                 </Pie>
-                                                <ChartTooltip content={<CustomTooltip />} />
+                                                <ChartTooltip />
                                             </PieChart>
                                         </ResponsiveContainer>
                                     </ChartContainer>
@@ -459,12 +447,6 @@ export default function Component() {
                                 </CardHeader>
                                 <CardContent>
                                     <ChartContainer
-                                        config={{
-                                            드라마: { label: "드라마", color: "#8884d8" },
-                                            영화: { label: "영화", color: "#82ca9d" },
-                                            책: { label: "책", color: "#ffc658" },
-                                            음악: { label: "음악", color: "#ff7c7c" },
-                                        }}
                                         className="h-[300px] overflow-hidden"
                                     >
                                         <ResponsiveContainer width="100%" height="100%">
@@ -477,7 +459,7 @@ export default function Component() {
                                                     <CartesianGrid strokeDasharray="3 3" />
                                                     <XAxis dataKey="period" />
                                                     <YAxis />
-                                                    <ChartTooltip content={<CustomTooltip />} />
+                                                    <ChartTooltip />
                                                     {getTimeData.typeData.length > 0 &&
                                                         Object.keys(getTimeData.typeData[0])
                                                             .filter((key) => key !== "period")
@@ -552,13 +534,6 @@ export default function Component() {
                                 </CardHeader>
                                 <CardContent>
                                     <ChartContainer
-                                        config={{
-                                            드라마: { label: "드라마", color: "#8884d8" },
-                                            액션: { label: "액션", color: "#82ca9d" },
-                                            로맨스: { label: "로맨스", color: "#ffc658" },
-                                            공포: { label: "공포", color: "#ff7c7c" },
-                                            코미디: { label: "코미디", color: "#8dd1e1" },
-                                        }}
                                         className="h-[350px] overflow-hidden"
                                     >
                                         <ResponsiveContainer width="100%" height="100%">
@@ -566,10 +541,10 @@ export default function Component() {
                                                 <CartesianGrid strokeDasharray="3 3" />
                                                 <XAxis dataKey="period" />
                                                 <YAxis />
-                                                <ChartTooltip content={<CustomTooltip />} />
+                                                <ChartTooltip />
 
                                                 <YAxis />
-                                                <ChartTooltip content={<CustomTooltip />} />
+                                                <ChartTooltip />
                                                 <Line
                                                     type="monotone"
                                                     dataKey="드라마"
@@ -658,14 +633,6 @@ export default function Component() {
                                 </CardHeader>
                                 <CardContent>
                                     <ChartContainer
-                                        config={{
-                                            감동: { label: "감동", color: "#ff6b6b" },
-                                            재미: { label: "재미", color: "#4ecdc4" },
-                                            긴장: { label: "긴장", color: "#45b7d1" },
-                                            슬픔: { label: "슬픔", color: "#96ceb4" },
-                                            분노: { label: "분노", color: "#feca57" },
-                                            공포: { label: "공포", color: "#ff9ff3" },
-                                        }}
                                         className="h-[300px] overflow-hidden"
                                     >
                                         <ResponsiveContainer width="100%" height="100%">
@@ -673,7 +640,7 @@ export default function Component() {
                                                 <CartesianGrid strokeDasharray="3 3" />
                                                 <XAxis dataKey="period" />
                                                 <YAxis />
-                                                <ChartTooltip content={<CustomTooltip />} />
+                                                <ChartTooltip />
                                                 <Line
                                                     type="monotone"
                                                     dataKey="감동"
