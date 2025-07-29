@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { Calendar, BarChart3, Heart, Star, TrendingUp, CalendarIcon } from "lucide-react"
+import { Calendar, BarChart3, Star, CalendarIcon } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -16,19 +16,19 @@ import { ko } from "date-fns/locale"
 
 const BASE_URL = "http://localhost:8080/api/v1/statistics";
 
-async function fetchCard() {
+async function fetchCard(): Promise<StatisticsCardDto> {
     const res = await fetch(`${BASE_URL}/card`);
     return res.json();
 }
-async function fetchMonthlyDiaryGraph() {
+async function fetchMonthlyDiaryGraph(): Promise<MonthlyDiaryCount[]> {
     const res = await fetch(`${BASE_URL}/monthly-diary-graph`);
     return res.json();
 }
-async function fetchTypeDistribution() {
+async function fetchTypeDistribution(): Promise<TypeCountDto[]> {
     const res = await fetch(`${BASE_URL}/type-distribution`);
     return res.json();
 }
-async function fetchTypeGraph(userId: number, period: string) {
+async function fetchTypeGraph(period: string): Promise<TypeGraphResponse> {
   // period를 PeriodOption enum 값으로 변환
   const periodMap: Record<string, string> = {
     "전체": "ALL",
@@ -40,7 +40,7 @@ async function fetchTypeGraph(userId: number, period: string) {
   
   const periodOption = periodMap[period] || "ALL";
   
-  const res = await fetch(`${BASE_URL}/type-graph?userId=${userId}&period=${periodOption}`);
+  const res = await fetch(`${BASE_URL}/type-graph?period=${periodOption}`);
   return res.json();
 }
 
@@ -72,16 +72,12 @@ type StatisticsCardDto = {
 
 type MonthlyDiaryCount = { period: string; views: number };
 
-// 월별 데이터 (기본 데이터)
-const monthlyTypeData = [
-    { period: "1월", 드라마: 10, 영화: 8, 책: 6, 음악: 12 },
-    { period: "2월", 드라마: 12, 영화: 9, 책: 7, 음악: 11 },
-    { period: "3월", 드라마: 11, 영화: 10, 책: 8, 음악: 13 },
-    { period: "4월", 드라마: 9, 영화: 11, 책: 9, 음악: 10 },
-    { period: "5월", 드라마: 8, 영화: 12, 책: 10, 음악: 9 },
-    { period: "6월", 드라마: 7, 영화: 13, 책: 11, 음악: 8 },
-]
+type TypeCountDto = {
+  type: string;
+  count: number;
+};
 
+// 월별 데이터 (기본 데이터) - 장르별, 감정별용
 const monthlyGenreData = [
     { period: "1월", 드라마: 15, 액션: 10, 로맨스: 8, 공포: 7, 코미디: 6 },
     { period: "2월", 드라마: 14, 액션: 12, 로맨스: 9, 공포: 6, 코미디: 7 },
@@ -109,24 +105,40 @@ const typeColors: Record<string, string> = {
 };
 
 // 변환 함수 추가
-function convertTypeTimeCountsToChartData(timeCounts: TypeLineGraphDto[]): Record<string, any>[] {
+type ChartDataPoint = {
+  period: string;
+  [key: string]: string | number;
+};
+
+function convertTypeTimeCountsToChartData(timeCounts: TypeLineGraphDto[]): ChartDataPoint[] {
   // { period: { 드라마: 10, 영화: 8, ... } } 형태로 그룹핑
-  const periodMap: Record<string, Record<string, any>> = {};
+  const periodMap: Record<string, ChartDataPoint> = {};
+  
+  console.log("변환 전 데이터:", timeCounts);
+  
   timeCounts.forEach(({ axisLabel, type, count }) => {
     if (!periodMap[axisLabel]) periodMap[axisLabel] = { period: axisLabel };
     periodMap[axisLabel][type] = count;
   });
+  
+  const result = Object.values(periodMap);
+  console.log("변환 후 데이터:", result);
+  
   // 배열로 변환
-  return Object.values(periodMap);
+  return result;
 }
 
 // 커스텀 툴팁 컴포넌트
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label }: {
+  active?: boolean;
+  payload?: Array<{ dataKey: string; value: number; color: string }>;
+  label?: string;
+}) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg max-w-xs z-50">
                 <p className="font-semibold text-gray-800 mb-2">{label}</p>
-                {payload.map((entry: any, index: number) => (
+                {payload.map((entry, index: number) => (
                     <p key={index} className="text-sm" style={{ color: entry.color }}>
                         {entry.dataKey}: <span className="font-bold">{entry.value}개</span>
                     </p>
@@ -142,16 +154,16 @@ export default function Component() {
     const [startDate, setStartDate] = useState<Date>()
     const [endDate, setEndDate] = useState<Date>()
     const [activeTab, setActiveTab] = useState("overview")
-    const [card, setCard] = useState<any>(null);
-    const [monthlyDiary, setMonthlyDiary] = useState<any[]>([]);
-    const [typeDist, setTypeDist] = useState<any[]>([]);
+    const [card, setCard] = useState<StatisticsCardDto | null>(null);
+    const [monthlyDiary, setMonthlyDiary] = useState<MonthlyDiaryCount[]>([]);
+    const [typeDist, setTypeDist] = useState<TypeCountDto[]>([]);
     const [typeGraph, setTypeGraph] = useState<TypeGraphResponse>({ typeLineGraph: [], typeRanking: [] });
 
     useEffect(() => {
         fetchCard().then(setCard);
         fetchMonthlyDiaryGraph().then(setMonthlyDiary);
         fetchTypeDistribution().then(setTypeDist);
-        fetchTypeGraph(1, selectedPeriod).then((data) => {
+        fetchTypeGraph(selectedPeriod).then((data) => {
             console.log("typeGraph API 응답:", data);
             console.log("typeLineGraph:", data?.typeLineGraph);
             console.log("typeRanking:", data?.typeRanking);
