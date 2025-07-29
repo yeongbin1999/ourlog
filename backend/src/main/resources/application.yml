@@ -70,4 +70,4 @@ tmdb:
     key: ${TMDB_API_KEY}
 
 library:
-  api-key: ${LIBRARY_API_KEY}
+  api-key: ${Library_API_KEY}
