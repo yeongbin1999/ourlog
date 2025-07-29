@@ -1,11 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { Diary, DiaryInfoProps } from "../types/detail";
 {
   /* 페이지 타이틀 */
 }
-function DiaryTitle() {
+function DiaryTitle({ title }: { title: string }) {
   return (
-    <h1 className="text-center text-4xl font-bold text-gray-800">Title</h1>
+    <h1 className="text-center text-4xl font-bold text-gray-800">{title}</h1>
   );
 }
 
@@ -35,22 +37,24 @@ function ContentInfo() {
   );
 }
 
-function DiaryInfo() {
+function DiaryInfo({ rating, contentText, tagNames }: DiaryInfoProps) {
   return (
     <section className="p-6 border rounded-xl shadow-sm bg-white space-y-4">
       <header className="flex flex-col gap-1">
-        <div className="text-yellow-500 text-xl">⭐️⭐️⭐️⭐️⭐️ 5.0 / 5.0</div>
+        <div className="text-yellow-500 text-xl">
+          ⭐️⭐️⭐️⭐️⭐️ {rating} / 5.0
+        </div>
       </header>
-      <p className="text-gray-800">
-        해당 작품은 명작이네요. 여러분도 꼭 보시길 바랍니다.
-      </p>
+      <p className="text-gray-800">{contentText}</p>
       <div className="flex gap-2">
-        <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-sm">
-          #명작
-        </span>
-        <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-sm">
-          #감동
-        </span>
+        {tagNames.map((tag, index) => (
+          <span
+            key={index}
+            className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-sm"
+          >
+            #{tag}
+          </span>
+        ))}
       </div>
     </section>
   );
@@ -102,11 +106,53 @@ function CommentInfo() {
 }
 
 export default function Page() {
+  const [diary, setDiary] = useState<Diary | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const diaryId = 1; // 나중에 pathVariable로 받아올 예정
+
+  useEffect(() => {
+    async function fetchDiary() {
+      try {
+        const res = await fetch(
+          `http://localhost:8080/api/v1/diaries/${diaryId}`
+        );
+        if (!res.ok) {
+          throw new Error("Failed to fetch Diary");
+        }
+        const json = await res.json();
+        setDiary(json.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchDiary();
+  }, [diaryId]);
+
+  if (loading) {
+    return <main className="p-6 text-center">로딩 중...</main>;
+  }
+
+  if (!diary) {
+    return (
+      <main className="p-6 text-center text-red-500">
+        데이터를 불러오지 못했습니다.
+      </main>
+    );
+  }
+
   return (
     <main className="max-w-3xl mx-auto p-6 space-y-10">
-      <DiaryTitle />
+      <DiaryTitle title={diary.title} />
       <ContentInfo />
-      <DiaryInfo />
+      <DiaryInfo
+        rating={diary.rating}
+        contentText={diary.contentText}
+        tagNames={diary.tagNames}
+      />
       <CommentForm />
       <CommentInfo />
     </main>
