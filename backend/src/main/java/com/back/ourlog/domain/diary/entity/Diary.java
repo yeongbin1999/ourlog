@@ -12,6 +12,7 @@ import com.back.ourlog.domain.tag.entity.DiaryTag;
 import com.back.ourlog.domain.tag.entity.Tag;
 import com.back.ourlog.domain.user.entity.User;
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -26,6 +27,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Diary {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -85,25 +87,11 @@ public class Diary {
         this.content.update(externalId, type);
     }
 
-    public void updateTags(List<Tag> tags) {
-        this.diaryTags.clear(); // orphanRemoval = true 이므로 DB에서도 삭제됨
-        tags.forEach(tag -> this.diaryTags.add(new DiaryTag(this, tag)));
-    }
-
-    public void updateGenres(List<Genre> genres) {
-        this.diaryGenres.clear();
-        genres.forEach(genre -> this.diaryGenres.add(new DiaryGenre(this, genre)));
-    }
-
-    public void updateOtts(List<Ott> otts) {
-        this.diaryOtts.clear();
-        otts.forEach(ott -> this.diaryOtts.add(new DiaryOtt(this, ott)));
-    }
-
     public Comment addComment(User user, String content) {
         Comment comment = new Comment(this, user, content);
         comments.add(comment);
 
         return comment;
     }
+
 }

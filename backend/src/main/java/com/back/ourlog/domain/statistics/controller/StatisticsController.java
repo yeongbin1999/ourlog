@@ -1,8 +1,7 @@
 package com.back.ourlog.domain.statistics.controller;
 
-import com.back.ourlog.domain.statistics.dto.MonthlyDiaryCount;
-import com.back.ourlog.domain.statistics.dto.StatisticsCardDto;
-import com.back.ourlog.domain.statistics.dto.TypeCountDto;
+import com.back.ourlog.domain.statistics.dto.*;
+import com.back.ourlog.domain.statistics.enums.PeriodOption;
 import com.back.ourlog.domain.statistics.service.StatisticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -37,5 +36,12 @@ public class StatisticsController {
     public List<TypeCountDto> getTypeDistribution() {
         int userId = 1; // 임시 값, 실제로는 인증된 사용자 ID를 사용해야 합니다.
         return statisticsService.getTypeDistributionByUser(userId);
+    }
+
+    @GetMapping("/type-graph")
+    public TypeGraphResponse getTypeGraph(@RequestParam PeriodOption period) {
+        int userId = 1; // 임시 값, 실제로는 인증된 사용자 ID를 사용해야 합니다.
+        TypeGraphRequest req = new TypeGraphRequest(userId, period);
+        return statisticsService.getTypeGraph(req);
     }
 }

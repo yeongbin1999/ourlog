@@ -15,14 +15,19 @@ export default function TimelineCard({ item }: Props) {
 
   const handleLikeClick = async () => {
     try {
+      const method = isLiked ? "DELETE" : "POST";
+
       const response = await fetch(`/api/v1/likes/${item.id}`, {
-        method: isLiked ? "DELETE" : "POST",
+          method,
       });
 
-      if (!response.ok) throw new Error("요청 실패");
+      if (!response.ok) throw new Error("좋아요 요청 실패");
 
-      setIsLiked(!isLiked);
-      setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1));
+      //  좋아요 후, 서버에서 최신 좋아요 수 조회
+      const data = await response.json();
+
+      setIsLiked(data.liked);
+      setLikeCount(data.likeCount);
     } catch (err) {
       console.error("좋아요 요청 실패:", err);
       alert("좋아요 요청 중 오류가 발생했습니다.");

@@ -64,7 +64,7 @@ class DiaryServiceTest {
                 "테스트 제목",
                 "테스트 내용",
                 true,
-                4.0,
+                4.0F,
                 "EXT123",
                 ContentType.MOVIE,
                 List.of(tag1.getId(), tag2.getId()),
@@ -95,6 +95,7 @@ class DiaryServiceTest {
     @Test
     @DisplayName("감상일기 등록 -> DiaryGenre 생성")
     void t2() throws Exception {
+        Tag dummyTag = tagRepository.save(new Tag("더미"));
 
         Genre genre1 = genreRepository.save(new Genre("스릴러"));
         Genre genre2 = genreRepository.save(new Genre("판타지"));
@@ -103,12 +104,12 @@ class DiaryServiceTest {
                 "테스트 제목",
                 "테스트 내용",
                 true,
-                4.0,
+                4.0F,
                 "EXT123",
                 ContentType.MOVIE,
-                List.of(), // tag
+                List.of(dummyTag.getId()),
                 List.of(genre1.getId(), genre2.getId()),
-                List.of()  // ott
+                List.of()
         );
 
         mockMvc.perform(post("/api/v1/diaries")
@@ -127,6 +128,7 @@ class DiaryServiceTest {
     @Test
     @DisplayName("감상일기 등록 -> DiaryOtt 생성")
     void t3() throws Exception {
+        Tag dummyTag = tagRepository.save(new Tag("더미"));
 
         Ott ott1 = ottRepository.save(new Ott("Netflix"));
         Ott ott2 = ottRepository.save(new Ott("Disney+"));
@@ -135,10 +137,10 @@ class DiaryServiceTest {
                 "테스트 제목",
                 "테스트 내용",
                 true,
-                4.0,
+                4.0F,
                 "EXT123",
                 ContentType.MOVIE,
-                List.of(), // tag
+                List.of(dummyTag.getId()),
                 List.of(), // genre
                 List.of(ott1.getId(), ott2.getId())
         );

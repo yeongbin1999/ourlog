@@ -1,5 +1,7 @@
 package com.back.ourlog.domain.like.controller;
 
+import com.back.ourlog.domain.like.dto.LikeCountResponse;
+import com.back.ourlog.domain.like.dto.LikeResponse;
 import com.back.ourlog.domain.like.service.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -9,20 +11,28 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/likes")
 @RequiredArgsConstructor
 
-// 좋아요 등록/취소 API 제공..
 public class LikeController {
 
     private final LikeService likeService;
 
     @PostMapping("/{diaryId}")  // 좋아요 등록..
-    public ResponseEntity<Void> like(@PathVariable Integer diaryId) {
-        likeService.like(diaryId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<LikeResponse> like(@PathVariable Integer diaryId) {
+        boolean liked = likeService.like(diaryId);
+        int likeCount = likeService.getLikeCount(diaryId);
+        return ResponseEntity.ok(new LikeResponse(liked, likeCount));
     }
 
     @DeleteMapping("/{diaryId}")    // 좋아요 취소..
-    public ResponseEntity<Void> unlike(@PathVariable Integer diaryId) {
+    public ResponseEntity<LikeResponse> unlike(@PathVariable Integer diaryId) {
         likeService.unlike(diaryId);
-        return ResponseEntity.ok().build();
+        int likeCount = likeService.getLikeCount(diaryId);
+        return ResponseEntity.ok(new LikeResponse(false, likeCount));
     }
+
+    @GetMapping("/count")   // 좋아요 수 단건 조회..
+    public ResponseEntity<LikeCountResponse> getLikeCount(@RequestParam Integer diaryId){
+        int count = likeService.getLikeCount(diaryId);
+        return ResponseEntity.ok(new LikeCountResponse(count));
+    }
+
 }

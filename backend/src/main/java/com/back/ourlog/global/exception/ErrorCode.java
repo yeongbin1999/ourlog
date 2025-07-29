@@ -22,6 +22,11 @@ public enum ErrorCode {
     // 다이어리 관련
     DIARY_NOT_FOUND("DIARY_001", "존재하지 않는 다이어리입니다."),
 
+    // 태그/장르/OTT 관련
+    TAG_NOT_FOUND("TAG_001", "존재하지 않는 태그입니다."),
+    GENRE_NOT_FOUND("GENRE_001", "존재하지 않는 장르입니다."),
+    OTT_NOT_FOUND("OTT_001", "존재하지 않는 OTT입니다."),
+
     // 서버/시스템 관련 (HTTP 500)
     SERVER_ERROR("SERVER_500", "서버 내부 오류가 발생했습니다."),
     DATABASE_ERROR("SERVER_501", "데이터베이스 오류가 발생했습니다."),
