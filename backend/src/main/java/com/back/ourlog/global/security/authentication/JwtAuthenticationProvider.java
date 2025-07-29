@@ -1,13 +1,13 @@
 package com.back.ourlog.global.security.authentication;
 
 import com.back.ourlog.global.exception.ErrorCode;
+import com.back.ourlog.global.security.CustomUserDetailsService;
 import com.back.ourlog.global.security.exception.JwtAuthenticationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class JwtAuthenticationProvider implements AuthenticationProvider {
 
     private final JwtProvider jwtTokenProvider;
-    private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -26,7 +26,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         }
 
         String userId = jwtTokenProvider.getUserIdFromToken(token);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(userId);
 
         return new JwtAuthenticationToken(userDetails, userDetails.getAuthorities());
     }
