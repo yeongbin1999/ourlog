@@ -1,6 +1,8 @@
 package com.back.ourlog.domain.statistics.service;
 
+import com.back.ourlog.domain.content.entity.ContentType;
 import com.back.ourlog.domain.statistics.dto.*;
+import com.back.ourlog.domain.statistics.enums.PeriodOption;
 import com.back.ourlog.domain.statistics.repository.StatisticsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -57,6 +59,7 @@ public class StatisticsService {
                 .orElse(new FavoriteEmotionAndCountDto("없음", 0L));
     }
 
+    /** 특정 회원의 최근 6개월 월 별 감상 수 조회 */
     public List<MonthlyDiaryCount> getLast6MonthsDiaryCountsByUser(Integer userId) {
         // 6개월 전 첫날
         LocalDate now = LocalDate.now();
@@ -79,9 +82,40 @@ public class StatisticsService {
         return result;
     }
 
+    /** 특정 회원의 콘텐츠 타입 분포 조회 */
     public List<TypeCountDto> getTypeDistributionByUser(int userId) {
         return statisticsRepository.findTypeCountsByUserId(userId)
                 .filter(list -> !list.isEmpty())  // 값 있으면 그대로 반환
                 .orElseGet(() -> Collections.singletonList(new TypeCountDto("없음", 1L)));
     }
+
+    /** 특정 회원의 콘텐츠 타입 그래프 조회 */
+    public TypeGraphResponse getTypeGraph(TypeGraphRequest req) {
+        LocalDateTime now   = LocalDateTime.now();
+        LocalDateTime start = calculateStart(req.getPeriod(), now);
+        LocalDateTime end   = now.plusDays(1);
+
+        List<TypeRankDto> ranking = statisticsRepository.findTypeRanking(req.getUserId(), start, end);
+
+        List<TypeLineGraphDto> trend;
+        switch (req.getPeriod()) {
+            case LAST_MONTH, LAST_WEEK ->
+                    trend = statisticsRepository.findTypeLineDaily(req.getUserId(), start, end);
+            default ->
+                    trend = statisticsRepository.findTypeLineMonthly(req.getUserId(), start, end);
+        }
+
+        return new TypeGraphResponse(trend, ranking);
+    }
+
+    private LocalDateTime calculateStart(PeriodOption period, LocalDateTime now) {
+        return switch (period) {
+            case THIS_YEAR    -> now.withDayOfYear(1);
+            case LAST_6_MONTHS -> now.minusMonths(5).withDayOfMonth(1);
+            case LAST_MONTH   -> now.minusMonths(1).withDayOfMonth(1);
+            case LAST_WEEK    -> now.minusWeeks(1);
+            default           -> LocalDateTime.of(1970,1,1,0,0);
+        };
+    }
+
 }

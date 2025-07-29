@@ -1,5 +1,6 @@
 package com.back.ourlog.domain.timeline.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -14,7 +15,10 @@ public class TimelineResponse {
     private String imageUrl;
     private int likeCount;
     private int commentCount;
+
+    @JsonProperty("isLiked")
     private boolean isLiked;
+
     private UserSummary user;
 
     @Getter

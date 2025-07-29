@@ -15,12 +15,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface StatisticsRepository extends JpaRepository<Diary, Integer> {
+public interface StatisticsRepository extends JpaRepository<Diary, Integer>,StatisticsRepositoryCustom {
 
     @Query("SELECT COUNT(d) FROM Diary d WHERE d.user.id = :userId")
     long getTotalDiaryCountByUserId(@Param("userId") int userId);
 
-    @Query("SELECT AVG(d.rating) FROM Diary d WHERE d.user.id = :userId")
+    // 평균 평점 조회, 없으면 0.0 반환
+    @Query(value = "SELECT ROUND(AVG(rating), 2) FROM diary WHERE user_id = :userId", nativeQuery = true)
     Optional<Double> getAverageRatingByUserId(@Param("userId") int userId);
 
     @Query(value = """
