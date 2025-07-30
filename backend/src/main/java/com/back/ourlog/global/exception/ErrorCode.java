@@ -22,6 +22,9 @@ public enum ErrorCode {
     // 다이어리 관련
     DIARY_NOT_FOUND("DIARY_001", "존재하지 않는 다이어리입니다."),
 
+    // 콘텐츠 관련
+    CONTENT_NOT_FOUND("CONTENT_001", "콘텐츠를 찾을 수 없습니다."),
+
     // 태그/장르/OTT 관련
     TAG_NOT_FOUND("TAG_001", "존재하지 않는 태그입니다."),
     GENRE_NOT_FOUND("GENRE_001", "존재하지 않는 장르입니다."),

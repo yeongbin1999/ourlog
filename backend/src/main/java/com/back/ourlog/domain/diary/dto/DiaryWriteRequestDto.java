@@ -2,6 +2,7 @@ package com.back.ourlog.domain.diary.dto;
 
 import java.util.List;
 import com.back.ourlog.domain.content.entity.ContentType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 
 public record DiaryWriteRequestDto(
@@ -18,9 +19,6 @@ public record DiaryWriteRequestDto(
         @DecimalMin(value = "0.0", message = "평점은 0 이상이어야 합니다.")
         @DecimalMax(value = "5.0", message = "평점은 5 이하이어야 합니다.")
         Float rating,
-
-        @NotNull
-        String externalId,
 
         @NotNull
         ContentType type,
@@ -40,7 +38,6 @@ public record DiaryWriteRequestDto(
                 contentText,
                 true,
                 4.5F,
-                "external-id-test",
                 ContentType.MOVIE,
                 List.of(1, 2),
                 List.of(1, 2),

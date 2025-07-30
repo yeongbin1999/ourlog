@@ -1,6 +1,9 @@
 package com.back.ourlog.domain.diary.service;
 
+import com.back.ourlog.domain.content.dto.ContentSearchResultDto;
 import com.back.ourlog.domain.content.entity.Content;
+import com.back.ourlog.domain.content.entity.ContentType;
+import com.back.ourlog.domain.content.repository.ContentRepository;
 import com.back.ourlog.domain.content.service.ContentService;
 import com.back.ourlog.domain.diary.dto.DiaryDetailDto;
 import com.back.ourlog.domain.diary.dto.DiaryResponseDto;
@@ -22,6 +25,7 @@ import com.back.ourlog.domain.tag.entity.Tag;
 import com.back.ourlog.domain.tag.repository.TagRepository;
 import com.back.ourlog.domain.tag.service.TagService;
 import com.back.ourlog.domain.user.entity.User;
+import com.back.ourlog.external.common.ContentSearchFacade;
 import com.back.ourlog.global.exception.CustomException;
 import com.back.ourlog.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +40,7 @@ import java.util.List;
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
+    private final ContentRepository contentRepository;
     private final ContentService contentService;
     private final TagRepository tagRepository;
     private final GenreRepository genreRepository;
@@ -43,42 +48,48 @@ public class DiaryService {
     private final TagService tagService;
     private final GenreService genreService;
     private final OttService ottService;
+    private final ContentSearchFacade contentSearchFacade;
 
-    public Diary write(DiaryWriteRequestDto req, User user) {
-        Content content = contentService.getOrCreateContent(req.externalId(), req.type());
+    public Diary writeWithContentSearch(DiaryWriteRequestDto req, User user) {
+        // 외부 콘텐츠 검색
+        ContentSearchResultDto result = contentSearchFacade.search(req.type(), req.title());
 
+        if (result == null || result.externalId() == null) {
+            throw new CustomException(ErrorCode.CONTENT_NOT_FOUND);
+        }
+
+        // 콘텐츠 저장 or 조회
+        Content content = contentService.saveOrGet(result, req.type());
+
+        // Diary 생성
         Diary diary = new Diary(
-                null, // 나중에 유저 넣기
+                user,
                 content,
                 req.title(),
                 req.contentText(),
-                req.rating().floatValue(),
+                req.rating(),
                 req.isPublic()
         );
 
         // Tag 매핑
         req.tagIds().forEach(tagId -> {
             Tag tag = tagRepository.findById(tagId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 태그입니다: " + tagId));
-
-            DiaryTag diaryTag = new DiaryTag(diary, tag);
-            diary.getDiaryTags().add(diaryTag);
+                    .orElseThrow(() -> new CustomException(ErrorCode.TAG_NOT_FOUND));
+            diary.getDiaryTags().add(new DiaryTag(diary, tag));
         });
 
         // Genre 매핑
         req.genreIds().forEach(genreId -> {
             Genre genre = genreRepository.findById(genreId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 장르입니다: " + genreId));
-            DiaryGenre diaryGenre = new DiaryGenre(diary, genre);
-            diary.getDiaryGenres().add(diaryGenre);
+                    .orElseThrow(() -> new CustomException(ErrorCode.GENRE_NOT_FOUND));
+            diary.getDiaryGenres().add(new DiaryGenre(diary, genre));
         });
 
         // OTT 매핑
         req.ottIds().forEach(ottId -> {
             Ott ott = ottRepository.findById(ottId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 OTT입니다: " + ottId));
-            DiaryOtt diaryOtt = new DiaryOtt(diary, ott);
-            diary.getDiaryOtts().add(diaryOtt);
+                    .orElseThrow(() -> new CustomException(ErrorCode.OTT_NOT_FOUND));
+            diary.getDiaryOtts().add(new DiaryOtt(diary, ott));
         });
 
         return diaryRepository.save(diary);

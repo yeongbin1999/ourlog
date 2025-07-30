@@ -1,5 +1,6 @@
 package com.back.ourlog.domain.content.entity;
 
+import com.back.ourlog.domain.content.dto.ContentSearchResultDto;
 import com.back.ourlog.domain.diary.entity.Diary;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -59,6 +60,18 @@ public class Content {
     public void update(String externalId, ContentType type) {
         this.externalId = externalId;
         this.type = type;
+    }
+
+    public static Content of(ContentSearchResultDto result) {
+        return new Content(
+                result.title(),
+                result.type(),
+                result.creatorName(),
+                result.description(),
+                result.posterUrl(),
+                result.releasedAt(),
+                result.externalId()
+        );
     }
 
 }

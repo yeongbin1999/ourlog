@@ -65,7 +65,6 @@ class DiaryServiceTest {
                 "테스트 내용",
                 true,
                 4.0F,
-                "EXT123",
                 ContentType.MOVIE,
                 List.of(tag1.getId(), tag2.getId()),
                 List.of(), // genre
@@ -105,7 +104,6 @@ class DiaryServiceTest {
                 "테스트 내용",
                 true,
                 4.0F,
-                "EXT123",
                 ContentType.MOVIE,
                 List.of(dummyTag.getId()),
                 List.of(genre1.getId(), genre2.getId()),
@@ -138,7 +136,6 @@ class DiaryServiceTest {
                 "테스트 내용",
                 true,
                 4.0F,
-                "EXT123",
                 ContentType.MOVIE,
                 List.of(dummyTag.getId()),
                 List.of(), // genre

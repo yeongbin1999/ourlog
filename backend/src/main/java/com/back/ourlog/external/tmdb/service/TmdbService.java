@@ -1,19 +1,19 @@
 package com.back.ourlog.external.tmdb.service;
 
-import com.back.ourlog.domain.content.dto.ContentDto;
+import com.back.ourlog.domain.content.dto.ContentSearchResultDto;
 import com.back.ourlog.domain.content.entity.ContentType;
 import com.back.ourlog.external.tmdb.client.TmdbClient;
 import com.back.ourlog.external.tmdb.dto.TmdbCreditsResponse;
 import com.back.ourlog.external.tmdb.dto.TmdbCrewDto;
 import com.back.ourlog.external.tmdb.dto.TmdbMovieDto;
 import com.back.ourlog.external.tmdb.dto.TmdbSearchResponse;
+import com.back.ourlog.global.exception.CustomException;
+import com.back.ourlog.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,35 +23,28 @@ public class TmdbService {
 
     private static final String POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
-    public Optional<ContentDto> searchMovieByExactTitle(String title) {
+    public ContentSearchResultDto searchMovieByExactTitle(String title) {
         TmdbSearchResponse response = tmdbClient.searchMovie(title);
 
         return response.getResults().stream()
                 .filter(movie -> movie.getTitle().equalsIgnoreCase(title))
                 .findFirst()
-                .map(this::toContentDto);
+                .map(this::toContentSearchResult)
+                .orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
     }
 
-    public List<ContentDto> searchMoviesAsContent(String query) {
-        TmdbSearchResponse response = tmdbClient.searchMovie(query);
-
-        return response.getResults().stream()
-                .map(this::toContentDto)
-                .toList();
-    }
-
-    private ContentDto toContentDto(TmdbMovieDto movie) {
+    private ContentSearchResultDto toContentSearchResult(TmdbMovieDto movie) {
         String directorName = fetchDirectorName(movie.getId());
 
-        return ContentDto.builder()
-                .title(movie.getTitle())
-                .type(ContentType.MOVIE)
-                .creatorName(directorName)
-                .description(movie.getDescription())
-                .posterUrl(POSTER_BASE_URL + movie.getPosterPath())
-                .releasedAt(parseDate(movie.getReleaseDate()))
-                .externalId(String.valueOf(movie.getId()))
-                .build();
+        return new ContentSearchResultDto(
+                String.valueOf(movie.getId()),
+                movie.getTitle(),
+                directorName,
+                movie.getDescription(),
+                POSTER_BASE_URL + movie.getPosterPath(),
+                parseDate(movie.getReleaseDate()),
+                ContentType.MOVIE
+        );
     }
 
     private String fetchDirectorName(int movieId) {
