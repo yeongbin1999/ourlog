@@ -168,7 +168,8 @@ public class DiaryService {
     }
 
     public DiaryDetailDto getDiaryDetail(int diaryId) {
-        Diary diary = diaryRepository.findById(diaryId).orElseThrow();
+        Diary diary = diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
 
         List<String> TagNames = diary.getDiaryTags().stream()
                 .map(diaryTag -> diaryTag.getTag().getName())
