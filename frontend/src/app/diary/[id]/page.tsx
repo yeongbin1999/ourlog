@@ -60,7 +60,13 @@ function DiaryInfo({ rating, contentText, tagNames }: DiaryInfoProps) {
   );
 }
 
-function CommentForm() {
+function CommentForm({
+  diaryId,
+  onCommentAdd,
+}: {
+  diaryId: number;
+  onCommentAdd: (newComment: Comment) => void;
+}) {
   const [content, setContent] = useState("");
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -71,10 +77,7 @@ function CommentForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          diaryId: 1, // 실제로는 props나 route param으로 받아올 예정
-          content,
-        }),
+        body: JSON.stringify({ diaryId, content }),
       });
 
       if (!response.ok) {
@@ -82,11 +85,14 @@ function CommentForm() {
       }
 
       const result = await response.json();
-      alert("댓글 등록에 성공하였습니다.");
-      console.log("댓글 등록 성공:", result);
 
       // 입력 초기화
       setContent("");
+      console.log(result.data);
+      // 부모 상태 업데이트
+      onCommentAdd(result.data);
+
+      alert("댓글 등록에 성공하였습니다.");
     } catch (error) {
       console.error(error);
       alert("댓글 등록 중 오류가 발생했습니다.");
@@ -115,38 +121,10 @@ function CommentForm() {
   );
 }
 
-function CommentInfo({ diaryId }: { diaryId: number }) {
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchComments() {
-      try {
-        const res = await fetch(
-          `http://localhost:8080/api/v1/comments/${diaryId}`
-        );
-        if (!res.ok) throw new Error("Failed to fetch comments");
-
-        const json = await res.json();
-        setComments(json.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchComments();
-  }, [diaryId]);
-
-  if (loading) {
-    return <div className="text-sm text-gray-500">댓글 로딩 중...</div>;
-  }
-
+function CommentInfo({ comments }: { comments: Comment[] }) {
   return (
     <section className="space-y-4">
       <h2 className="text-xl font-semibold">댓글</h2>
-
       {comments.length === 0 ? (
         <p className="text-gray-500">등록된 댓글이 없습니다.</p>
       ) : (
@@ -157,7 +135,6 @@ function CommentInfo({ diaryId }: { diaryId: number }) {
                 <p>{comment.content}</p>
                 <div className="absolute -left-2 top-4 w-0 h-0 border-t-8 border-b-8 border-r-8 border-t-transparent border-b-transparent border-r-gray-100"></div>
               </div>
-
               <div className="text-sm text-gray-500 mt-2 flex gap-2">
                 <span>{comment.profileImageUrl}</span>
                 <span>{comment.nickname}</span>
@@ -173,6 +150,7 @@ function CommentInfo({ diaryId }: { diaryId: number }) {
 
 export default function Page() {
   const [diary, setDiary] = useState<Diary | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const diaryId = 1; // 나중에 pathVariable로 받아올 예정
 
@@ -194,8 +172,29 @@ export default function Page() {
       }
     }
 
+    async function fetchComments() {
+      try {
+        const res = await fetch(
+          `http://localhost:8080/api/v1/comments/${diaryId}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch comments");
+
+        const json = await res.json();
+        setComments(json.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     fetchDiary();
+    fetchComments();
   }, [diaryId]);
+
+  const handleCommentAdd = (newComment: Comment) => {
+    setComments((prev) => [...prev, newComment]);
+  };
 
   if (loading) {
     return <main className="p-6 text-center">로딩 중...</main>;
@@ -218,8 +217,8 @@ export default function Page() {
         contentText={diary.contentText}
         tagNames={diary.tagNames}
       />
-      <CommentForm />
-      <CommentInfo diaryId={diaryId} />
+      <CommentForm diaryId={diaryId} onCommentAdd={handleCommentAdd} />
+      <CommentInfo comments={comments} />
     </main>
   );
 }
