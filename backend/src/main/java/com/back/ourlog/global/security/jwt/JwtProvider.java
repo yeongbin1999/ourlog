@@ -65,16 +65,6 @@ public class JwtProvider {
         return claims.getSubject();
     }
 
-    // 토큰 유효성 검사
-    public boolean validateToken(String token) {
-        try {
-            parseClaims(token);
-            return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
-        }
-    }
-
     // 토큰 파싱과 검증
     public Claims parseClaims(String token) {
         try {
@@ -91,4 +81,15 @@ public class JwtProvider {
             throw new JwtAuthenticationException(ErrorCode.AUTH_UNAUTHORIZED, e);
         }
     }
+
+    // 토큰 유효성 검사
+    public boolean validateToken(String token) {
+        try {
+            parseClaims(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException | JwtAuthenticationException e) {
+            return false;
+        }
+    }
+
 }
