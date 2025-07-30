@@ -60,7 +60,7 @@ function DiaryInfo({ rating, contentText, tagNames }: DiaryInfoProps) {
     <section className="p-6 border rounded-xl shadow-sm bg-white space-y-4">
       <header className="flex items-center gap-2">
         <div className="flex items-center gap-1">{stars}</div>
-        <div className="text-yellow-500 text-xl">{rating} / 5.0</div>
+        <div className="text-yellow-500 text-xl">{rating.toFixed(1)} / 5.0</div>
       </header>
       <p className="text-gray-800">{contentText}</p>
       <div className="flex gap-2">
