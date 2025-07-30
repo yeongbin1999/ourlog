@@ -37,37 +37,27 @@ public class TokenService {
      * 2) 리프레시 엔드포인트: 새 Access( + 새 Refresh) 발급
      * ----------------------------------------------------------------*/
     public TokenDto reIssueTokens(String presentedRefreshToken, String deviceId) {
-        // 1) 리프레시 토큰 유효성 검사
         if (!jwtProvider.validateToken(presentedRefreshToken)) {
             throw new CustomException(ErrorCode.AUTH_EXPIRED_TOKEN);
         }
 
-        // 2) 리프레시 토큰에서 userId 추출
         String userId = jwtProvider.getUserIdFromToken(presentedRefreshToken);
 
-        // 3) Redis에 저장된 토큰과 일치 여부 확인
-        String storedRefresh = refreshTokenRepository.find(userId, deviceId);
-        if (storedRefresh == null || !storedRefresh.equals(presentedRefreshToken)) {
-            throw new CustomException(ErrorCode.AUTH_INVALID_TOKEN);
-        }
-
-        // 4) userId로 CustomUserDetails 조회
+        // 새 토큰 발급 준비
         CustomUserDetails userDetails = customUserDetailsService.loadUserById(userId);
-
-        // 5) 새 토큰 발급 (userDetails 기반)
-        String newAccessToken  = jwtProvider.createAccessToken(userDetails);
+        String newAccessToken = jwtProvider.createAccessToken(userDetails);
         String newRefreshToken = jwtProvider.createRefreshToken(userDetails);
 
-        // 6) Redis 갱신 (토큰 로테이션)
-        refreshTokenRepository.save(
-                userId,
-                deviceId,
-                newRefreshToken,
-                jwtProvider.getRefreshTokenExpiration()
-        );
+        // 원자적 토큰 회전 시도 (Lua 스크립트)
+        Long result = refreshTokenRepository.rotateRefreshToken(userId, deviceId, presentedRefreshToken, newRefreshToken, jwtProvider.getRefreshTokenExpiration());
+
+        if (result == null || result != 1L) {
+            throw new CustomException(ErrorCode.AUTH_INVALID_TOKEN); // 토큰 재사용, 변조 등 실패
+        }
 
         return new TokenDto(newAccessToken, newRefreshToken);
     }
+
 
     /** ----------------------------------------------------------------
      * 3) 로그아웃: Redis‑stored Refresh 토큰 삭제
