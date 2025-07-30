@@ -36,6 +36,7 @@ public class DiaryController {
     }
 
     @GetMapping("/{diaryId}")
+    @Operation(summary = "감상일기 조회", description = "감상일기를 조회합니다.")
     public ResponseEntity<RsData<DiaryDetailDto>> getDiary(@PathVariable("diaryId") int diaryId) {
         DiaryDetailDto diaryDetailDto = diaryService.getDiaryDetail(diaryId);
 
