@@ -49,4 +49,25 @@ class CommentControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.content").value("안녕하시렵니까?"));
     }
+
+    @Test
+    @DisplayName("댓글 작성 - 댓글 내용이 없음")
+    void t2() throws Exception {
+        Map<String, Object> data = new HashMap<>();
+        data.put("diaryId", 1);
+        data.put("content", "");
+
+        String json = objectMapper.writeValueAsString(data);
+
+        ResultActions resultActions = mvc.perform(
+                post("/api/v1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+        ).andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(CommentController.class))
+                .andExpect(handler().methodName("writeComment"))
+                .andExpect(status().isBadRequest());
+    }
 }

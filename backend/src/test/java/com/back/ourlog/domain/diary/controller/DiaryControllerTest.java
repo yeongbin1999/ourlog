@@ -318,7 +318,8 @@ class DiaryControllerTest {
         resultActions
                 .andExpect(handler().handlerType(DiaryController.class))
                 .andExpect(handler().methodName("getDiary"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultCode").value("DIARY_001"))
+                .andExpect(jsonPath("$.msg").value("존재하지 않는 다이어리입니다."));
     }
-
 }
