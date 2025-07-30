@@ -68,6 +68,8 @@ class CommentControllerTest {
         resultActions
                 .andExpect(handler().handlerType(CommentController.class))
                 .andExpect(handler().methodName("writeComment"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultCode").value("COMMON_400"))
+                .andExpect(jsonPath("$.msg").value("must not be blank"));
     }
 }

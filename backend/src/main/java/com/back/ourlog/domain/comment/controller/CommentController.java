@@ -6,6 +6,7 @@ import com.back.ourlog.domain.comment.service.CommentService;
 import com.back.ourlog.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ public class CommentController {
     private final CommentService commentService;
     @PostMapping
     @Operation(summary = "댓글 등록")
-    public ResponseEntity<RsData<CommentResponseDto>> writeComment(@RequestBody CommentRequestDto req) {
+    public ResponseEntity<RsData<CommentResponseDto>> writeComment(@RequestBody @Valid CommentRequestDto req) {
         // 테스트 ver (우선 User가 있다고 가정)
         CommentResponseDto res = commentService.write(req.getDiaryId(),null, req.getContent());
 
