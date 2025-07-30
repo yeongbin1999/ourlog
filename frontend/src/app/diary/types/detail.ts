@@ -10,3 +10,11 @@ export type DiaryInfoProps = {
     contentText: string;
     tagNames: string[];
 };
+
+export type Comment = {
+    id: number;
+    nickname: string;
+    profileImageUrl: string;
+    content: string;
+    createdAt: string;
+}

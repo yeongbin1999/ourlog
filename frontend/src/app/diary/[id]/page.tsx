@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Diary, DiaryInfoProps } from "../types/detail";
+import { Diary, DiaryInfoProps, Comment } from "../types/detail";
 {
   /* 페이지 타이틀 */
 }
@@ -115,26 +115,58 @@ function CommentForm() {
   );
 }
 
-function CommentInfo() {
+function CommentInfo({ diaryId }: { diaryId: number }) {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchComments() {
+      try {
+        const res = await fetch(
+          `http://localhost:8080/api/v1/comments/${diaryId}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch comments");
+
+        const json = await res.json();
+        setComments(json.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchComments();
+  }, [diaryId]);
+
+  if (loading) {
+    return <div className="text-sm text-gray-500">댓글 로딩 중...</div>;
+  }
+
   return (
     <section className="space-y-4">
-      <div className="p-4 border rounded-md bg-white shadow-sm">
-        <h2>댓글</h2>
+      <h2 className="text-xl font-semibold">댓글</h2>
 
-        {/* 말풍선 형태로 수정된 comment_content */}
-        <div className="relative max-w-full md:max-w-[80%]">
-          <div className="bg-gray-100 text-gray-800 p-4 rounded-xl shadow-md relative">
-            <p>comment_content</p>
-            <div className="absolute -left-2 top-4 w-0 h-0 border-t-8 border-b-8 border-r-8 border-t-transparent border-b-transparent border-r-gray-100"></div>
-          </div>
-        </div>
+      {comments.length === 0 ? (
+        <p className="text-gray-500">등록된 댓글이 없습니다.</p>
+      ) : (
+        <div className="border rounded-md bg-white shadow-sm">
+          {comments.map((comment) => (
+            <div key={comment.id} className="p-4">
+              <div className="bg-gray-100 text-gray-800 p-4 rounded-xl relative max-w-full md:max-w-[80%]">
+                <p>{comment.content}</p>
+                <div className="absolute -left-2 top-4 w-0 h-0 border-t-8 border-b-8 border-r-8 border-t-transparent border-b-transparent border-r-gray-100"></div>
+              </div>
 
-        <div className="text-sm text-gray-500 mt-2 flex gap-2">
-          <span>👤 profile</span>
-          <span>nickname</span>
-          <span> date</span>
+              <div className="text-sm text-gray-500 mt-2 flex gap-2">
+                <span>{comment.profileImageUrl}</span>
+                <span>{comment.nickname}</span>
+                <span>{new Date(comment.createdAt).toLocaleString()}</span>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
+      )}
     </section>
   );
 }
@@ -187,7 +219,7 @@ export default function Page() {
         tagNames={diary.tagNames}
       />
       <CommentForm />
-      <CommentInfo />
+      <CommentInfo diaryId={diaryId} />
     </main>
   );
 }
