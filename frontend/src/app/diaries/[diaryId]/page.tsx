@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Diary, DiaryInfoProps, Comment, Content } from "../types/detail";
 import { FaStar, FaRegStar } from "react-icons/fa"; // 꽉 찬 별, 빈 별
-
+import { useParams, useRouter } from "next/navigation";
 {
   /* 페이지 타이틀 */
 }
@@ -177,7 +177,8 @@ export default function Page() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState<Content | null>(null);
-  const diaryId = 1; // 나중에 pathVariable로 받아올 예정
+  const router = useRouter();
+  const { diaryId } = useParams();
 
   useEffect(() => {
     async function fetchDiary() {
@@ -257,7 +258,10 @@ export default function Page() {
         contentText={diary.contentText}
         tagNames={diary.tagNames}
       />
-      <CommentForm diaryId={diaryId} onCommentAdd={handleCommentAdd} />
+      <CommentForm
+        diaryId={Number(diaryId ?? 1)}
+        onCommentAdd={handleCommentAdd}
+      />
       <CommentInfo comments={comments} />
     </main>
   );
