@@ -1,6 +1,6 @@
-package com.back.ourlog.global.security.authentication;
+package com.back.ourlog.global.security.jwt;
 
-import com.back.ourlog.global.security.CustomUserDetails;
+import com.back.ourlog.global.security.service.CustomUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

@@ -1,4 +1,4 @@
-package com.back.ourlog.global.security;
+package com.back.ourlog.global.security.service;
 
 import com.back.ourlog.domain.user.entity.Role;
 import com.back.ourlog.domain.user.entity.User;
@@ -26,7 +26,7 @@ public class CustomUserDetails implements UserDetails {
         this.authorities = List.of(new SimpleGrantedAuthority(user.getRole().getKey()));
     }
 
-    @Override public String getUsername() { return email; }
+    @Override public String getUsername() { return id.toString(); }
     @Override public String getPassword() { return null; }
     @Override public boolean isAccountNonExpired() { return true; }
     @Override public boolean isAccountNonLocked() { return true; }
