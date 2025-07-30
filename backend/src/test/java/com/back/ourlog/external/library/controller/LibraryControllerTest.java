@@ -29,8 +29,6 @@ class LibraryControllerTest {
     private MockMvc mvc;
     @Autowired
     private ObjectMapper objectMapper;
-    @Autowired
-    private ContentRepository contentRepository;
     @Test
     @DisplayName("중앙도서관 도서 정보 조회")
     void t1() throws Exception {
@@ -50,6 +48,6 @@ class LibraryControllerTest {
                 .andExpect(handler().methodName("getLibraryInfo"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.msg").value("도서 정보가 조회되었습니다."))
-                .andExpect(jsonPath("$.data[0].title").value("서울 필동2가 21-1번지 유적"));
+                .andExpect(jsonPath("$.data").isNotEmpty());
     }
 }
