@@ -5,6 +5,7 @@ import com.back.ourlog.domain.statistics.enums.PeriodOption;
 import com.back.ourlog.domain.statistics.service.StatisticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,5 +44,11 @@ public class StatisticsController {
         int userId = 1; // 임시 값, 실제로는 인증된 사용자 ID를 사용해야 합니다.
         TypeGraphRequest req = new TypeGraphRequest(userId, period);
         return statisticsService.getTypeGraph(req);
+    }
+
+    @GetMapping("/genre-graph")
+    public ResponseEntity<GenreGraphResponse> getGenreGraph(@RequestParam PeriodOption period) {
+        int userId = 1;
+        return ResponseEntity.ok(statisticsService.getGenreGraph(userId, period));
     }
 }
