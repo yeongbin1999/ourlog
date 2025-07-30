@@ -2,7 +2,7 @@ package com.back.ourlog.domain.content.controller;
 
 import com.back.ourlog.domain.content.dto.ContentResponseDto;
 import com.back.ourlog.domain.content.service.ContentService;
-import com.back.ourlog.global.rsData.RsData;
+import com.back.ourlog.global.common.dto.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

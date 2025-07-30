@@ -1,6 +1,6 @@
 package com.back.ourlog.global.exception;
 
-import com.back.ourlog.global.rsData.RsData;
+import com.back.ourlog.global.common.dto.RsData;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;

@@ -1,10 +1,9 @@
 package com.back.ourlog.global.security.jwt;
 
+import com.back.ourlog.global.exception.ErrorCode;
+import com.back.ourlog.global.security.exception.JwtAuthenticationException;
 import com.back.ourlog.global.security.service.CustomUserDetails;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
@@ -72,17 +71,24 @@ public class JwtProvider {
             parseClaims(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            // 로그 찍거나 별도 예외처리 가능
             return false;
         }
     }
 
-    private Claims parseClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+    // 토큰 파싱과 검증
+    public Claims parseClaims(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            throw new JwtAuthenticationException(ErrorCode.AUTH_EXPIRED_TOKEN, e);
+        } catch (MalformedJwtException | SignatureException | UnsupportedJwtException | IllegalArgumentException e) {
+            throw new JwtAuthenticationException(ErrorCode.AUTH_INVALID_TOKEN, e);
+        } catch (JwtException e) {
+            throw new JwtAuthenticationException(ErrorCode.AUTH_UNAUTHORIZED, e);
+        }
     }
-
 }

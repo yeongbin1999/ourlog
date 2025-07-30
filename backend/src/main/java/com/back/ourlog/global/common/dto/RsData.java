@@ -1,4 +1,4 @@
-package com.back.ourlog.global.rsData;
+package com.back.ourlog.global.common.dto;
 
 import com.back.ourlog.global.exception.ErrorCode;
 import lombok.AllArgsConstructor;
