@@ -61,14 +61,48 @@ function DiaryInfo({ rating, contentText, tagNames }: DiaryInfoProps) {
 }
 
 function CommentForm() {
+  const [content, setContent] = useState("");
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch("http://localhost:8080/api/v1/comments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          diaryId: 1, // 실제로는 props나 route param으로 받아올 예정
+          content,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("댓글 등록 실패");
+      }
+
+      const result = await response.json();
+      alert("댓글 등록에 성공하였습니다.");
+      console.log("댓글 등록 성공:", result);
+
+      // 입력 초기화
+      setContent("");
+    } catch (error) {
+      console.error(error);
+      alert("댓글 등록 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <section className="p-6 border rounded-xl shadow-sm bg-white space-y-4">
-      <form className="flex flex-col gap-3">
+      <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
         <label className="text-sm text-gray-600">Nickname</label>
         <textarea
           className="border p-2 rounded-md h-24 resize-none"
           name="content"
           placeholder="댓글을 입력하세요"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
         />
         <button
           type="submit"
@@ -108,7 +142,6 @@ function CommentInfo() {
 export default function Page() {
   const [diary, setDiary] = useState<Diary | null>(null);
   const [loading, setLoading] = useState(true);
-
   const diaryId = 1; // 나중에 pathVariable로 받아올 예정
 
   useEffect(() => {
