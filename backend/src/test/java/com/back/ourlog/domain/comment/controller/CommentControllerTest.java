@@ -89,4 +89,19 @@ class CommentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").isNotEmpty());
     }
+
+    @Test
+    @DisplayName("댓글 조회 - 존재하지 않는 diaryId")
+    void t4() throws Exception {
+        int diaryId = 99999;
+
+        ResultActions resultActions = mvc.perform(
+                get("/api/v1/comments/" + diaryId)
+        ).andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(CommentController.class))
+                .andExpect(handler().methodName("getComments"))
+                .andExpect(status().isNotFound());
+    }
 }
