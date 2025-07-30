@@ -4,12 +4,20 @@ import { useEffect, useState } from "react";
 import { Diary, DiaryInfoProps, Comment, Content } from "../types/detail";
 import { FaStar, FaRegStar } from "react-icons/fa"; // 꽉 찬 별, 빈 별
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 {
   /* 페이지 타이틀 */
 }
 function DiaryTitle({ title }: { title: string }) {
   return (
-    <h1 className="text-center text-4xl font-bold text-gray-800">{title}</h1>
+    <div className="flex items-center justify-between mb-4">
+      <Link href="/" className="text-blue-600 hover:underline text-sm">
+        ← Back to Feed
+      </Link>
+      <h1 className="text-xl font-bold text-gray-800 text-center flex-1">
+        {title}
+      </h1>
+    </div>
   );
 }
 
