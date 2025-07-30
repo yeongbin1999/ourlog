@@ -131,6 +131,24 @@ public class StatisticsService {
         return new GenreGraphResponse(graph, ranking);
     }
 
+    public EmotionGraphResponse getEmotionGraph(int userId, PeriodOption period) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = calculateStart(period, now);
+        LocalDateTime end = now.plusDays(1);
+
+        List<EmotionLineGraphDto> line;
+        switch (period) {
+            case LAST_MONTH, LAST_WEEK ->
+                    line = statisticsRepository.findEmotionLineDaily(userId, start, end);
+            default ->
+                    line = statisticsRepository.findEmotionLineMonthly(userId, start, end);
+        }
+
+        List<EmotionRankDto> ranking = statisticsRepository.findEmotionRanking(userId, start, end);
+
+        return new EmotionGraphResponse(line, ranking);
+    }
+
     private LocalDateTime calculateStart(PeriodOption period, LocalDateTime now) {
         return switch (period) {
             case THIS_YEAR    -> now.withDayOfYear(1);
