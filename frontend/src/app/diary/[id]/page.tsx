@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Diary, DiaryInfoProps, Comment, Content } from "../types/detail";
+import { FaStar, FaRegStar } from "react-icons/fa"; // 꽉 찬 별, 빈 별
+
 {
   /* 페이지 타이틀 */
 }
@@ -46,12 +48,19 @@ function ContentInfo({ content }: { content: Content }) {
 }
 
 function DiaryInfo({ rating, contentText, tagNames }: DiaryInfoProps) {
+  const stars = Array.from({ length: 5 }, (_, i) =>
+    i < rating ? (
+      <FaStar key={i} className="text-yellow-400" />
+    ) : (
+      <FaRegStar key={i} className="text-gray-300" />
+    )
+  );
+
   return (
     <section className="p-6 border rounded-xl shadow-sm bg-white space-y-4">
-      <header className="flex flex-col gap-1">
-        <div className="text-yellow-500 text-xl">
-          ⭐️⭐️⭐️⭐️⭐️ {rating} / 5.0
-        </div>
+      <header className="flex items-center gap-2">
+        <div className="flex items-center gap-1">{stars}</div>
+        <div className="text-yellow-500 text-xl">{rating} / 5.0</div>
       </header>
       <p className="text-gray-800">{contentText}</p>
       <div className="flex gap-2">
