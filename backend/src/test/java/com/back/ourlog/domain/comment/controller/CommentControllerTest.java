@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -71,5 +72,21 @@ class CommentControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.resultCode").value("COMMON_400"))
                 .andExpect(jsonPath("$.msg").value("must not be blank"));
+    }
+
+    @Test
+    @DisplayName("댓글 조회")
+    void t3() throws Exception {
+        int diaryId = 1;
+
+        ResultActions resultActions = mvc.perform(
+                get("/api/v1/comments/" + diaryId)
+        ).andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(CommentController.class))
+                .andExpect(handler().methodName("getComments"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isNotEmpty());
     }
 }
