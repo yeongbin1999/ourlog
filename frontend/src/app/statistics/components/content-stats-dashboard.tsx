@@ -56,6 +56,19 @@ async function fetchGenreGraph(period: string): Promise<GenreGraphResponse> {
   return res.json();
 }
 
+async function fetchEmotionGraph(period: string): Promise<EmotionGraphResponse> {
+  const periodMap: Record<string, string> = {
+    "전체": "ALL",
+    "이번년도": "THIS_YEAR",
+    "최근6개월": "LAST_6_MONTHS",
+    "최근한달": "LAST_MONTH",
+    "최근일주일": "LAST_WEEK"
+  };
+  const periodOption = periodMap[period] || "ALL";
+  const res = await fetch(`${BASE_URL}/emotion-graph?period=${periodOption}`);
+  return res.json();
+}
+
 // 새로운 타입 정의
 type TypeLineGraphDto = {
   axisLabel: string;
@@ -105,6 +118,23 @@ type GenreGraphResponse = {
   genreRanking: GenreRankDto[];
 };
 
+type EmotionLineGraphDto = {
+    axisLabel: string;
+    emotion: string;
+    count: number;
+};
+
+type EmotionRankDto = {
+    emotion: string;
+    totalCount: number;
+};
+
+type EmotionGraphResponse = {
+    emotionLineGraph: EmotionLineGraphDto[];
+    emotionRanking: EmotionRankDto[];
+};
+
+
 // 월별 데이터 (기본 데이터) - 장르별, 감정별용
 const monthlyGenreData = [
     { period: "1월", 드라마: 15, 액션: 10, 로맨스: 8, 공포: 7, 코미디: 6 },
@@ -113,15 +143,6 @@ const monthlyGenreData = [
     { period: "4월", 드라마: 12, 액션: 9, 로맨스: 11, 공포: 4, 코미디: 9 },
     { period: "5월", 드라마: 11, 액션: 8, 로맨스: 12, 공포: 3, 코미디: 10 },
     { period: "6월", 드라마: 10, 액션: 7, 로맨스: 13, 공포: 2, 코미디: 11 },
-]
-
-const monthlyEmotionData = [
-    { period: "1월", 감동: 12, 재미: 10, 긴장: 8, 슬픔: 7, 분노: 6, 공포: 5 },
-    { period: "2월", 감동: 11, 재미: 12, 긴장: 9, 슬픔: 6, 분노: 7, 공포: 4 },
-    { period: "3월", 감동: 10, 재미: 11, 긴장: 10, 슬픔: 5, 분노: 8, 공포: 3 },
-    { period: "4월", 감동: 9, 재미: 9, 긴장: 11, 슬픔: 4, 분노: 9, 공포: 2 },
-    { period: "5월", 감동: 8, 재미: 8, 긴장: 12, 슬픔: 3, 분노: 10, 공포: 1 },
-    { period: "6월", 감동: 7, 재미: 7, 긴장: 13, 슬픔: 2, 분노: 11, 공포: 0 },
 ]
 
 // 타입별 색상 맵 추가
@@ -150,6 +171,15 @@ const genreColors: Record<string, string> = {
   "romance": "#ffc658",
   "horror": "#ff7c7c",
   "comedy": "#8dd1e1",
+};
+
+const emotionColors: Record<string, string> = {
+    "감동": "#ff6b6b",
+    "재미": "#4ecdc4",
+    "긴장": "#45b7d1",
+    "슬픔": "#96ceb4",
+    "분노": "#feca57",
+    "공포": "#ff9ff3",
 };
 
 // 변환 함수 추가
@@ -186,6 +216,15 @@ function convertGenreLineGraphToChartData(lineGraph: GenreLineGraphDto[]): Chart
   return Object.values(periodMap);
 }
 
+function convertEmotionLineGraphToChartData(lineGraph: EmotionLineGraphDto[]): ChartDataPoint[] {
+    const periodMap: Record<string, ChartDataPoint> = {};
+    lineGraph.forEach(({ axisLabel, emotion, count }) => {
+        if (!periodMap[axisLabel]) periodMap[axisLabel] = { period: axisLabel };
+        periodMap[axisLabel][emotion] = count;
+    });
+    return Object.values(periodMap);
+}
+
 export default function Component() {
     const [selectedPeriod, setSelectedPeriod] = useState("전체")
     const [startDate, setStartDate] = useState<Date>()
@@ -196,6 +235,7 @@ export default function Component() {
     const [typeDist, setTypeDist] = useState<TypeCountDto[]>([]);
     const [typeGraph, setTypeGraph] = useState<TypeGraphResponse>({ typeLineGraph: [], typeRanking: [] });
     const [genreGraph, setGenreGraph] = useState<GenreGraphResponse>({ genreLineGraph: [], genreRanking: [] });
+    const [emotionGraph, setEmotionGraph] = useState<EmotionGraphResponse>({ emotionLineGraph: [], emotionRanking: [] });
 
     useEffect(() => {
         fetchCard().then(setCard);
@@ -286,6 +326,7 @@ export default function Component() {
             };
             setGenreGraph(dummy);
         });
+        fetchEmotionGraph(selectedPeriod).then(setEmotionGraph);
     }, [selectedPeriod]);
 
     // 기간에 따른 데이터 선택
@@ -301,7 +342,6 @@ export default function Component() {
             return {
                 typeData: convertedData, // 일별도 변환 함수 사용
                 genreData: monthlyGenreData,
-                emotionData: monthlyEmotionData,
                 periodLabel: "일별",
                 rankings: currentRankings,
             }
@@ -309,22 +349,11 @@ export default function Component() {
             return {
                 typeData: convertedData,
                 genreData: monthlyGenreData,
-                emotionData: monthlyEmotionData,
                 periodLabel: "월별",
                 rankings: currentRankings,
             }
         }
     }, [selectedPeriod, typeGraph])
-
-    // 장르별 그래프 데이터 변환 함수
-    function convertGenreLineGraphToChartData(lineGraph: GenreLineGraphDto[]): ChartDataPoint[] {
-      const periodMap: Record<string, ChartDataPoint> = {};
-      lineGraph.forEach(({ axisLabel, genre, count }) => {
-        if (!periodMap[axisLabel]) periodMap[axisLabel] = { period: axisLabel };
-        periodMap[axisLabel][genre] = count;
-      });
-      return Object.values(periodMap);
-    }
 
     // 장르별 그래프 데이터 변환 함수
     const getGenreData = useMemo(() => {
@@ -333,25 +362,29 @@ export default function Component() {
       return { chartData, ranking };
     }, [genreGraph]);
 
+    const getEmotionData = useMemo(() => {
+        const chartData = convertEmotionLineGraphToChartData(emotionGraph.emotionLineGraph ?? []);
+        const ranking = emotionGraph.emotionRanking ?? [];
+
+        // 모든 감정 키를 수집하고 동적 색상 맵 생성
+        const allEmotions = new Set<string>();
+        chartData.forEach(d => Object.keys(d).forEach(k => k !== 'period' && allEmotions.add(k)));
+        ranking.forEach(r => allEmotions.add(r.emotion));
+
+        const dynamicEmotionColors: Record<string, string> = { ...emotionColors };
+        let colorIndex = Object.keys(emotionColors).length;
+        allEmotions.forEach(emotion => {
+            if (!dynamicEmotionColors[emotion]) {
+                dynamicEmotionColors[emotion] = `hsl(${colorIndex * 60}, 70%, 50%)`;
+                colorIndex++;
+            }
+        });
+
+        return { chartData, ranking, colors: dynamicEmotionColors };
+    }, [emotionGraph]);
+
     // 1. 장르명 콘솔 출력 (useEffect 등에서)
     console.log('장르별 데이터:', getGenreData);
-
-    // 2. genreColors 맵 보강
-    const genreColors: Record<string, string> = {
-      "드라마": "#8884d8",
-      "액션": "#82ca9d",
-      "로맨스": "#ffc658",
-      "공포": "#ff7c7c",
-      "코미디": "#8dd1e1",
-      "판타지": "#e74c3c",
-      "애니메이션": "#f1c40f",
-      "sf": "#2ecc40",
-      "다큐멘터리": "#1abc9c",
-      // 필요시 영어도 추가
-      "fantasy": "#e74c3c",
-      "animation": "#f1c40f",
-      // ...
-    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
@@ -730,54 +763,30 @@ export default function Component() {
                                         className="h-[300px] overflow-hidden"
                                     >
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <LineChart data={monthlyEmotionData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="period" />
-                                                <YAxis />
-                                                <ChartTooltip />
-                                                <Line
-                                                    type="monotone"
-                                                    dataKey="감동"
-                                                    stroke="#ff6b6b"
-                                                    strokeWidth={2}
-                                                    dot={{ fill: "#ff6b6b", r: 3 }}
-                                                />
-                                                <Line
-                                                    type="monotone"
-                                                    dataKey="재미"
-                                                    stroke="#4ecdc4"
-                                                    strokeWidth={2}
-                                                    dot={{ fill: "#4ecdc4", r: 3 }}
-                                                />
-                                                <Line
-                                                    type="monotone"
-                                                    dataKey="긴장"
-                                                    stroke="#45b7d1"
-                                                    strokeWidth={2}
-                                                    dot={{ fill: "#45b7d1", r: 3 }}
-                                                />
-                                                <Line
-                                                    type="monotone"
-                                                    dataKey="슬픔"
-                                                    stroke="#96ceb4"
-                                                    strokeWidth={2}
-                                                    dot={{ fill: "#96ceb4", r: 3 }}
-                                                />
-                                                <Line
-                                                    type="monotone"
-                                                    dataKey="분노"
-                                                    stroke="#feca57"
-                                                    strokeWidth={2}
-                                                    dot={{ fill: "#feca57", r: 3 }}
-                                                />
-                                                <Line
-                                                    type="monotone"
-                                                    dataKey="공포"
-                                                    stroke="#ff9ff3"
-                                                    strokeWidth={2}
-                                                    dot={{ fill: "#ff9ff3", r: 3 }}
-                                                />
-                                            </LineChart>
+                                            {getEmotionData.chartData.length === 0 ? (
+                                                <div className="flex items-center justify-center h-full text-gray-400">
+                                                    데이터가 없습니다.
+                                                </div>
+                                            ) : (
+                                                <LineChart data={getEmotionData.chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis dataKey="period" />
+                                                    <YAxis />
+                                                    <ChartTooltip />
+                                                    {Object.keys(getEmotionData.chartData[0] ?? {})
+                                                        .filter((key) => key !== "period")
+                                                        .map((emotion, idx) => (
+                                                            <Line
+                                                                key={emotion}
+                                                                type="monotone"
+                                                                dataKey={emotion}
+                                                                stroke={getEmotionData.colors[emotion]}
+                                                                strokeWidth={2}
+                                                                dot={{ fill: getEmotionData.colors[emotion], r: 3 }}
+                                                            />
+                                                        ))}
+                                                </LineChart>
+                                            )}
                                         </ResponsiveContainer>
                                     </ChartContainer>
                                 </CardContent>
@@ -790,31 +799,35 @@ export default function Component() {
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-4">
-                                        {(typeGraph?.typeRanking ?? []).map((item, index) => (
-                                            <div key={item.type} className="flex items-center gap-3">
-                                                <div
-                                                    className="flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-semibold"
-                                                    style={{ backgroundColor: `hsl(${index * 50}, 70%, 50%)` }}
-                                                >
-                                                    {index + 1}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="font-medium">{item.type}</span>
-                                                        <span className="text-sm text-gray-600">{item.totalCount}회</span>
+                                        {getEmotionData.ranking.length === 0 ? (
+                                            <div className="text-center text-gray-400 py-8">데이터가 없습니다.</div>
+                                        ) : (
+                                            getEmotionData.ranking.map((item, index) => (
+                                                <div key={item.emotion} className="flex items-center gap-3">
+                                                    <div
+                                                        className="flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-semibold"
+                                                        style={{ backgroundColor: getEmotionData.colors[item.emotion] }}
+                                                    >
+                                                        {index + 1}
                                                     </div>
-                                                    <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                                                        <div
-                                                            className="h-2 rounded-full"
-                                                            style={{
-                                                                backgroundColor: `hsl(${index * 50}, 70%, 50%)`,
-                                                                width: `${(item.totalCount / Math.max(...(typeGraph?.typeRanking ?? []).map((d) => d.totalCount))) * 100}%`,
-                                                            }}
-                                                        />
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="font-medium">{item.emotion}</span>
+                                                            <span className="text-sm text-gray-600">{item.totalCount}회</span>
+                                                        </div>
+                                                        <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                                            <div
+                                                                className="h-2 rounded-full"
+                                                                style={{
+                                                                    backgroundColor: getEmotionData.colors[item.emotion],
+                                                                    width: `${(item.totalCount / Math.max(...getEmotionData.ranking.map((d) => d.totalCount))) * 100}%`,
+                                                                }}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>

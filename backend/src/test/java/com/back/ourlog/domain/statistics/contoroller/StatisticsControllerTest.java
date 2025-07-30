@@ -189,4 +189,40 @@ public class StatisticsControllerTest {
                     .andExpect(jsonPath("$.genreRanking.[%d].totalCount".formatted(i)).value(genreRankDto.getTotalCount()));
         }
     }
+
+    @Test
+    @DisplayName("감정 그래프 조회")
+    void 감정_그래프() throws Exception {
+
+        ResultActions resultActions = mvc.perform(
+                get("/api/v1/statistics/emotion-graph")
+                        .param("period", "ALL")  // 예시로 MONTH 기간을 사용
+        ).andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(StatisticsController.class))
+                .andExpect(handler().methodName("getEmotionGraph"))
+                .andExpect(status().isOk());
+
+        EmotionGraphResponse emotionGraphResponse = statisticsService.getEmotionGraph(1, PeriodOption.ALL);
+
+        List<EmotionLineGraphDto> line = emotionGraphResponse.getEmotionLineGraph();
+        List<EmotionRankDto> ranking = emotionGraphResponse.getEmotionRanking();
+
+        for(int i = 0; i < line.size(); i++) {
+            EmotionLineGraphDto emotionLineGraphDto = line.get(i);
+            System.out.println("Axis Label: " + emotionLineGraphDto.getAxisLabel() + ", Emotion: " + emotionLineGraphDto.getEmotion() + ", Count: " + emotionLineGraphDto.getCount());
+            resultActions
+                    .andExpect(jsonPath("$.emotionLineGraph.[%d].axisLabel".formatted(i)).value(emotionLineGraphDto.getAxisLabel()))
+                    .andExpect(jsonPath("$.emotionLineGraph.[%d].emotion".formatted(i)).value(emotionLineGraphDto.getEmotion()))
+                    .andExpect(jsonPath("$.emotionLineGraph.[%d].count".formatted(i)).value(emotionLineGraphDto.getCount()));
+        }
+        for(int i = 0; i < ranking.size(); i++) {
+            EmotionRankDto emotionRankDto = ranking.get(i);
+            System.out.println("Emotion: " + emotionRankDto.getEmotion() + ", Count: " + emotionRankDto.getTotalCount());
+            resultActions
+                    .andExpect(jsonPath("$.emotionRanking.[%d].emotion".formatted(i)).value(emotionRankDto.getEmotion()))
+                    .andExpect(jsonPath("$.emotionRanking.[%d].totalCount".formatted(i)).value(emotionRankDto.getTotalCount()));
+        }
+    }
 }

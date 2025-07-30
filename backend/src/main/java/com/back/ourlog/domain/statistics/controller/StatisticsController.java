@@ -51,4 +51,11 @@ public class StatisticsController {
         int userId = 1;
         return ResponseEntity.ok(statisticsService.getGenreGraph(userId, period));
     }
+
+    @GetMapping("/emotion-graph")
+    public ResponseEntity<EmotionGraphResponse> getEmotionGraph(@RequestParam PeriodOption period) {
+        int userId = 1; // 임시 값, 실제로는 인증된 사용자 ID를 사용해야 합니다.
+        EmotionGraphResponse res = statisticsService.getEmotionGraph(userId, period);
+        return ResponseEntity.ok(res);
+    }
 }

@@ -1,9 +1,6 @@
 package com.back.ourlog.domain.statistics.repository;
 
-import com.back.ourlog.domain.statistics.dto.GenreLineGraphDto;
-import com.back.ourlog.domain.statistics.dto.GenreRankDto;
-import com.back.ourlog.domain.statistics.dto.TypeLineGraphDto;
-import com.back.ourlog.domain.statistics.dto.TypeRankDto;
+import com.back.ourlog.domain.statistics.dto.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,4 +16,9 @@ public interface StatisticsRepositoryCustom {
     List<GenreLineGraphDto> findGenreLineMonthly(Integer userId, LocalDateTime start, LocalDateTime end);
     List<GenreLineGraphDto> findGenreLineDaily(Integer userId, LocalDateTime start, LocalDateTime end);
     List<GenreRankDto> findGenreRanking(Integer userId, LocalDateTime start, LocalDateTime end);
+
+    /** 감정 그래프 데이터 조회 */
+    List<EmotionLineGraphDto> findEmotionLineMonthly(Integer userId, LocalDateTime start, LocalDateTime end);
+    List<EmotionLineGraphDto> findEmotionLineDaily(Integer userId, LocalDateTime start, LocalDateTime end);
+    List<EmotionRankDto> findEmotionRanking(Integer userId, LocalDateTime start, LocalDateTime end);
 }
