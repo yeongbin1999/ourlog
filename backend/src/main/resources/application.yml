@@ -2,14 +2,8 @@ spring:
   application:
     name: springboot-jpa
 
-  # application-secret.yml 을 포함합니다.
-  profiles:
-    include: secret
-
-  # 추가 import application-secret.yml (for API KEY)
-#  , classpath:application-secret.yml
   config:
-    import: optional:file:.env[.properties]
+    import: optional:file:.env
 
   jpa:
     hibernate:
@@ -76,4 +70,4 @@ tmdb:
     key: ${TMDB_API_KEY}
 
 library:
-  api-key: "${Library_API_KEY}"
+  api-key: ${Library_API_KEY}
