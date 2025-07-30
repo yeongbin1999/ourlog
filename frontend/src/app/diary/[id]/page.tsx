@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Diary, DiaryInfoProps, Comment } from "../types/detail";
+import { Diary, DiaryInfoProps, Comment, Content } from "../types/detail";
 {
   /* 페이지 타이틀 */
 }
@@ -11,25 +11,33 @@ function DiaryTitle({ title }: { title: string }) {
   );
 }
 
-function ContentInfo() {
+function ContentInfo({ content }: { content: Content }) {
   return (
     <section className="border rounded-xl p-6 shadow-sm bg-white">
       <div className="flex flex-col md:flex-row items-center gap-8">
         {/* 포스터 영역 */}
         <div className="w-full md:w-1/2">
-          <div className="aspect-[16/9] bg-gray-200 rounded-lg shadow-sm flex items-center justify-center text-gray-400 text-lg">
-            포스터 이미지
+          <div className="aspect-[16/9] bg-gray-200 rounded-lg shadow-sm flex items-center justify-center text-gray-400 text-lg overflow-hidden">
+            {content.posterUrl ? (
+              <img
+                src={content.posterUrl}
+                alt="포스터 이미지"
+                className="w-full h-full object-cover rounded-lg"
+              />
+            ) : (
+              "포스터 이미지 없음"
+            )}
           </div>
         </div>
 
         {/* 텍스트 정보 */}
         <div className="w-full md:w-1/2 space-y-4">
           <h2 className="text-2xl font-semibold text-gray-800">
-            content_title
+            {content.title}
           </h2>
-          <p className="text-gray-700 leading-relaxed">content_description</p>
+          <p className="text-gray-700 leading-relaxed">{content.description}</p>
           <div className="text-sm text-gray-500">
-            출시일: content_released_at
+            출시일: {new Date(content.releasedAt).toLocaleDateString()}
           </div>
         </div>
       </div>
@@ -152,6 +160,7 @@ export default function Page() {
   const [diary, setDiary] = useState<Diary | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [content, setContent] = useState<Content | null>(null);
   const diaryId = 1; // 나중에 pathVariable로 받아올 예정
 
   useEffect(() => {
@@ -187,9 +196,24 @@ export default function Page() {
         setLoading(false);
       }
     }
+    async function fetchContent() {
+      try {
+        const res = await fetch(
+          `http://localhost:8080/api/v1/contents/${diaryId}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch content");
+        const json = await res.json();
+        setContent(json.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
 
     fetchDiary();
     fetchComments();
+    fetchContent();
   }, [diaryId]);
 
   const handleCommentAdd = (newComment: Comment) => {
@@ -211,7 +235,7 @@ export default function Page() {
   return (
     <main className="max-w-3xl mx-auto p-6 space-y-10">
       <DiaryTitle title={diary.title} />
-      <ContentInfo />
+      {content && <ContentInfo content={content} />}
       <DiaryInfo
         rating={diary.rating}
         contentText={diary.contentText}

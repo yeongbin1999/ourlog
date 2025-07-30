@@ -18,3 +18,13 @@ export type Comment = {
     content: string;
     createdAt: string;
 }
+
+export type Content = {
+    id: number;
+    type: string;
+    posterUrl: string;
+    title: string;
+    creatorName: string;
+    description: string;
+    releasedAt: string;
+} 
