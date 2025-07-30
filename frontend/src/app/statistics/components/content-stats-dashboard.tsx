@@ -43,6 +43,18 @@ async function fetchTypeGraph(period: string): Promise<TypeGraphResponse> {
   const res = await fetch(`${BASE_URL}/type-graph?period=${periodOption}`);
   return res.json();
 }
+async function fetchGenreGraph(period: string): Promise<GenreGraphResponse> {
+  const periodMap: Record<string, string> = {
+    "전체": "ALL",
+    "이번년도": "THIS_YEAR",
+    "최근6개월": "LAST_6_MONTHS",
+    "최근한달": "LAST_MONTH",
+    "최근일주일": "LAST_WEEK"
+  };
+  const periodOption = periodMap[period] || "ALL";
+  const res = await fetch(`${BASE_URL}/genre-graph?period=${periodOption}`);
+  return res.json();
+}
 
 // 새로운 타입 정의
 type TypeLineGraphDto = {
@@ -77,6 +89,22 @@ type TypeCountDto = {
   count: number;
 };
 
+// 1. 타입 정의 추가
+
+type GenreLineGraphDto = {
+  axisLabel: string;
+  genre: string;
+  count: number;
+};
+type GenreRankDto = {
+  genre: string;
+  totalCount: number;
+};
+type GenreGraphResponse = {
+  genreLineGraph: GenreLineGraphDto[];
+  genreRanking: GenreRankDto[];
+};
+
 // 월별 데이터 (기본 데이터) - 장르별, 감정별용
 const monthlyGenreData = [
     { period: "1월", 드라마: 15, 액션: 10, 로맨스: 8, 공포: 7, 코미디: 6 },
@@ -104,6 +132,26 @@ const typeColors: Record<string, string> = {
   "MUSIC": "#ff7c7c"
 };
 
+// 장르명 정규화 함수
+function normalizeGenre(genre: string) {
+  return genre.trim().toLowerCase();
+}
+
+// 장르별 색상 맵 추가
+const genreColors: Record<string, string> = {
+  "드라마": "#8884d8",
+  "액션": "#82ca9d",
+  "로맨스": "#ffc658",
+  "공포": "#ff7c7c",
+  "코미디": "#8dd1e1",
+  // 영어 장르명도 추가
+  "drama": "#8884d8",
+  "action": "#82ca9d",
+  "romance": "#ffc658",
+  "horror": "#ff7c7c",
+  "comedy": "#8dd1e1",
+};
+
 // 변환 함수 추가
 type ChartDataPoint = {
   period: string;
@@ -128,6 +176,16 @@ function convertTypeTimeCountsToChartData(timeCounts: TypeLineGraphDto[]): Chart
   return result;
 }
 
+// 장르별 그래프 데이터 변환 함수
+function convertGenreLineGraphToChartData(lineGraph: GenreLineGraphDto[]): ChartDataPoint[] {
+  const periodMap: Record<string, ChartDataPoint> = {};
+  lineGraph.forEach(({ axisLabel, genre, count }) => {
+    if (!periodMap[axisLabel]) periodMap[axisLabel] = { period: axisLabel };
+    periodMap[axisLabel][genre] = count;
+  });
+  return Object.values(periodMap);
+}
+
 export default function Component() {
     const [selectedPeriod, setSelectedPeriod] = useState("전체")
     const [startDate, setStartDate] = useState<Date>()
@@ -137,6 +195,7 @@ export default function Component() {
     const [monthlyDiary, setMonthlyDiary] = useState<MonthlyDiaryCount[]>([]);
     const [typeDist, setTypeDist] = useState<TypeCountDto[]>([]);
     const [typeGraph, setTypeGraph] = useState<TypeGraphResponse>({ typeLineGraph: [], typeRanking: [] });
+    const [genreGraph, setGenreGraph] = useState<GenreGraphResponse>({ genreLineGraph: [], genreRanking: [] });
 
     useEffect(() => {
         fetchCard().then(setCard);
@@ -191,6 +250,42 @@ export default function Component() {
             };
             setTypeGraph(dummyData);
         });
+        // 장르별 데이터 fetch
+        fetchGenreGraph(selectedPeriod).then((data) => {
+            if (!data || !data.genreLineGraph || data.genreLineGraph.length === 0) {
+                // 더미 데이터
+                const dummy = {
+                  genreLineGraph: [
+                    { axisLabel: "2025-01", genre: "드라마", count: 10 },
+                    { axisLabel: "2025-01", genre: "액션", count: 5 },
+                    { axisLabel: "2025-02", genre: "드라마", count: 12 },
+                    { axisLabel: "2025-02", genre: "액션", count: 7 },
+                  ],
+                  genreRanking: [
+                    { genre: "드라마", totalCount: 22 },
+                    { genre: "액션", totalCount: 12 },
+                  ]
+                };
+                setGenreGraph(dummy);
+            } else {
+                setGenreGraph(data);
+            }
+        }).catch(() => {
+            // 더미 데이터
+            const dummy = {
+              genreLineGraph: [
+                { axisLabel: "2025-01", genre: "드라마", count: 10 },
+                { axisLabel: "2025-01", genre: "액션", count: 5 },
+                { axisLabel: "2025-02", genre: "드라마", count: 12 },
+                { axisLabel: "2025-02", genre: "액션", count: 7 },
+              ],
+              genreRanking: [
+                { genre: "드라마", totalCount: 22 },
+                { genre: "액션", totalCount: 12 },
+              ]
+            };
+            setGenreGraph(dummy);
+        });
     }, [selectedPeriod]);
 
     // 기간에 따른 데이터 선택
@@ -220,6 +315,43 @@ export default function Component() {
             }
         }
     }, [selectedPeriod, typeGraph])
+
+    // 장르별 그래프 데이터 변환 함수
+    function convertGenreLineGraphToChartData(lineGraph: GenreLineGraphDto[]): ChartDataPoint[] {
+      const periodMap: Record<string, ChartDataPoint> = {};
+      lineGraph.forEach(({ axisLabel, genre, count }) => {
+        if (!periodMap[axisLabel]) periodMap[axisLabel] = { period: axisLabel };
+        periodMap[axisLabel][genre] = count;
+      });
+      return Object.values(periodMap);
+    }
+
+    // 장르별 그래프 데이터 변환 함수
+    const getGenreData = useMemo(() => {
+      const chartData = convertGenreLineGraphToChartData(genreGraph.genreLineGraph ?? []);
+      const ranking = genreGraph.genreRanking ?? [];
+      return { chartData, ranking };
+    }, [genreGraph]);
+
+    // 1. 장르명 콘솔 출력 (useEffect 등에서)
+    console.log('장르별 데이터:', getGenreData);
+
+    // 2. genreColors 맵 보강
+    const genreColors: Record<string, string> = {
+      "드라마": "#8884d8",
+      "액션": "#82ca9d",
+      "로맨스": "#ffc658",
+      "공포": "#ff7c7c",
+      "코미디": "#8dd1e1",
+      "판타지": "#e74c3c",
+      "애니메이션": "#f1c40f",
+      "sf": "#2ecc40",
+      "다큐멘터리": "#1abc9c",
+      // 필요시 영어도 추가
+      "fantasy": "#e74c3c",
+      "animation": "#f1c40f",
+      // ...
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
@@ -512,54 +644,34 @@ export default function Component() {
                                     <CardDescription>주요 장르별 {getTimeData.periodLabel} 감상 현황</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <ChartContainer
-                                        className="h-[350px] overflow-hidden"
-                                    >
+                                    <ChartContainer className="h-[350px] overflow-hidden">
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <LineChart data={monthlyGenreData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="period" />
-                                                <YAxis />
-                                                <ChartTooltip />
-
-                                                <YAxis />
-                                                <ChartTooltip />
-                                                <Line
-                                                    type="monotone"
-                                                    dataKey="드라마"
-                                                    stroke="#8884d8"
-                                                    strokeWidth={2}
-                                                    dot={{ fill: "#8884d8", r: 3 }}
-                                                />
-                                                <Line
-                                                    type="monotone"
-                                                    dataKey="액션"
-                                                    stroke="#82ca9d"
-                                                    strokeWidth={2}
-                                                    dot={{ fill: "#82ca9d", r: 3 }}
-                                                />
-                                                <Line
-                                                    type="monotone"
-                                                    dataKey="로맨스"
-                                                    stroke="#ffc658"
-                                                    strokeWidth={2}
-                                                    dot={{ fill: "#ffc658", r: 3 }}
-                                                />
-                                                <Line
-                                                    type="monotone"
-                                                    dataKey="공포"
-                                                    stroke="#ff7c7c"
-                                                    strokeWidth={2}
-                                                    dot={{ fill: "#ff7c7c", r: 3 }}
-                                                />
-                                                <Line
-                                                    type="monotone"
-                                                    dataKey="코미디"
-                                                    stroke="#8dd1e1"
-                                                    strokeWidth={2}
-                                                    dot={{ fill: "#8dd1e1", r: 3 }}
-                                                />
-                                            </LineChart>
+                                            {getGenreData.chartData.length === 0 ? (
+                                                <div className="flex items-center justify-center h-full text-gray-400">
+                                                    데이터가 없습니다.
+                                                </div>
+                                            ) : (
+                                                <LineChart data={getGenreData.chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis dataKey="period" />
+                                                    <YAxis />
+                                                    <ChartTooltip />
+                                                    {getGenreData.chartData.length > 0 &&
+                                                        Object.keys(getGenreData.chartData[0])
+                                                            .filter((key) => key !== "period")
+                                                            .map((genre, idx) => (
+                                                                <Line
+                                                                    key={genre}
+                                                                    type="monotone"
+                                                                    dataKey={genre}
+                                                                    stroke={genreColors[normalizeGenre(genre)] || `hsl(${idx * 50}, 70%, 50%)`}
+                                                                    strokeWidth={2}
+                                                                    dot={{ fill: genreColors[normalizeGenre(genre)] || `hsl(${idx * 50}, 70%, 50%)`, r: 3 }}
+                                                                />
+                                                            ))
+                                                    }
+                                                </LineChart>
+                                            )}
                                         </ResponsiveContainer>
                                     </ChartContainer>
                                 </CardContent>
@@ -571,32 +683,35 @@ export default function Component() {
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-3 max-h-[350px] overflow-y-auto">
-                                        <h3 className="font-semibold text-lg mb-3">장르별 순위</h3>
-                                        {(typeGraph?.typeRanking ?? []).map((item, index) => (
-                                            <div key={item.type} className="flex items-center gap-3">
-                                                <div
-                                                    className="flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-semibold"
-                                                    style={{ backgroundColor: `hsl(${index * 50}, 70%, 50%)` }}
-                                                >
-                                                    {index + 1}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="font-medium">{item.type}</span>
-                                                        <span className="text-sm text-gray-600">{item.totalCount}개</span>
+                                        {getGenreData.ranking.length === 0 ? (
+                                            <div className="text-center text-gray-400 py-8">데이터가 없습니다.</div>
+                                        ) : (
+                                            getGenreData.ranking.map((item, index) => (
+                                                <div key={item.genre} className="flex items-center gap-3">
+                                                    <div
+                                                        className="flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-semibold"
+                                                        style={{ backgroundColor: genreColors[normalizeGenre(item.genre)] || `hsl(${index * 50}, 70%, 50%)` }}
+                                                    >
+                                                        {index + 1}
                                                     </div>
-                                                    <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                                                        <div
-                                                            className="h-2 rounded-full"
-                                                            style={{
-                                                                backgroundColor: `hsl(${index * 50}, 70%, 50%)`,
-                                                                width: `${(item.totalCount / Math.max(...(typeGraph?.typeRanking ?? []).map((d) => d.totalCount))) * 100}%`,
-                                                            }}
-                                                        />
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="font-medium">{item.genre}</span>
+                                                            <span className="text-sm text-gray-600">{item.totalCount}개</span>
+                                                        </div>
+                                                        <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                                            <div
+                                                                className="h-2 rounded-full"
+                                                                style={{
+                                                                    backgroundColor: genreColors[normalizeGenre(item.genre)] || `hsl(${index * 50}, 70%, 50%)`,
+                                                                    width: `${(item.totalCount / Math.max(...getGenreData.ranking.map((d) => d.totalCount))) * 100}%`,
+                                                                }}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>

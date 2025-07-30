@@ -122,7 +122,6 @@ public class StatisticsControllerTest {
 
         ResultActions resultActions = mvc.perform(
                 get("/api/v1/statistics/type-graph")
-                .param("userId", "1")
                 .param("period", "ALL")  // 예시로 MONTH 기간을 사용
         ).andDo(print());
 
@@ -152,5 +151,42 @@ public class StatisticsControllerTest {
                     .andExpect(jsonPath("$.typeRanking.[%d].totalCount".formatted(i)).value(typeRankDto.getTotalCount()));
         }
 
+    }
+
+    @Test
+    @DisplayName("장르 그래프 조회")
+    void 장르_그래프() throws Exception {
+
+        ResultActions resultActions = mvc.perform(
+                get("/api/v1/statistics/genre-graph")
+                        .param("period", "ALL")  // 예시로 MONTH 기간을 사용
+        ).andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(StatisticsController.class))
+                .andExpect(handler().methodName("getGenreGraph"))
+                .andExpect(status().isOk());
+
+        GenreGraphResponse genreGraphResponse = statisticsService.getGenreGraph(1, PeriodOption.ALL);
+
+        List<GenreLineGraphDto> graph = genreGraphResponse.getGenreLineGraph();
+        List<GenreRankDto> ranking = genreGraphResponse.getGenreRanking();
+
+        for(int i = 0; i < graph.size(); i++) {
+            GenreLineGraphDto genreLineGraphDto = graph.get(i);
+            System.out.println("Axis Label: " + genreLineGraphDto.getAxisLabel() + ", Genre: " + genreLineGraphDto.getGenre() + ", Count: " + genreLineGraphDto.getCount());
+            resultActions
+                    .andExpect(jsonPath("$.genreLineGraph.[%d].axisLabel".formatted(i)).value(genreLineGraphDto.getAxisLabel()))
+                    .andExpect(jsonPath("$.genreLineGraph.[%d].genre".formatted(i)).value(genreLineGraphDto.getGenre()))
+                    .andExpect(jsonPath("$.genreLineGraph.[%d].count".formatted(i)).value(genreLineGraphDto.getCount()));
+        }
+
+        for(int i = 0; i < ranking.size(); i++) {
+            GenreRankDto genreRankDto = ranking.get(i);
+            System.out.println("Genre: " + genreRankDto.getGenre() + ", Count: " + genreRankDto.getTotalCount());
+            resultActions
+                    .andExpect(jsonPath("$.genreRanking.[%d].genre".formatted(i)).value(genreRankDto.getGenre()))
+                    .andExpect(jsonPath("$.genreRanking.[%d].totalCount".formatted(i)).value(genreRankDto.getTotalCount()));
+        }
     }
 }

@@ -1,6 +1,9 @@
 package com.back.ourlog.domain.statistics.repository;
 
 import com.back.ourlog.domain.content.entity.ContentType;
+import com.back.ourlog.domain.diary.entity.Diary;
+import com.back.ourlog.domain.statistics.dto.GenreLineGraphDto;
+import com.back.ourlog.domain.statistics.dto.GenreRankDto;
 import com.back.ourlog.domain.statistics.dto.TypeLineGraphDto;
 import com.back.ourlog.domain.statistics.dto.TypeRankDto;
 import jakarta.persistence.EntityManager;
@@ -83,5 +86,86 @@ public class StatisticsRepositoryCustomImpl implements  StatisticsRepositoryCust
                 .setParameter("s",   start)
                 .setParameter("e",   end)
                 .getResultList();
+    }
+
+
+    @Override
+    public List<GenreLineGraphDto> findGenreLineMonthly(Integer userId, LocalDateTime start, LocalDateTime end) {
+        String sql =
+                "SELECT FORMATDATETIME(d.created_at, 'yyyy-MM') AS axisLabel, " +
+                        "       g.name AS genre, " +
+                        "       COUNT(*) AS cnt " +
+                        "FROM diary d " +
+                        "JOIN diary_genre dg ON d.id = dg.diary_id " +
+                        "JOIN genre g ON dg.genre_id = g.id " +
+                        "WHERE d.user_id = ? AND d.created_at BETWEEN ? AND ? " +
+                        "GROUP BY axisLabel, g.name " +
+                        "ORDER BY axisLabel, g.name";
+
+        List<Object[]> rows = em.createNativeQuery(sql)
+                .setParameter(1, userId)
+                .setParameter(2, start)
+                .setParameter(3, end)
+                .getResultList();
+
+        return rows.stream()
+                .map(r -> new GenreLineGraphDto(
+                        (String) r[0],
+                        (String) r[1],
+                        ((Number) r[2]).longValue()
+                ))
+                .toList();
+    }
+
+    @Override
+    public List<GenreLineGraphDto> findGenreLineDaily(Integer userId, LocalDateTime start, LocalDateTime end) {
+        String sql =
+                "SELECT FORMATDATETIME(d.created_at, 'yyyy-MM-dd') AS axisLabel, " +
+                        "       g.name AS genre, " +
+                        "       COUNT(*) AS cnt " +
+                        "FROM diary d " +
+                        "JOIN diary_genre dg ON d.id = dg.diary_id " +
+                        "JOIN genre g ON dg.genre_id = g.id " +
+                        "WHERE d.user_id = ? AND d.created_at BETWEEN ? AND ? " +
+                        "GROUP BY axisLabel, g.name " +
+                        "ORDER BY axisLabel, g.name";
+
+        List<Object[]> rows = em.createNativeQuery(sql)
+                .setParameter(1, userId)
+                .setParameter(2, start)
+                .setParameter(3, end)
+                .getResultList();
+
+        return rows.stream()
+                .map(r -> new GenreLineGraphDto(
+                        (String) r[0],
+                        (String) r[1],
+                        ((Number) r[2]).longValue()
+                ))
+                .toList();
+    }
+
+    @Override
+    public List<GenreRankDto> findGenreRanking(Integer userId, LocalDateTime start, LocalDateTime end) {
+        String sql =
+                "SELECT g.name AS genre, COUNT(*) AS totalCount " +
+                        "FROM diary d " +
+                        "JOIN diary_genre dg ON d.id = dg.diary_id " +
+                        "JOIN genre g ON dg.genre_id = g.id " +
+                        "WHERE d.user_id = ? AND d.created_at BETWEEN ? AND ? " +
+                        "GROUP BY g.name ORDER BY totalCount DESC";
+
+        List<Object[]> rows = em.createNativeQuery(sql)
+                .setParameter(1, userId)
+                .setParameter(2, start)
+                .setParameter(3, end)
+                .getResultList();
+
+        return rows.stream()
+                .map(r -> new GenreRankDto(
+                        (String) r[0],
+                        ((Number) r[1]).longValue()
+                ))
+                .toList();
     }
 }
