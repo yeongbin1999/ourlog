@@ -101,9 +101,27 @@ public class DiaryService {
 
         // TODO: 유저 인증 로직은 이후에 추가 예정
 
-        // 연관 필드 업데이트
-        diary.update(dto.title(), dto.contentText(), dto.rating(),
-                dto.isPublic(), dto.externalId(), dto.type());
+        // 기존 콘텐츠 비교
+        Content oldContent = diary.getContent();
+        boolean contentChanged = !oldContent.getExternalId().equals(dto.externalId())
+                || !oldContent.getType().equals(dto.type());
+
+        Content newContent = oldContent;
+
+        if (contentChanged) {
+            // 외부 API 검색
+            ContentSearchResultDto result = contentSearchFacade.search(dto.type(), dto.title());
+            if (result == null || result.externalId() == null) {
+                throw new CustomException(ErrorCode.CONTENT_NOT_FOUND);
+            }
+
+            // 새 Content 저장 or 조회
+            newContent = contentService.saveOrGet(result, dto.type());
+            diary.setContent(newContent);
+        }
+
+        // 필드 업데이트
+        diary.update(dto.title(), dto.contentText(), dto.rating(), dto.isPublic());
 
         // 변경된 연관관계만 처리
         updateTags(diary, dto.tagIds());

@@ -31,7 +31,9 @@ public class Content {
     @Column(name = "creator_name")
     private String creatorName;
 
+    @Column(length = 1000)
     private String description;
+
     private String posterUrl;
 
     @CreatedDate

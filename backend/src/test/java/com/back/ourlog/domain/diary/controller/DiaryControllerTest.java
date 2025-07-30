@@ -156,7 +156,6 @@ class DiaryControllerTest {
                 .andExpect(jsonPath("$.data.tagNames[0]").isNotEmpty());
     }
 
-    /*
     @Test
     @DisplayName("감상일기 수정 성공")
     void t5() throws Exception {
@@ -166,7 +165,7 @@ class DiaryControllerTest {
         Ott ott = ottRepository.save(new Ott("Netflix"));
 
         DiaryWriteRequestDto requestDto = new DiaryWriteRequestDto(
-                "원본 제목",
+                "인셉션",
                 "원본 내용",
                 true,
                 3.5F,
@@ -191,7 +190,7 @@ class DiaryControllerTest {
         // 수정 요청
         String body = """
     {
-        "title": "수정된 다이어리",
+        "title": "메멘토",
         "contentText": "수정된 내용입니다.",
         "rating": 4.0,
         "isPublic": true,
@@ -208,7 +207,7 @@ class DiaryControllerTest {
                         .content(body))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.title").value("수정된 다이어리"))
+                .andExpect(jsonPath("$.data.title").value("메멘토"))
                 .andExpect(jsonPath("$.data.contentText").value("수정된 내용입니다."))
                 .andExpect(jsonPath("$.data.rating").value(4.0));
 
@@ -229,8 +228,6 @@ class DiaryControllerTest {
         assertThat(genreIds).containsExactly(genre.getId());
         assertThat(ottIds).containsExactly(ott.getId());
     }
-
-     */
 
     @Test
     @DisplayName("감상일기 수정 실패 - 존재하지 않는 태그 ID")
