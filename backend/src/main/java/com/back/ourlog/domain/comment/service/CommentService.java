@@ -2,6 +2,7 @@ package com.back.ourlog.domain.comment.service;
 
 import com.back.ourlog.domain.comment.dto.CommentResponseDto;
 import com.back.ourlog.domain.comment.entity.Comment;
+import com.back.ourlog.domain.comment.repository.CommentRepository;
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.diary.repository.DiaryRepository;
 import com.back.ourlog.domain.user.entity.User;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CommentService {
     private final DiaryRepository diaryRepository;
-
+    private final CommentRepository commentRepository;
     @Transactional
     public CommentResponseDto write(int diaryId, User user, String content) {
         Diary diary = diaryRepository.findById(diaryId)
@@ -38,5 +39,10 @@ public class CommentService {
         return comments.stream()
                 .map(CommentResponseDto::new)
                 .collect(Collectors.toList());
+    }
+
+    public void update(int id, String content) {
+        Comment comment = commentRepository.findById(id).orElseThrow();
+        comment.update(content);
     }
 }

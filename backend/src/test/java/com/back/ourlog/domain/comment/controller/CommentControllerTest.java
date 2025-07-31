@@ -115,7 +115,7 @@ class CommentControllerTest {
     @DisplayName("댓글 수정")
     void t5() throws Exception {
         Map<String, Object> data = new HashMap<>();
-        data.put("commentId", 1);
+        data.put("id", 1);
         data.put("content", "안녕하시렵니까?");
 
         String json = objectMapper.writeValueAsString(data);
