@@ -73,6 +73,8 @@ public class GlobalExceptionHandler {
 
         if (code.startsWith("SERVER_")) return HttpStatus.INTERNAL_SERVER_ERROR;
 
+        if(code.startsWith("COMMENT_")) return HttpStatus.NOT_FOUND;
+
         return HttpStatus.BAD_REQUEST;
     }
     

@@ -77,14 +77,19 @@ public class Diary {
         this.isPublic = isPublic;
     }
 
-    public void update(String title, String contentText, Float rating, Boolean isPublic, String externalId, ContentType type) {
+    public void update(String title, String contentText, float rating, boolean isPublic) {
         this.title = title;
         this.contentText = contentText;
         this.rating = rating;
         this.isPublic = isPublic;
+    }
 
-        // Content 내 필드 업데이트
-        this.content.update(externalId, type);
+    public void setContent(Content content) {
+        this.content = content;
+    }
+
+    public void clearGenres() {
+        this.getDiaryGenres().clear();
     }
 
     public Comment addComment(User user, String content) {

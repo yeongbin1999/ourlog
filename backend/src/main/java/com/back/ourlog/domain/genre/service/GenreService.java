@@ -15,4 +15,9 @@ public class GenreService {
     public List<Genre> getGenresByIds(List<Integer> ids) {
         return genreRepository.findAllById(ids);
     }
+
+    public Genre findOrCreateByName(String name) {
+        return genreRepository.findByName(name)
+                .orElseGet(() -> genreRepository.save(new Genre(name)));
+    }
 }
