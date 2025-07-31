@@ -42,7 +42,8 @@ public class CommentService {
     }
 
     public void update(int id, String content) {
-        Comment comment = commentRepository.findById(id).orElseThrow();
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
         comment.update(content);
     }
 }
