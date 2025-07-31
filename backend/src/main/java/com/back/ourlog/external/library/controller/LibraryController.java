@@ -27,7 +27,7 @@ public class LibraryController {
             @RequestBody LibraryApiResponseDto libraryApiRequestDto) throws Exception {
         List<LibraryApiResponseDto> res = libraryService.searchBooks(libraryApiRequestDto.getTitle());
 
-        return ResponseEntity.status(HttpStatus.CREATED)
+        return ResponseEntity.status(HttpStatus.OK)
                 .body(RsData.of("200-2", "도서 정보가 조회되었습니다.", res));
     }
 }

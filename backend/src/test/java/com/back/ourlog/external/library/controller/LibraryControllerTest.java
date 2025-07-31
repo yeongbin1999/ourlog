@@ -1,6 +1,5 @@
 package com.back.ourlog.external.library.controller;
 
-import com.back.ourlog.domain.content.repository.ContentRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,7 +29,7 @@ class LibraryControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
     @Test
-    @DisplayName("중앙도서관 도서 정보 조회")
+    @DisplayName("도서 정보 조회")
     void t1() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("title", "유적");
@@ -46,8 +45,28 @@ class LibraryControllerTest {
         resultActions
                 .andExpect(handler().handlerType(LibraryController.class))
                 .andExpect(handler().methodName("getLibraryInfo"))
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").value("도서 정보가 조회되었습니다."))
                 .andExpect(jsonPath("$.data").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("도서 정보 조회 - 검색어가 없는 경우")
+    void t2() throws Exception {
+        Map<String, Object> data = new HashMap<>();
+        data.put("title", "");
+
+        String json = objectMapper.writeValueAsString(data);
+
+        ResultActions resultActions = mvc.perform(
+                get("/api/v1/library")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+        ).andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(LibraryController.class))
+                .andExpect(handler().methodName("getLibraryInfo"))
+                .andExpect(status().isNotFound());
     }
 }
