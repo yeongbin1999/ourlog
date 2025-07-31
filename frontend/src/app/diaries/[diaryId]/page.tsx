@@ -2,12 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { Diary, DiaryInfoProps, Comment, Content } from "../types/detail";
+import { FaStar, FaRegStar } from "react-icons/fa"; // 꽉 찬 별, 빈 별
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 {
   /* 페이지 타이틀 */
 }
 function DiaryTitle({ title }: { title: string }) {
   return (
-    <h1 className="text-center text-4xl font-bold text-gray-800">{title}</h1>
+    <div className="flex items-center justify-between mb-4">
+      <Link href="/" className="text-blue-600 hover:underline text-sm">
+        ← Back to Feed
+      </Link>
+      <h1 className="text-xl font-bold text-gray-800 text-center flex-1">
+        {title}
+      </h1>
+    </div>
   );
 }
 
@@ -46,12 +56,19 @@ function ContentInfo({ content }: { content: Content }) {
 }
 
 function DiaryInfo({ rating, contentText, tagNames }: DiaryInfoProps) {
+  const stars = Array.from({ length: 5 }, (_, i) =>
+    i < rating ? (
+      <FaStar key={i} className="text-yellow-400" />
+    ) : (
+      <FaRegStar key={i} className="text-gray-300" />
+    )
+  );
+
   return (
     <section className="p-6 border rounded-xl shadow-sm bg-white space-y-4">
-      <header className="flex flex-col gap-1">
-        <div className="text-yellow-500 text-xl">
-          ⭐️⭐️⭐️⭐️⭐️ {rating} / 5.0
-        </div>
+      <header className="flex items-center gap-2">
+        <div className="flex items-center gap-1">{stars}</div>
+        <div className="text-yellow-500 text-xl">{rating.toFixed(1)} / 5.0</div>
       </header>
       <p className="text-gray-800">{contentText}</p>
       <div className="flex gap-2">
@@ -79,6 +96,11 @@ function CommentForm({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    if (!content.trim()) {
+      alert("댓글 내용을 입력해주세요");
+      return;
+    }
+
     try {
       const response = await fetch("http://localhost:8080/api/v1/comments", {
         method: "POST",
@@ -97,7 +119,7 @@ function CommentForm({
       // 입력 초기화
       setContent("");
       console.log(result.data);
-      // 부모 상태 업데이트
+      // 상태 업데이트
       onCommentAdd(result.data);
 
       alert("댓글 등록에 성공하였습니다.");
@@ -108,31 +130,33 @@ function CommentForm({
   };
 
   return (
-    <section className="p-6 border rounded-xl shadow-sm bg-white space-y-4">
-      <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
-        <label className="text-sm text-gray-600">Nickname</label>
-        <textarea
-          className="border p-2 rounded-md h-24 resize-none"
-          name="content"
-          placeholder="댓글을 입력하세요"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-        />
-        <button
-          type="submit"
-          className="self-end px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-        >
-          등록
-        </button>
-      </form>
-    </section>
+    <>
+      <h2 className="text-xl font-semibold">댓글</h2>
+      <section className="p-6 border rounded-xl shadow-sm bg-white space-y-4">
+        <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+          <label className="text-sm text-gray-600">Nickname</label>
+          <textarea
+            className="border p-2 rounded-md h-24 resize-none"
+            name="content"
+            placeholder="댓글을 입력하세요"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+          />
+          <button
+            type="submit"
+            className="self-end px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          >
+            등록
+          </button>
+        </form>
+      </section>
+    </>
   );
 }
 
 function CommentInfo({ comments }: { comments: Comment[] }) {
   return (
     <section className="space-y-4">
-      <h2 className="text-xl font-semibold">댓글</h2>
       {comments.length === 0 ? (
         <p className="text-gray-500">등록된 댓글이 없습니다.</p>
       ) : (
@@ -161,7 +185,8 @@ export default function Page() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState<Content | null>(null);
-  const diaryId = 1; // 나중에 pathVariable로 받아올 예정
+  const router = useRouter();
+  const { diaryId } = useParams();
 
   useEffect(() => {
     async function fetchDiary() {
@@ -241,7 +266,10 @@ export default function Page() {
         contentText={diary.contentText}
         tagNames={diary.tagNames}
       />
-      <CommentForm diaryId={diaryId} onCommentAdd={handleCommentAdd} />
+      <CommentForm
+        diaryId={Number(diaryId ?? 1)}
+        onCommentAdd={handleCommentAdd}
+      />
       <CommentInfo comments={comments} />
     </main>
   );
