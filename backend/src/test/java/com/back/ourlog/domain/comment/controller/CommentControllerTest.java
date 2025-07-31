@@ -129,7 +129,7 @@ class CommentControllerTest {
         resultActions
                 .andExpect(handler().handlerType(CommentController.class))
                 .andExpect(handler().methodName("updateComment"))
-                .andExpect(status().isNoContent())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultCode").value("200-0"))
                 .andExpect(jsonPath("$.msg").value("1번 댓글이 수정되었습니다."));
 
@@ -183,7 +183,7 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.msg").value("1번 댓글이 삭제되었습니다."));
 
         // 1번 댓글이 실제로 사라졌는지 확인
-        Comment comment = commentRepository.findById(1).get();
+        Comment comment = commentRepository.findById(1).orElse(null);
         assertThat(comment).isNull();
     }
 
