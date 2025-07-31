@@ -1,10 +1,12 @@
 package com.back.ourlog.external.library.controller;
 
+import com.back.ourlog.external.library.dto.LibraryApiRequestDto;
 import com.back.ourlog.external.library.dto.LibraryApiResponseDto;
 import com.back.ourlog.external.library.service.LibraryService;
 import com.back.ourlog.global.rsData.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +26,7 @@ public class LibraryController {
     @GetMapping()
     @Operation(summary = "책 제목으로 연관 도서 조회")
     public ResponseEntity<RsData<List<LibraryApiResponseDto>>> getLibraryInfo(
-            @RequestBody LibraryApiResponseDto libraryApiRequestDto) throws Exception {
+            @RequestBody @Valid LibraryApiRequestDto libraryApiRequestDto) throws Exception {
         List<LibraryApiResponseDto> res = libraryService.searchBooks(libraryApiRequestDto.getTitle());
 
         return ResponseEntity.status(HttpStatus.OK)

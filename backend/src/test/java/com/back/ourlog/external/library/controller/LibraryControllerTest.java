@@ -67,6 +67,6 @@ class LibraryControllerTest {
         resultActions
                 .andExpect(handler().handlerType(LibraryController.class))
                 .andExpect(handler().methodName("getLibraryInfo"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
 }
