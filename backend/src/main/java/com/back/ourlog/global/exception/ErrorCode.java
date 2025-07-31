@@ -30,6 +30,9 @@ public enum ErrorCode {
     GENRE_NOT_FOUND("GENRE_001", "존재하지 않는 장르입니다."),
     OTT_NOT_FOUND("OTT_001", "존재하지 않는 OTT입니다."),
 
+    // 댓글 관련
+    COMMENT_NOT_FOUND("COMMENT_001", "존재하지 않는 댓글입니다."),
+
     // 서버/시스템 관련 (HTTP 500)
     SERVER_ERROR("SERVER_500", "서버 내부 오류가 발생했습니다."),
     DATABASE_ERROR("SERVER_501", "데이터베이스 오류가 발생했습니다."),

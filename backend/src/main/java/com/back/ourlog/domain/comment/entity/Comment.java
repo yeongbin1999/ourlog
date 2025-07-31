@@ -42,4 +42,8 @@ public class Comment {
         this.content = content;
         this.diary = diary;
     }
+
+    public void update(String content) {
+        this.content = content;
+    }
 }
