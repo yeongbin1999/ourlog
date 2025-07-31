@@ -137,4 +137,27 @@ class CommentControllerTest {
         Comment comment = commentRepository.findById(1).get();
         assertThat(comment.getContent()).isEqualTo("안녕하시렵니까?");
     }
+
+    @Test
+    @DisplayName("댓글 수정 - 존재하지 않는 댓글 ID")
+    void t6() throws Exception {
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", 1000000);
+        data.put("content", "안녕하시렵니까?");
+
+        String json = objectMapper.writeValueAsString(data);
+
+        ResultActions resultActions = mvc.perform(
+                put("/api/v1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+        ).andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(CommentController.class))
+                .andExpect(handler().methodName("updateComment"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultCode").value("COMMENT_001"))
+                .andExpect(jsonPath("$.msg").value("존재하지 않는 댓글입니다."));
+    }
 }
