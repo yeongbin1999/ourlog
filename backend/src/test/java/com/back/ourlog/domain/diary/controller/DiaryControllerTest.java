@@ -102,6 +102,8 @@ class DiaryControllerTest {
     @Test
     @DisplayName("감상일기 등록 실패 - 내용 없음")
     void t3() throws Exception {
+        Tag tag = tagRepository.save(new Tag("테스트"));
+
         String body = """
         {
             "title": "제목 있음",
@@ -109,17 +111,17 @@ class DiaryControllerTest {
             "rating": 3.0,
             "isPublic": true,
             "type": "BOOK",
-            "tagIds": [1],
-            "genreIds": [1],
-            "ottIds": [1]
+            "tagIds": [3]
         }
-    """;
+    """.formatted(tag.getId());
 
         mvc.perform(post("/api/v1/diaries")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
+                .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.msg").value("내용을 입력해주세요."));
+                .andExpect(jsonPath("$.msg").value("내용을 입력해주세요."))
+                .andExpect(jsonPath("$.resultCode").value("COMMON_400"));
     }
 
     @Test
