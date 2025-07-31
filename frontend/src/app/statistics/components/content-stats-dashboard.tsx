@@ -1,17 +1,12 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { Calendar, BarChart3, Star, CalendarIcon } from "lucide-react"
+import { Calendar, BarChart3, Star } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
-import { Line, LineChart, Pie, PieChart, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
-import { Button } from "@/components/ui/button"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { format } from "date-fns"
-import { ko } from "date-fns/locale"
+import { Line, LineChart, Pie, PieChart, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, TooltipProps } from "recharts"
 
 
 const BASE_URL = "http://localhost:8080/api/v1/statistics";
@@ -331,8 +326,6 @@ function convertOttLineGraphToChartData(lineGraph: OttLineGraphDto[]): ChartData
 
 export default function Component() {
     const [selectedPeriod, setSelectedPeriod] = useState("전체")
-    const [startDate, setStartDate] = useState<Date>()
-    const [endDate, setEndDate] = useState<Date>()
     const [activeTab, setActiveTab] = useState("overview")
     const [card, setCard] = useState<StatisticsCardDto | null>(null);
     const [monthlyDiary, setMonthlyDiary] = useState<MonthlyDiaryCount[]>([]);
@@ -566,9 +559,9 @@ export default function Component() {
       return { chartData, ranking, colors: dynamicOttColors };
     }, [ottGraph]);
 
-const CustomTooltip = ({ active, payload, label, highlightedLine }: any) => {
+const CustomTooltip = ({ active, payload, label, highlightedLine }: TooltipProps<number, string> & { highlightedLine: string | null }) => {
   if (active && payload && payload.length && highlightedLine) {
-    const data = payload.find((p: any) => p.dataKey === highlightedLine);
+    const data = payload.find((p) => p.dataKey === highlightedLine);
     if (!data) return null;
 
     return (
@@ -771,7 +764,7 @@ const CustomTooltip = ({ active, payload, label, highlightedLine }: any) => {
                                                     {getTimeData.typeData.length > 0 &&
                                                         Object.keys(getTimeData.typeData[0])
                                                             .filter((key) => key !== "period")
-                                                            .map((type, idx) => (
+                                                            .map((type) => (
                                                                 <Line
                                                                     key={type}
                                                                     type="monotone"
@@ -867,7 +860,7 @@ const CustomTooltip = ({ active, payload, label, highlightedLine }: any) => {
                                                     {getGenreData.chartData.length > 0 &&
                                                         Object.keys(getGenreData.chartData[0])
                                                             .filter((key) => key !== "period")
-                                                            .map((genre, idx) => (
+                                                            .map((genre) => (
                                                                 <Line
                                                                     key={genre}
                                                                     type="monotone"
@@ -961,7 +954,7 @@ const CustomTooltip = ({ active, payload, label, highlightedLine }: any) => {
                                                     <Tooltip content={<CustomTooltip highlightedLine={highlightedLine} />} />
                                                     {Object.keys(getEmotionData.chartData[0] ?? {})
                                                         .filter((key) => key !== "period")
-                                                        .map((emotion, idx) => (
+                                                        .map((emotion) => (
                                                             <Line
                                                                 key={emotion}
                                                                 type="monotone"
