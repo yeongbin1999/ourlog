@@ -149,6 +149,20 @@ public class StatisticsService {
         return new EmotionGraphResponse(line, ranking);
     }
 
+    public OttGraphResponse getOttGraph(int userId, PeriodOption period) {
+        LocalDateTime now   = LocalDateTime.now();
+        LocalDateTime start = calculateStart(period, now);
+        LocalDateTime end   = now.plusDays(1);
+
+        List<OttLineGraphDto> line = switch (period) {
+            case LAST_MONTH, LAST_WEEK -> statisticsRepository.findOttLineDaily(userId, start, end);
+            default                    -> statisticsRepository.findOttLineMonthly(userId, start, end);
+        };
+        List<OttRankDto> ranking = statisticsRepository.findOttRanking(userId, start, end);
+
+        return new OttGraphResponse(line, ranking);
+    }
+
     private LocalDateTime calculateStart(PeriodOption period, LocalDateTime now) {
         return switch (period) {
             case THIS_YEAR    -> now.withDayOfYear(1);

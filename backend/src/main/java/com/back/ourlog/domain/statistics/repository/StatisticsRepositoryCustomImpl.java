@@ -246,4 +246,78 @@ public class StatisticsRepositoryCustomImpl implements  StatisticsRepositoryCust
                 ))
                 .toList();
     }
+
+    @Override
+    public List<OttLineGraphDto> findOttLineMonthly(Integer userId, LocalDateTime start, LocalDateTime end) {
+        String sql =
+                "SELECT FORMATDATETIME(d.created_at, 'yyyy-MM') AS axisLabel, o.name AS ottName, COUNT(*) AS cnt " +
+                        "FROM diary d " +
+                        "JOIN diary_ott do ON d.id = do.diary_id " +
+                        "JOIN ott o ON do.ott_id = o.id " +
+                        "WHERE d.user_id = ? AND d.created_at BETWEEN ? AND ? " +
+                        "GROUP BY axisLabel, o.name ORDER BY axisLabel, o.name";
+
+        List<Object[]> rows = em.createNativeQuery(sql)
+                .setParameter(1, userId)
+                .setParameter(2, start)
+                .setParameter(3, end)
+                .getResultList();
+
+        return rows.stream()
+                .map(r -> new OttLineGraphDto(
+                        (String) r[0],
+                        (String) r[1],
+                        ((Number) r[2]).longValue()
+                ))
+                .toList();
+    }
+
+    @Override
+    public List<OttLineGraphDto> findOttLineDaily(Integer userId, LocalDateTime start, LocalDateTime end) {
+        String sql =
+                "SELECT FORMATDATETIME(d.created_at, 'yyyy-MM-dd') AS axisLabel, o.name AS ottName, COUNT(*) AS cnt " +
+                        "FROM diary d " +
+                        "JOIN diary_ott do ON d.id = do.diary_id " +
+                        "JOIN ott o ON do.ott_id = o.id " +
+                        "WHERE d.user_id = ? AND d.created_at BETWEEN ? AND ? " +
+                        "GROUP BY axisLabel, o.name ORDER BY axisLabel, o.name";
+
+        List<Object[]> rows = em.createNativeQuery(sql)
+                .setParameter(1, userId)
+                .setParameter(2, start)
+                .setParameter(3, end)
+                .getResultList();
+
+        return rows.stream()
+                .map(r -> new OttLineGraphDto(
+                        (String) r[0],
+                        (String) r[1],
+                        ((Number) r[2]).longValue()
+                ))
+                .toList();
+    }
+
+    @Override
+    public List<OttRankDto> findOttRanking(Integer userId, LocalDateTime start, LocalDateTime end) {
+        String sql =
+                "SELECT o.name AS ottName, COUNT(*) AS totalCnt " +
+                        "FROM diary d " +
+                        "JOIN diary_ott do ON d.id = do.diary_id " +
+                        "JOIN ott o ON do.ott_id = o.id " +
+                        "WHERE d.user_id = ? AND d.created_at BETWEEN ? AND ? " +
+                        "GROUP BY o.name ORDER BY totalCnt DESC";
+
+        List<Object[]> rows = em.createNativeQuery(sql)
+                .setParameter(1, userId)
+                .setParameter(2, start)
+                .setParameter(3, end)
+                .getResultList();
+
+        return rows.stream()
+                .map(r -> new OttRankDto(
+                        (String) r[0],
+                        ((Number) r[1]).longValue()
+                ))
+                .toList();
+    }
 }

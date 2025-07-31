@@ -48,7 +48,7 @@ public class StatisticsController {
 
     @GetMapping("/genre-graph")
     public ResponseEntity<GenreGraphResponse> getGenreGraph(@RequestParam PeriodOption period) {
-        int userId = 1;
+        int userId = 1; // 임시 값, 실제로는 인증된 사용자 ID를 사용해야 합니다.
         return ResponseEntity.ok(statisticsService.getGenreGraph(userId, period));
     }
 
@@ -56,6 +56,13 @@ public class StatisticsController {
     public ResponseEntity<EmotionGraphResponse> getEmotionGraph(@RequestParam PeriodOption period) {
         int userId = 1; // 임시 값, 실제로는 인증된 사용자 ID를 사용해야 합니다.
         EmotionGraphResponse res = statisticsService.getEmotionGraph(userId, period);
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/ott-graph")
+    public ResponseEntity<OttGraphResponse> getOttGraph(@RequestParam PeriodOption period) {
+        int userId = 1; // 임시 값, 실제로는 인증된 사용자 ID를 사용해야 합니다.
+        OttGraphResponse res = statisticsService.getOttGraph(userId, period);
         return ResponseEntity.ok(res);
     }
 }
