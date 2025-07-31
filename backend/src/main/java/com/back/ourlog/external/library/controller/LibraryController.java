@@ -2,7 +2,7 @@ package com.back.ourlog.external.library.controller;
 
 import com.back.ourlog.external.library.dto.LibraryApiResponseDto;
 import com.back.ourlog.external.library.service.LibraryService;
-import com.back.ourlog.global.rsData.RsData;
+import com.back.ourlog.global.common.dto.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
