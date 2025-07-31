@@ -26,6 +26,7 @@ import com.back.ourlog.domain.tag.repository.TagRepository;
 import com.back.ourlog.domain.tag.service.TagService;
 import com.back.ourlog.domain.user.entity.User;
 import com.back.ourlog.external.common.ContentSearchFacade;
+import com.back.ourlog.external.library.service.LibraryService;
 import com.back.ourlog.global.exception.CustomException;
 import com.back.ourlog.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -49,10 +50,11 @@ public class DiaryService {
     private final GenreService genreService;
     private final OttService ottService;
     private final ContentSearchFacade contentSearchFacade;
+    private final LibraryService libraryService;
 
     public Diary writeWithContentSearch(DiaryWriteRequestDto req, User user) {
         // 외부 콘텐츠 검색
-        ContentSearchResultDto result = contentSearchFacade.search(req.type(), req.title());
+        ContentSearchResultDto result = contentSearchFacade.search(req.type(), req.externalId());
 
         if (result == null || result.externalId() == null) {
             throw new CustomException(ErrorCode.CONTENT_NOT_FOUND);
@@ -78,12 +80,22 @@ public class DiaryService {
             diary.getDiaryTags().add(new DiaryTag(diary, tag));
         });
 
-        // Genre 매핑
-        req.genreIds().forEach(genreId -> {
-            Genre genre = genreRepository.findById(genreId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.GENRE_NOT_FOUND));
-            diary.getDiaryGenres().add(new DiaryGenre(diary, genre));
-        });
+        // Genre 매핑 (외부 API로부터 자동 추출된 장르)
+        if (result.genres() != null) {
+            result.genres().forEach(rawGenre -> {
+                String genreName;
+
+                // BOOK일 때만 KDC 코드 → 장르명 변환
+                if (result.type() == ContentType.BOOK) {
+                    genreName = libraryService.mapKdcToGenre(rawGenre);
+                } else {
+                    genreName = rawGenre; // MOVIE, MUSIC은 그대로 사용
+                }
+
+                Genre genre = genreService.findOrCreateByName(genreName);
+                diary.getDiaryGenres().add(new DiaryGenre(diary, genre));
+            });
+        }
 
         // OTT 매핑
         req.ottIds().forEach(ottId -> {
@@ -93,6 +105,7 @@ public class DiaryService {
         });
 
         return diaryRepository.save(diary);
+
     }
 
     public DiaryResponseDto update(int id, DiaryUpdateRequestDto dto) {
@@ -107,10 +120,11 @@ public class DiaryService {
                 || !oldContent.getType().equals(dto.type());
 
         Content newContent = oldContent;
+        ContentSearchResultDto result = null;
 
         if (contentChanged) {
-            // 외부 API 검색
-            ContentSearchResultDto result = contentSearchFacade.search(dto.type(), dto.title());
+            // 외부 API에서 새 콘텐츠 정보 조회
+            result = contentSearchFacade.search(dto.type(), dto.externalId());
             if (result == null || result.externalId() == null) {
                 throw new CustomException(ErrorCode.CONTENT_NOT_FOUND);
             }
@@ -118,17 +132,49 @@ public class DiaryService {
             // 새 Content 저장 or 조회
             newContent = contentService.saveOrGet(result, dto.type());
             diary.setContent(newContent);
+
+            // 새 장르 추가
+            if (result.genres() != null) {
+                updateGenres(diary, result.genres());
+            }
         }
 
-        // 필드 업데이트
+        // 나머지 필드 업데이트
         diary.update(dto.title(), dto.contentText(), dto.rating(), dto.isPublic());
 
-        // 변경된 연관관계만 처리
+        // 태그 & OTT 갱신
         updateTags(diary, dto.tagIds());
-        updateGenres(diary, dto.genreIds());
         updateOtts(diary, dto.ottIds());
 
         return DiaryResponseDto.from(diary);
+    }
+
+    private void updateGenres(Diary diary, List<String> newGenreNames) {
+        List<DiaryGenre> current = diary.getDiaryGenres();
+        List<String> currentNames = current.stream()
+                .map(dg -> dg.getGenre().getName())
+                .toList();
+
+        // BOOK일 경우 KDC 코드를 장르 이름으로 변환
+        ContentType contentType = diary.getContent().getType();
+        List<String> mappedGenreNames = newGenreNames.stream()
+                .map(name -> contentType == ContentType.BOOK ? libraryService.mapKdcToGenre(name) : name)
+                .toList();
+
+        // 제거할 항목
+        List<DiaryGenre> toRemove = current.stream()
+                .filter(dg -> !mappedGenreNames.contains(dg.getGenre().getName()))
+                .toList();
+        diary.getDiaryGenres().removeAll(toRemove);
+
+        // 추가할 항목
+        List<String> toAdd = mappedGenreNames.stream()
+                .filter(name -> !currentNames.contains(name))
+                .toList();
+        toAdd.forEach(name -> {
+            Genre genre = genreService.findOrCreateByName(name);
+            diary.getDiaryGenres().add(new DiaryGenre(diary, genre));
+        });
     }
 
     private void updateTags(Diary diary, List<Integer> newTagIds) {
@@ -151,27 +197,6 @@ public class DiaryService {
             Tag tag = tagRepository.findById(tagId)
                     .orElseThrow(() -> new CustomException(ErrorCode.TAG_NOT_FOUND));
             diary.getDiaryTags().add(new DiaryTag(diary, tag));
-        });
-    }
-
-    private void updateGenres(Diary diary, List<Integer> newGenreIds) {
-        List<DiaryGenre> current = diary.getDiaryGenres();
-        List<Integer> currentIds = current.stream()
-                .map(dg -> dg.getGenre().getId())
-                .toList();
-
-        List<DiaryGenre> toRemove = current.stream()
-                .filter(dg -> !newGenreIds.contains(dg.getGenre().getId()))
-                .toList();
-        diary.getDiaryGenres().removeAll(toRemove);
-
-        List<Integer> toAdd = newGenreIds.stream()
-                .filter(id -> !currentIds.contains(id))
-                .toList();
-        toAdd.forEach(id -> {
-            Genre genre = genreRepository.findById(id)
-                    .orElseThrow(() -> new CustomException(ErrorCode.GENRE_NOT_FOUND));
-            diary.getDiaryGenres().add(new DiaryGenre(diary, genre));
         });
     }
 
@@ -203,7 +228,11 @@ public class DiaryService {
                 .map(diaryTag -> diaryTag.getTag().getName())
                 .toList();
 
-        return new DiaryDetailDto(diary, TagNames);
+        List<String> genreNames = diary.getDiaryGenres().stream()
+                .map(dg -> dg.getGenre().getName())
+                .toList();
+
+        return new DiaryDetailDto(diary, TagNames, genreNames);
     }
 
     public void delete(int diaryId) {

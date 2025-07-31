@@ -66,6 +66,7 @@ class DiaryServiceTest {
                 true,
                 4.0F,
                 ContentType.MOVIE,
+                "library-9788954616515",
                 List.of(tag1.getId(), tag2.getId()),
                 List.of(), // genre
                 List.of()  // ott
@@ -105,6 +106,7 @@ class DiaryServiceTest {
                 true,
                 4.0F,
                 ContentType.MOVIE,
+                "library-9788954616515",
                 List.of(dummyTag.getId()),
                 List.of(genre1.getId(), genre2.getId()),
                 List.of()
@@ -137,6 +139,7 @@ class DiaryServiceTest {
                 true,
                 4.0F,
                 ContentType.MOVIE,
+                "library-9788954616515",
                 List.of(dummyTag.getId()),
                 List.of(), // genre
                 List.of(ott1.getId(), ott2.getId())

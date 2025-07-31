@@ -23,6 +23,9 @@ public record DiaryWriteRequestDto(
         @NotNull
         ContentType type,
 
+        @NotBlank(message = "콘텐츠 식별자(externalId)는 필수입니다.")
+        String externalId,
+
         @NotEmpty(message = "태그는 하나 이상 선택해야 합니다.")
         List<@NotNull Integer> tagIds,
 
@@ -39,6 +42,7 @@ public record DiaryWriteRequestDto(
                 true,
                 4.5F,
                 ContentType.MOVIE,
+                "externalId",
                 List.of(1, 2),
                 List.of(1, 2),
                 List.of(1, 2)

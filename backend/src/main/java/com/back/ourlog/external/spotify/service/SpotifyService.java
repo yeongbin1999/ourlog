@@ -9,30 +9,42 @@ import com.back.ourlog.external.spotify.dto.TrackItem;
 import com.back.ourlog.global.exception.CustomException;
 import com.back.ourlog.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SpotifyService {
 
     private final SpotifyClient spotifyClient;
 
-    public ContentSearchResultDto searchMusicByExactTitle(String title) {
-        SpotifySearchResponse response = spotifyClient.searchTrack(title);
+    public ContentSearchResultDto searchMusicByExternalId(String externalId) {
+        try {
+            String id = externalId.replace("spotify-", "");
+            TrackItem track = spotifyClient.getTrackById(id); // Spotify 단건 조회 API
 
-        return response.getTracks().getItems().stream()
-                .filter(track -> track.getName().equalsIgnoreCase(title))
-                .findFirst()
-                .map(this::toContentSearchResult)
-                .orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+            if (track == null || track.getArtists() == null || track.getArtists().isEmpty()) {
+                throw new CustomException(ErrorCode.CONTENT_NOT_FOUND);
+            }
+
+            String artistId = track.getArtists().get(0).getId();
+            List<String> genres = Optional.ofNullable(spotifyClient.fetchGenresByArtistId(artistId))
+                    .orElse(new ArrayList<>());
+
+            return toContentSearchResult(track, genres);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.CONTENT_NOT_FOUND);
+        }
     }
 
-    private ContentSearchResultDto toContentSearchResult(TrackItem trackItem) {
+    private ContentSearchResultDto toContentSearchResult(TrackItem trackItem, List<String> genres) {
         String creatorName = trackItem.getArtists().get(0).getName();
         String posterUrl = trackItem.getAlbum().getImages().isEmpty() ? null : trackItem.getAlbum().getImages().get(0).getUrl();
         String releaseDate = trackItem.getAlbum().getReleaseDate();
@@ -43,13 +55,14 @@ public class SpotifyService {
         } catch (Exception ignored) {}
 
         return new ContentSearchResultDto(
-                trackItem.getId(),
+                "spotify-" + trackItem.getId(),
                 trackItem.getName(),
                 creatorName,
                 null,
                 posterUrl,
                 releasedAt,
-                ContentType.MUSIC
+                ContentType.MUSIC,
+                genres
         );
     }
 }

@@ -19,23 +19,15 @@ public class ContentSearchFacade {
     private final TmdbService tmdbService;
     private final LibraryService libraryService;
 
-    public ContentSearchResultDto search(ContentType type, String title) {
+    public ContentSearchResultDto search(ContentType type, String externalId) {
         try {
-            if (type == ContentType.MUSIC) {
-                return spotifyService.searchMusicByExactTitle(title);
-
-            } else if (type == ContentType.MOVIE) {
-                return tmdbService.searchMovieByExactTitle(title);
-
-            } else if (type == ContentType.BOOK) {
-                return libraryService.searchBookByExactTitle(title);
-
-            } else {
-                throw new CustomException(ErrorCode.CONTENT_NOT_FOUND);
-            }
-
+            return switch (type) {
+                case MUSIC -> spotifyService.searchMusicByExternalId(externalId);
+                case MOVIE -> tmdbService.searchMovieByExternalId(externalId);
+                case BOOK -> libraryService.searchBookByExternalId(externalId);
+            };
         } catch (Exception e) {
-            throw new RuntimeException("콘텐츠 검색 중 오류 발생", e);
+            throw new RuntimeException("externalId로 콘텐츠 검색 중 오류 발생", e);
         }
     }
 

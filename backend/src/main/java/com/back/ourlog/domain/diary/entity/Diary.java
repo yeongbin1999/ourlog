@@ -88,6 +88,10 @@ public class Diary {
         this.content = content;
     }
 
+    public void clearGenres() {
+        this.getDiaryGenres().clear();
+    }
+
     public Comment addComment(User user, String content) {
         Comment comment = new Comment(this, user, content);
         comments.add(comment);

@@ -170,6 +170,7 @@ class DiaryControllerTest {
                 true,
                 3.5F,
                 ContentType.MOVIE,
+                "library-9788954616515",
                 List.of(tag1.getId()), // 최초엔 tag1만
                 List.of(),
                 List.of()
