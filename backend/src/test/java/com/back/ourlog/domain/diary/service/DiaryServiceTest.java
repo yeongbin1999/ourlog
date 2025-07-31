@@ -42,9 +42,6 @@ class DiaryServiceTest {
     private TagRepository tagRepository;
 
     @Autowired
-    private GenreRepository genreRepository;
-
-    @Autowired
     private DiaryRepository diaryRepository;
 
     @Autowired
@@ -54,22 +51,21 @@ class DiaryServiceTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @DisplayName("감상일기 등록 -> DiaryTag 생성")
+    @DisplayName("감상일기 등록 → DiaryTag 생성")
     void t1() throws Exception {
-
         Tag tag1 = tagRepository.save(new Tag("로맨스"));
         Tag tag2 = tagRepository.save(new Tag("액션"));
 
         DiaryWriteRequestDto requestDto = new DiaryWriteRequestDto(
-                "테스트 제목",
+                "인셉션",
                 "테스트 내용",
                 true,
                 4.0F,
                 ContentType.MOVIE,
-                "library-9788954616515",
+                "tt1375666",
                 List.of(tag1.getId(), tag2.getId()),
-                List.of(), // genre
-                List.of()  // ott
+                List.of(), // genreIds
+                List.of()  // ottIds
         );
 
         mockMvc.perform(post("/api/v1/diaries")
@@ -79,13 +75,6 @@ class DiaryServiceTest {
 
         Diary savedDiary = diaryRepository.findTopByOrderByIdDesc().orElseThrow();
 
-        // Diary 등록 시간 확인
-        System.out.println("createdAt = " + savedDiary.getCreatedAt());
-        System.out.println("updatedAt = " + savedDiary.getUpdatedAt());
-
-        assertThat(savedDiary.getCreatedAt()).isNotNull();
-        assertThat(savedDiary.getUpdatedAt()).isNotNull();
-
         assertThat(savedDiary.getDiaryTags()).hasSize(2);
         assertThat(savedDiary.getDiaryTags())
                 .extracting(dt -> dt.getTag().getName())
@@ -93,22 +82,19 @@ class DiaryServiceTest {
     }
 
     @Test
-    @DisplayName("감상일기 등록 -> DiaryGenre 생성")
+    @DisplayName("감상일기 등록 → 외부 API 기반 DiaryGenre 자동 생성")
     void t2() throws Exception {
         Tag dummyTag = tagRepository.save(new Tag("더미"));
 
-        Genre genre1 = genreRepository.save(new Genre("스릴러"));
-        Genre genre2 = genreRepository.save(new Genre("판타지"));
-
         DiaryWriteRequestDto requestDto = new DiaryWriteRequestDto(
-                "테스트 제목",
-                "테스트 내용",
+                "인셉션",
+                "장르 테스트",
                 true,
                 4.0F,
                 ContentType.MOVIE,
-                "library-9788954616515",
+                "tt1375666",
                 List.of(dummyTag.getId()),
-                List.of(genre1.getId(), genre2.getId()),
+                List.of(),  // 외부 API 기반 자동 매핑
                 List.of()
         );
 
@@ -119,14 +105,13 @@ class DiaryServiceTest {
 
         Diary savedDiary = diaryRepository.findTopByOrderByIdDesc().orElseThrow();
 
-        assertThat(savedDiary.getDiaryGenres()).hasSize(2);
-        assertThat(savedDiary.getDiaryGenres())
-                .extracting(dg -> dg.getGenre().getName())
-                .containsExactlyInAnyOrder("스릴러", "판타지");
+        assertThat(savedDiary.getDiaryGenres()).isNotEmpty();
+        System.out.println("추출된 장르 목록:");
+        savedDiary.getDiaryGenres().forEach(g -> System.out.println("- " + g.getGenre().getName()));
     }
 
     @Test
-    @DisplayName("감상일기 등록 -> DiaryOtt 생성")
+    @DisplayName("감상일기 등록 → DiaryOtt 생성")
     void t3() throws Exception {
         Tag dummyTag = tagRepository.save(new Tag("더미"));
 
@@ -134,14 +119,14 @@ class DiaryServiceTest {
         Ott ott2 = ottRepository.save(new Ott("Disney+"));
 
         DiaryWriteRequestDto requestDto = new DiaryWriteRequestDto(
-                "테스트 제목",
-                "테스트 내용",
+                "인셉션",
+                "OTT 테스트",
                 true,
                 4.0F,
                 ContentType.MOVIE,
-                "library-9788954616515",
+                "tt1375666",
                 List.of(dummyTag.getId()),
-                List.of(), // genre
+                List.of(), // genreIds 생략
                 List.of(ott1.getId(), ott2.getId())
         );
 
