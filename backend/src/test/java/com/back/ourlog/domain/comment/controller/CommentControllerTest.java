@@ -2,6 +2,7 @@ package com.back.ourlog.domain.comment.controller;
 
 import com.back.ourlog.domain.comment.entity.Comment;
 import com.back.ourlog.domain.comment.repository.CommentRepository;
+import com.back.ourlog.domain.diary.repository.DiaryRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,8 @@ class CommentControllerTest {
     private ObjectMapper objectMapper;
     @Autowired
     private CommentRepository commentRepository;
+    @Autowired
+    private DiaryRepository diaryRepository;
     @Test
     @DisplayName("댓글 작성")
     void t1() throws Exception {
@@ -181,5 +184,9 @@ class CommentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultCode").value("200-0"))
                 .andExpect(jsonPath("$.msg").value("1번 댓글이 삭제되었습니다."));
+
+        // 1번 댓글이 실제로 사라졌는지 확인
+        Comment comment = commentRepository.findById(1).get();
+        assertThat(comment).isNull();
     }
 }
