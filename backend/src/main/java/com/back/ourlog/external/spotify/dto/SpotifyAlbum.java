@@ -10,12 +10,10 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TrackItem {
-    private String id;
-    private String name;
-    private List<SpotifyArtist> artists;
-    private SpotifyAlbum album;
+public class SpotifyAlbum {
 
-    @JsonProperty("external_urls")
-    private ExternalUrls externalUrls;
+    @JsonProperty("release_date")
+    private String releaseDate;
+
+    private List<SpotifyImage> images;
 }

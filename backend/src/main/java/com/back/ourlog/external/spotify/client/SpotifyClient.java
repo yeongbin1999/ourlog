@@ -2,6 +2,8 @@ package com.back.ourlog.external.spotify.client;
 
 import com.back.ourlog.external.spotify.dto.SpotifySearchResponse;
 import com.back.ourlog.external.spotify.dto.SpotifyTokenResponse;
+import com.back.ourlog.external.spotify.dto.TrackItem;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,8 @@ import org.springframework.web.util.UriUtils;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -40,22 +44,31 @@ public class SpotifyClient {
     }
 
     public SpotifySearchResponse searchTrack(String keyword) {
-        // 만료 시각 선제 체크
+        // 만료 시 토큰 갱신
         if (tokenExpireAt == null || LocalDateTime.now().isAfter(tokenExpireAt)) {
             log.info("Spotify accessToken 만료됨. 선제 갱신.");
             updateAccessToken();
         }
 
         try {
-            return requestSpotify(keyword);
+            SpotifySearchResponse response = requestSpotify(keyword);
+            return response;
         } catch (HttpClientErrorException.Unauthorized e) {
-            log.warn("갱신했지만 여전히 Unauthorized. 강제 갱신 후 재시도.");
-            updateAccessToken(); // 만료 정보가 틀렸을 경우 재갱신
+            log.warn("Unauthorized 발생. 강제 갱신 후 재시도.");
+            updateAccessToken();
             return requestSpotify(keyword);
         } catch (Exception e) {
             log.error("Spotify 응답 파싱 실패", e);
             throw new RuntimeException("Spotify API 응답 파싱 실패");
         }
+    }
+
+    private String getAccessToken() {
+        // 토큰이 없거나 만료되었으면 갱신
+        if (accessToken == null || tokenExpireAt == null || LocalDateTime.now().isAfter(tokenExpireAt)) {
+            updateAccessToken();
+        }
+        return accessToken;
     }
 
     private void updateAccessToken() {
@@ -112,4 +125,68 @@ public class SpotifyClient {
 
         return response.getBody();
     }
+
+    public List<String> fetchGenresByArtistId(String artistId) {
+        String url = "https://api.spotify.com/v1/artists/" + artistId;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(getAccessToken());
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    request,
+                    Map.class
+            );
+
+            List<String> genres = (List<String>) response.getBody().get("genres");
+            return genres != null ? genres : List.of();
+
+        } catch (HttpClientErrorException.Unauthorized e) {
+            updateAccessToken();
+
+            // 재시도
+            headers.setBearerAuth(getAccessToken());
+            request = new HttpEntity<>(headers);
+
+            ResponseEntity<Map> retry = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    request,
+                    Map.class
+            );
+
+            List<String> genres = (List<String>) retry.getBody().get("genres");
+            return genres != null ? genres : List.of();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Spotify 아티스트 장르 조회 중 오류 발생", e);
+        }
+    }
+
+    public TrackItem getTrackById(String id) {
+        String url = "https://api.spotify.com/v1/tracks/%s".formatted(id);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(getAccessToken());
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    url, HttpMethod.GET, entity, Map.class
+            );
+
+            Map<String, Object> body = response.getBody();
+
+            // 필요한 필드만 파싱해서 TrackItem 객체로 변환
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.convertValue(body, TrackItem.class);
+
+        } catch (HttpClientErrorException e) {
+            throw new RuntimeException("Spotify 트랙 조회 중 오류 발생", e);
+        }
+    }
+
 }

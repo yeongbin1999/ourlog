@@ -28,7 +28,7 @@ public class DiaryController {
     public ResponseEntity<RsData<DiaryResponseDto>> writeDiary(
             @Valid @RequestBody DiaryWriteRequestDto req
     ) {
-        Diary diary = diaryService.write(req, null); // TODO: 유저 인증 붙으면 'null' 대신 유저 넘기기
+        Diary diary = diaryService.writeWithContentSearch(req, null); // TODO: 유저 인증 붙으면 'null' 대신 유저 넘기기
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(RsData.of("201-1", "감상일기가 등록되었습니다.", DiaryResponseDto.from(diary)));
