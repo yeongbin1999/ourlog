@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { Diary, DiaryInfoProps, Comment, Content } from "../types/detail";
 import { FaStar, FaRegStar } from "react-icons/fa"; // 꽉 찬 별, 빈 별
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 {
   /* 페이지 타이틀 */
 }
@@ -29,9 +30,11 @@ function ContentInfo({ content }: { content: Content }) {
         <div className="w-full md:w-1/2">
           <div className="aspect-[16/9] bg-gray-200 rounded-lg shadow-sm flex items-center justify-center text-gray-400 text-lg overflow-hidden">
             {content.posterUrl ? (
-              <img
+              <Image
                 src={content.posterUrl}
                 alt="포스터 이미지"
+                width={1600}
+                height={900}
                 className="w-full h-full object-cover rounded-lg"
               />
             ) : (
@@ -185,7 +188,6 @@ export default function Page() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState<Content | null>(null);
-  const router = useRouter();
   const { diaryId } = useParams();
 
   useEffect(() => {

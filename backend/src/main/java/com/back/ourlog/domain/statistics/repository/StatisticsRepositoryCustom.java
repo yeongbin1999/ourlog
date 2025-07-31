@@ -21,4 +21,19 @@ public interface StatisticsRepositoryCustom {
     List<EmotionLineGraphDto> findEmotionLineMonthly(Integer userId, LocalDateTime start, LocalDateTime end);
     List<EmotionLineGraphDto> findEmotionLineDaily(Integer userId, LocalDateTime start, LocalDateTime end);
     List<EmotionRankDto> findEmotionRanking(Integer userId, LocalDateTime start, LocalDateTime end);
+
+    /**
+     * OTT(또는 장르/감정 등)별 월별 추이
+     */
+    List<OttLineGraphDto> findOttLineMonthly(Integer userId, LocalDateTime start, LocalDateTime end);
+
+    /**
+     * OTT(또는 장르/감정 등)별 일별 추이
+     */
+    List<OttLineGraphDto> findOttLineDaily(Integer userId, LocalDateTime start, LocalDateTime end);
+
+    /**
+     * OTT(또는 장르/감정 등)별 순위
+     */
+    List<OttRankDto> findOttRanking(Integer userId, LocalDateTime start, LocalDateTime end);
 }
