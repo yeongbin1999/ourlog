@@ -14,12 +14,14 @@ public class DiaryDetailDto {
     private String contentText;
     private List<String> tagNames;
     private List<String> genreNames;
+    private List<String> ottNames;
 
-    public DiaryDetailDto(Diary diary, List<String> tagNames, List<String> genreNames) {
+    public DiaryDetailDto(Diary diary, List<String> tagNames, List<String> genreNames, List<String> ottNames) {
         this.title = diary.getTitle();
         this.rating = diary.getRating();
         this.contentText = diary.getContentText();
         this.tagNames = tagNames;
         this.genreNames = genreNames;
+        this.ottNames = ottNames;
     }
 }

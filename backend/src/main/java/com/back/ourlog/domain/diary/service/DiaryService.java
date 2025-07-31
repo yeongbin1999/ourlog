@@ -41,14 +41,10 @@ import java.util.List;
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
-    private final ContentRepository contentRepository;
     private final ContentService contentService;
     private final TagRepository tagRepository;
-    private final GenreRepository genreRepository;
     private final OttRepository ottRepository;
-    private final TagService tagService;
     private final GenreService genreService;
-    private final OttService ottService;
     private final ContentSearchFacade contentSearchFacade;
     private final LibraryService libraryService;
 
@@ -97,12 +93,14 @@ public class DiaryService {
             });
         }
 
-        // OTT 매핑
-        req.ottIds().forEach(ottId -> {
-            Ott ott = ottRepository.findById(ottId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.OTT_NOT_FOUND));
-            diary.getDiaryOtts().add(new DiaryOtt(diary, ott));
-        });
+        // OTT 매핑 (MOVIE일 때만 처리)
+        if (req.ottIds() != null && req.type() == ContentType.MOVIE) {
+            req.ottIds().forEach(ottId -> {
+                Ott ott = ottRepository.findById(ottId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.OTT_NOT_FOUND));
+                diary.getDiaryOtts().add(new DiaryOtt(diary, ott));
+            });
+        }
 
         return diaryRepository.save(diary);
 
@@ -201,6 +199,12 @@ public class DiaryService {
     }
 
     private void updateOtts(Diary diary, List<Integer> newOttIds) {
+        // 영화가 아닐 경우 저장 안함
+        if (diary.getContent().getType() != ContentType.MOVIE || newOttIds == null) {
+            diary.getDiaryOtts().clear(); // 기존 OTT 모두 제거 (없애야 정합성 유지됨)
+            return;
+        }
+
         List<DiaryOtt> current = diary.getDiaryOtts();
         List<Integer> currentIds = current.stream()
                 .map(doo -> doo.getOtt().getId())
@@ -224,7 +228,7 @@ public class DiaryService {
     public DiaryDetailDto getDiaryDetail(int diaryId) {
         Diary diary = diaryRepository.findById(diaryId).orElseThrow();
 
-        List<String> TagNames = diary.getDiaryTags().stream()
+        List<String> tagNames = diary.getDiaryTags().stream()
                 .map(diaryTag -> diaryTag.getTag().getName())
                 .toList();
 
@@ -232,7 +236,11 @@ public class DiaryService {
                 .map(dg -> dg.getGenre().getName())
                 .toList();
 
-        return new DiaryDetailDto(diary, TagNames, genreNames);
+        List<String> ottNames = diary.getDiaryOtts().stream()
+                .map(doo -> doo.getOtt().getName())
+                .toList();
+
+        return new DiaryDetailDto(diary, tagNames, genreNames, ottNames);
     }
 
     public void delete(int diaryId) {
