@@ -3,9 +3,11 @@ package com.back.ourlog.domain.comment.controller;
 import com.back.ourlog.domain.comment.dto.CommentRequestDto;
 import com.back.ourlog.domain.comment.dto.CommentResponseDto;
 import com.back.ourlog.domain.comment.service.CommentService;
-import com.back.ourlog.global.rsData.RsData;
+import com.back.ourlog.global.common.dto.RsData;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +17,12 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/comments")
-@Log4j2
+@Tag(name = "댓글 API")
 public class CommentController {
     private final CommentService commentService;
     @PostMapping
-    public ResponseEntity<RsData<CommentResponseDto>> writeComment(@RequestBody CommentRequestDto req) {
+    @Operation(summary = "댓글 등록")
+    public ResponseEntity<RsData<CommentResponseDto>> writeComment(@RequestBody @Valid CommentRequestDto req) {
         // 테스트 ver (우선 User가 있다고 가정)
         CommentResponseDto res = commentService.write(req.getDiaryId(),null, req.getContent());
 
@@ -28,6 +31,7 @@ public class CommentController {
     }
 
     @GetMapping("/{diaryId}")
+    @Operation(summary = "댓글 조회")
     public ResponseEntity<RsData<List<CommentResponseDto>>> getComments(@PathVariable("diaryId") int diaryId) {
         List<CommentResponseDto> res = commentService.getComments(diaryId);
 

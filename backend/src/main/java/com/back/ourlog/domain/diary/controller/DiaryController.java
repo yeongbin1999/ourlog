@@ -6,7 +6,7 @@ import com.back.ourlog.domain.diary.dto.DiaryUpdateRequestDto;
 import com.back.ourlog.domain.diary.dto.DiaryWriteRequestDto;
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.diary.service.DiaryService;
-import com.back.ourlog.global.rsData.RsData;
+import com.back.ourlog.global.common.dto.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -36,6 +36,7 @@ public class DiaryController {
     }
 
     @GetMapping("/{diaryId}")
+    @Operation(summary = "감상일기 조회", description = "감상일기를 조회합니다.")
     public ResponseEntity<RsData<DiaryDetailDto>> getDiary(@PathVariable("diaryId") int diaryId) {
         DiaryDetailDto diaryDetailDto = diaryService.getDiaryDetail(diaryId);
 

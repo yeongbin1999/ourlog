@@ -4,7 +4,6 @@ import com.back.ourlog.domain.content.entity.ContentType;
 import com.back.ourlog.domain.diary.dto.DiaryWriteRequestDto;
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.diary.repository.DiaryRepository;
-
 import com.back.ourlog.domain.genre.entity.Genre;
 import com.back.ourlog.domain.genre.repository.GenreRepository;
 import com.back.ourlog.domain.ott.entity.Ott;
@@ -12,7 +11,6 @@ import com.back.ourlog.domain.ott.repository.OttRepository;
 import com.back.ourlog.domain.tag.entity.Tag;
 import com.back.ourlog.domain.tag.repository.TagRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -137,28 +132,8 @@ class DiaryControllerTest {
     }
 
     @Test
-    @DisplayName("감성일기 조회")
-    @Transactional(readOnly = true)
-    void t4() throws Exception {
-        int id = 1;
-        ResultActions resultActions = mvc.perform(
-                get("/api/v1/diaries/" + id)
-        ).andDo(print());
-
-
-        resultActions
-                .andExpect(handler().handlerType(DiaryController.class))
-                .andExpect(handler().methodName("getDiary"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.title").value("다이어리 1"))
-                .andExpect(jsonPath("$.data.rating").value(3.0))
-                .andExpect(jsonPath("$.data.contentText").value("이것은 다이어리 1의 본문 내용입니다."))
-                .andExpect(jsonPath("$.data.tagNames[0]").isNotEmpty());
-    }
-
-    @Test
     @DisplayName("감상일기 수정 성공")
-    void t5() throws Exception {
+    void t4() throws Exception {
         Tag tag1 = tagRepository.save(new Tag("로맨스"));
         Tag tag2 = tagRepository.save(new Tag("액션"));
         Genre genre = genreRepository.save(new Genre("스릴러"));
@@ -232,7 +207,7 @@ class DiaryControllerTest {
 
     @Test
     @DisplayName("감상일기 수정 실패 - 존재하지 않는 태그 ID")
-    void t6() throws Exception {
+    void t5() throws Exception {
         int id = 1;
 
         String body = """
@@ -261,7 +236,7 @@ class DiaryControllerTest {
 
     @Test
     @DisplayName("감상일기 수정 실패 - 존재하지 않는 장르 ID")
-    void t7() throws Exception {
+    void t6() throws Exception {
         String body = """
         {
             "title": "다이어리",
@@ -286,7 +261,7 @@ class DiaryControllerTest {
 
     @Test
     @DisplayName("감상일기 수정 실패 - 존재하지 않는 OTT ID")
-    void t8() throws Exception {
+    void t7() throws Exception {
         String body = """
         {
             "title": "다이어리",
@@ -311,7 +286,7 @@ class DiaryControllerTest {
 
     @DisplayName("감상일기 삭제 성공")
     @Test
-    void t9() throws Exception {
+    void t8() throws Exception {
         int id = 1;
         mvc.perform(delete("/api/v1/diaries/" + id))
                 .andDo(print())
@@ -322,7 +297,7 @@ class DiaryControllerTest {
 
     @DisplayName("감상일기 삭제 실패 - 존재하지 않는 ID")
     @Test
-    void t10() throws Exception {
+    void t9() throws Exception {
         int id = 9999;
         mvc.perform(delete("/api/v1/diaries/" + id))
                 .andDo(print())
@@ -331,4 +306,40 @@ class DiaryControllerTest {
                 .andExpect(jsonPath("$.msg").value("존재하지 않는 다이어리입니다."));
     }
 
+    @Test
+    @DisplayName("감성일기 조회 성공")
+    @Transactional(readOnly = true)
+    void t10() throws Exception {
+        int id = 1;
+        ResultActions resultActions = mvc.perform(
+                get("/api/v1/diaries/" + id)
+        ).andDo(print());
+
+
+        resultActions
+                .andExpect(handler().handlerType(DiaryController.class))
+                .andExpect(handler().methodName("getDiary"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.title").value("다이어리 1"))
+                .andExpect(jsonPath("$.data.rating").value(3.0))
+                .andExpect(jsonPath("$.data.contentText").value("이것은 다이어리 1의 본문 내용입니다."))
+                .andExpect(jsonPath("$.data.tagNames[0]").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("감성일기 조회 실패")
+    @Transactional(readOnly = true)
+    void t11() throws Exception {
+        int id = 100000;
+        ResultActions resultActions = mvc.perform(
+                get("/api/v1/diaries/" + id)
+        ).andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(DiaryController.class))
+                .andExpect(handler().methodName("getDiary"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultCode").value("DIARY_001"))
+                .andExpect(jsonPath("$.msg").value("존재하지 않는 다이어리입니다."));
+    }
 }

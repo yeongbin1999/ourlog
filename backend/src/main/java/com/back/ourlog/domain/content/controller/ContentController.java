@@ -2,9 +2,10 @@ package com.back.ourlog.domain.content.controller;
 
 import com.back.ourlog.domain.content.dto.ContentResponseDto;
 import com.back.ourlog.domain.content.service.ContentService;
-import com.back.ourlog.global.rsData.RsData;
+import com.back.ourlog.global.common.dto.RsData;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,11 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/contents")
 @RequiredArgsConstructor
-@Log4j2
+@Tag(name = "컨텐츠 API")
 public class ContentController {
     private final ContentService contentService;
 
     @GetMapping("/{diaryId}")
+    @Operation(summary = "컨텐츠 조회")
     public ResponseEntity<RsData<ContentResponseDto>> getContent(@PathVariable("diaryId") int diaryId) {
         ContentResponseDto res = contentService.getContent(diaryId);
 

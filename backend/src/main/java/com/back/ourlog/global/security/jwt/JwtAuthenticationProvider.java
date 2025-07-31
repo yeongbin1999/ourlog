@@ -1,7 +1,7 @@
-package com.back.ourlog.global.security.authentication;
+package com.back.ourlog.global.security.jwt;
 
 import com.back.ourlog.global.exception.ErrorCode;
-import com.back.ourlog.global.security.CustomUserDetailsService;
+import com.back.ourlog.global.security.service.CustomUserDetailsService;
 import com.back.ourlog.global.security.exception.JwtAuthenticationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -26,7 +26,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         }
 
         String userId = jwtTokenProvider.getUserIdFromToken(token);
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(userId);
+        UserDetails userDetails = customUserDetailsService.loadUserById(userId);
 
         return new JwtAuthenticationToken(userDetails, userDetails.getAuthorities());
     }

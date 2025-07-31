@@ -60,6 +60,7 @@ public class StatisticsService {
     }
 
     /** 특정 회원의 최근 6개월 월 별 감상 수 조회 */
+    @Transactional(readOnly = true)
     public List<MonthlyDiaryCount> getLast6MonthsDiaryCountsByUser(Integer userId) {
         // 6개월 전 첫날
         LocalDate now = LocalDate.now();
@@ -83,6 +84,7 @@ public class StatisticsService {
     }
 
     /** 특정 회원의 콘텐츠 타입 분포 조회 */
+    @Transactional(readOnly = true)
     public List<TypeCountDto> getTypeDistributionByUser(int userId) {
         return statisticsRepository.findTypeCountsByUserId(userId)
                 .filter(list -> !list.isEmpty())  // 값 있으면 그대로 반환
@@ -90,6 +92,7 @@ public class StatisticsService {
     }
 
     /** 특정 회원의 콘텐츠 타입 그래프 조회 */
+    @Transactional(readOnly = true)
     public TypeGraphResponse getTypeGraph(TypeGraphRequest req) {
         LocalDateTime now   = LocalDateTime.now();
         LocalDateTime start = calculateStart(req.getPeriod(), now);
@@ -106,6 +109,44 @@ public class StatisticsService {
         }
 
         return new TypeGraphResponse(trend, ranking);
+    }
+
+    /** 특정 회원의 장르 타입 그래프 조회 */
+    @Transactional(readOnly = true)
+    public GenreGraphResponse getGenreGraph(int userId, PeriodOption period) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = calculateStart(period, now);
+        LocalDateTime end = now.plusDays(1);
+
+        List<GenreLineGraphDto> graph;
+        switch (period) {
+            case LAST_MONTH, LAST_WEEK ->
+                    graph = statisticsRepository.findGenreLineDaily(userId, start, end);
+            default ->
+                    graph = statisticsRepository.findGenreLineMonthly(userId, start, end);
+        }
+
+        List<GenreRankDto> ranking = statisticsRepository.findGenreRanking(userId, start, end);
+
+        return new GenreGraphResponse(graph, ranking);
+    }
+
+    public EmotionGraphResponse getEmotionGraph(int userId, PeriodOption period) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = calculateStart(period, now);
+        LocalDateTime end = now.plusDays(1);
+
+        List<EmotionLineGraphDto> line;
+        switch (period) {
+            case LAST_MONTH, LAST_WEEK ->
+                    line = statisticsRepository.findEmotionLineDaily(userId, start, end);
+            default ->
+                    line = statisticsRepository.findEmotionLineMonthly(userId, start, end);
+        }
+
+        List<EmotionRankDto> ranking = statisticsRepository.findEmotionRanking(userId, start, end);
+
+        return new EmotionGraphResponse(line, ranking);
     }
 
     private LocalDateTime calculateStart(PeriodOption period, LocalDateTime now) {

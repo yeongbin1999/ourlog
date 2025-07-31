@@ -1,4 +1,4 @@
-package com.back.ourlog.global.security.authentication;
+package com.back.ourlog.global.security.jwt;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
