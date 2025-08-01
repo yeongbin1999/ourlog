@@ -160,16 +160,6 @@ type OttGraphResponse = {
 };
 
 
-// 월별 데이터 (기본 데이터) - 장르별, 감정별용
-const monthlyGenreData = [
-    { period: "1월", 드라마: 15, 액션: 10, 로맨스: 8, 공포: 7, 코미디: 6 },
-    { period: "2월", 드라마: 14, 액션: 12, 로맨스: 9, 공포: 6, 코미디: 7 },
-    { period: "3월", 드라마: 13, 액션: 11, 로맨스: 10, 공포: 5, 코미디: 8 },
-    { period: "4월", 드라마: 12, 액션: 9, 로맨스: 11, 공포: 4, 코미디: 9 },
-    { period: "5월", 드라마: 11, 액션: 8, 로맨스: 12, 공포: 3, 코미디: 10 },
-    { period: "6월", 드라마: 10, 액션: 7, 로맨스: 13, 공포: 2, 코미디: 11 },
-]
-
 // 타입별 색상 맵 추가
 const typeColors: Record<string, string> = {
   "DRAMA": "#8884d8",
@@ -340,129 +330,10 @@ export default function Component() {
         fetchCard().then(setCard);
         fetchMonthlyDiaryGraph().then(setMonthlyDiary);
         fetchTypeDistribution().then(setTypeDist);
-        fetchTypeGraph(selectedPeriod).then((data) => {
-            console.log("typeGraph API 응답:", data);
-            console.log("typeLineGraph:", data?.typeLineGraph);
-            console.log("typeRanking:", data?.typeRanking);
-            
-            // API 응답이 비어있으면 임시 더미 데이터 사용
-            if (!data || !data.typeLineGraph || data.typeLineGraph.length === 0) {
-                console.log("API 데이터가 비어있어서 더미 데이터 사용");
-                const dummyData = {
-                    typeLineGraph: [
-                        { axisLabel: "2025-01", type: "DRAMA", count: 5 },
-                        { axisLabel: "2025-01", type: "MOVIE", count: 3 },
-                        { axisLabel: "2025-02", type: "DRAMA", count: 7 },
-                        { axisLabel: "2025-02", type: "MOVIE", count: 4 },
-                        { axisLabel: "2025-03", type: "DRAMA", count: 6 },
-                        { axisLabel: "2025-03", type: "MOVIE", count: 8 },
-                    ],
-                    typeRanking: [
-                        { type: "DRAMA", totalCount: 18 },
-                        { type: "MOVIE", totalCount: 15 },
-                        { type: "BOOK", totalCount: 12 },
-                        { type: "MUSIC", totalCount: 10 },
-                    ]
-                };
-                setTypeGraph(dummyData);
-            } else {
-                setTypeGraph(data);
-            }
-        }).catch((error) => {
-            console.error("API 호출 에러:", error);
-            // 에러 발생 시에도 더미 데이터 사용
-            const dummyData = {
-                typeLineGraph: [
-                    { axisLabel: "2025-01", type: "DRAMA", count: 5 },
-                    { axisLabel: "2025-01", type: "MOVIE", count: 3 },
-                    { axisLabel: "2025-02", type: "DRAMA", count: 7 },
-                    { axisLabel: "2025-02", type: "MOVIE", count: 4 },
-                    { axisLabel: "2025-03", type: "DRAMA", count: 6 },
-                    { axisLabel: "2025-03", type: "MOVIE", count: 8 },
-                ],
-                typeRanking: [
-                    { type: "DRAMA", totalCount: 18 },
-                    { type: "MOVIE", totalCount: 15 },
-                    { type: "BOOK", totalCount: 12 },
-                    { type: "MUSIC", totalCount: 10 },
-                ]
-            };
-            setTypeGraph(dummyData);
-        });
-        // 장르별 데이터 fetch
-        fetchGenreGraph(selectedPeriod).then((data) => {
-            if (!data || !data.genreLineGraph || data.genreLineGraph.length === 0) {
-                // 더미 데이터
-                const dummy = {
-                  genreLineGraph: [
-                    { axisLabel: "2025-01", genre: "드라마", count: 10 },
-                    { axisLabel: "2025-01", genre: "액션", count: 5 },
-                    { axisLabel: "2025-02", genre: "드라마", count: 12 },
-                    { axisLabel: "2025-02", genre: "액션", count: 7 },
-                  ],
-                  genreRanking: [
-                    { genre: "드라마", totalCount: 22 },
-                    { genre: "액션", totalCount: 12 },
-                  ]
-                };
-                setGenreGraph(dummy);
-            } else {
-                setGenreGraph(data);
-            }
-        }).catch(() => {
-            // 더미 데이터
-            const dummy = {
-              genreLineGraph: [
-                { axisLabel: "2025-01", genre: "드라마", count: 10 },
-                { axisLabel: "2025-01", genre: "액션", count: 5 },
-                { axisLabel: "2025-02", genre: "드라마", count: 12 },
-                { axisLabel: "2025-02", genre: "액션", count: 7 },
-              ],
-              genreRanking: [
-                { genre: "드라마", totalCount: 22 },
-                { genre: "액션", totalCount: 12 },
-              ]
-            };
-            setGenreGraph(dummy);
-        });
+        fetchTypeGraph(selectedPeriod).then(setTypeGraph);
+        fetchGenreGraph(selectedPeriod).then(setGenreGraph);
         fetchEmotionGraph(selectedPeriod).then(setEmotionGraph);
-        fetchOttGraph(selectedPeriod).then((data) => {
-            if (!data || !data.ottLineGraph || data.ottLineGraph.length === 0) {
-                // Dummy data for OTT
-                const dummy = {
-                    ottLineGraph: [
-                        { axisLabel: "2025-01", ottName: "Netflix", count: 15 },
-                        { axisLabel: "2025-01", ottName: "Tving", count: 10 },
-                        { axisLabel: "2025-02", ottName: "Netflix", count: 18 },
-                        { axisLabel: "2025-02", ottName: "Tving", count: 12 },
-                    ],
-                    ottRanking: [
-                        { ottName: "Netflix", totalCount: 33 },
-                        { ottName: "Tving", totalCount: 22 },
-                        { ottName: "Watcha", totalCount: 15 },
-                    ]
-                };
-                setOttGraph(dummy);
-            } else {
-                setOttGraph(data);
-            }
-        }).catch(() => {
-            // Dummy data on error
-            const dummy = {
-                ottLineGraph: [
-                    { axisLabel: "2025-01", ottName: "Netflix", count: 15 },
-                    { axisLabel: "2025-01", ottName: "Tving", count: 10 },
-                    { axisLabel: "2025-02", ottName: "Netflix", count: 18 },
-                    { axisLabel: "2025-02", ottName: "Tving", count: 12 },
-                ],
-                ottRanking: [
-                    { ottName: "Netflix", totalCount: 33 },
-                    { ottName: "Tving", totalCount: 22 },
-                    { ottName: "Watcha", totalCount: 15 },
-                ]
-            };
-            setOttGraph(dummy);
-        });
+        fetchOttGraph(selectedPeriod).then(setOttGraph);
     }, [selectedPeriod]);
 
     const getTimeData = useMemo(() => {
@@ -682,21 +553,27 @@ const CustomTooltip = ({ active, payload, label, highlightedLine }: TooltipProps
                                     <ChartContainer
                                         className="h-[300px] overflow-hidden"
                                     >
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <LineChart data={monthlyDiary.map(d => ({ period: d.period, 감상수: d.views }))} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="period" />
-                                                <YAxis />
-                                                <ChartTooltip />
-                                                <Line
-                                                    type="monotone"
-                                                    dataKey="감상수"
-                                                    stroke="#3b82f6"
-                                                    strokeWidth={2}
-                                                    dot={{ fill: "#3b82f6" }}
-                                                />
-                                            </LineChart>
-                                        </ResponsiveContainer>
+                                        {monthlyDiary.length === 0 ? (
+                                            <div className="flex items-center justify-center h-full text-gray-400">
+                                                데이터가 없습니다.
+                                            </div>
+                                        ) : (
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <LineChart data={monthlyDiary.map(d => ({ period: d.period, 감상수: d.views }))} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis dataKey="period" />
+                                                    <YAxis />
+                                                    <ChartTooltip />
+                                                    <Line
+                                                        type="monotone"
+                                                        dataKey="감상수"
+                                                        stroke="#3b82f6"
+                                                        strokeWidth={2}
+                                                        dot={{ fill: "#3b82f6" }}
+                                                    />
+                                                </LineChart>
+                                            </ResponsiveContainer>
+                                        )}
                                     </ChartContainer>
                                 </CardContent>
                             </Card>
@@ -710,24 +587,30 @@ const CustomTooltip = ({ active, payload, label, highlightedLine }: TooltipProps
                                     <ChartContainer
                                         className="h-[300px] overflow-hidden"
                                     >
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <PieChart>
-                                                <Pie
-                                                    data={typeDist}
-                                                    cx="50%"
-                                                    cy="50%"
-                                                    outerRadius={80}
-                                                    dataKey="count"
-                                                    nameKey="type"
-                                                    label={({ type, percent }) => `${type} ${(percent * 100).toFixed(0)}%`}
-                                                >
-                                                    {typeDist.map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={`hsl(${index * 50}, 70%, 50%)`} />
-                                                    ))}
-                                                </Pie>
-                                                <ChartTooltip />
-                                            </PieChart>
-                                        </ResponsiveContainer>
+                                        {typeDist.length === 0 ? (
+                                            <div className="flex items-center justify-center h-full text-gray-400">
+                                                데이터가 없습니다.
+                                            </div>
+                                        ) : (
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <PieChart>
+                                                    <Pie
+                                                        data={typeDist}
+                                                        cx="50%"
+                                                        cy="50%"
+                                                        outerRadius={80}
+                                                        dataKey="count"
+                                                        nameKey="type"
+                                                        label={({ type, percent }) => `${type} ${(percent * 100).toFixed(0)}%`}
+                                                    >
+                                                        {typeDist.map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={`hsl(${index * 50}, 70%, 50%)`} />
+                                                        ))}
+                                                    </Pie>
+                                                    <ChartTooltip />
+                                                </PieChart>
+                                            </ResponsiveContainer>
+                                        )}
                                     </ChartContainer>
                                 </CardContent>
                             </Card>
