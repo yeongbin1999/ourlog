@@ -95,4 +95,8 @@ public class User {
         this.bio = bio;
     }
 
+    public void deleteComment(Comment comment) {
+        comments.remove(comment);
+        comment.removeUser();
+    }
 }

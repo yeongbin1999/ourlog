@@ -1,5 +1,6 @@
 package com.back.ourlog.domain.comment.controller;
 
+import com.back.ourlog.domain.comment.dto.CommentDeleteRequestDto;
 import com.back.ourlog.domain.comment.dto.CommentRequestDto;
 import com.back.ourlog.domain.comment.dto.CommentResponseDto;
 import com.back.ourlog.domain.comment.dto.CommentUpdateRequestDto;
@@ -43,12 +44,24 @@ public class CommentController {
     @PutMapping()
     @Operation(summary = "댓글 수정")
     public ResponseEntity<RsData<Void>> updateComment
-            (@RequestBody CommentUpdateRequestDto commentUpdateRequestDto) {
-        commentService.update(commentUpdateRequestDto.getId(), commentUpdateRequestDto.getContent());
+            (@RequestBody CommentUpdateRequestDto req) {
+        commentService.update(req.getId(), req.getContent());
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(RsData.of("200-0"
-                        ,"%d번 댓글이 수정되었습니다.".formatted(commentUpdateRequestDto.getId())
+                        ,"%d번 댓글이 수정되었습니다.".formatted(req.getId())
+                        , null));
+    }
+
+    @DeleteMapping()
+    @Operation(summary = "댓글 삭제")
+    public ResponseEntity<RsData<Void>> deleteComment
+            (@RequestBody CommentDeleteRequestDto req) {
+        commentService.delete(req.getId());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(RsData.of("200-0"
+                        ,"%d번 댓글이 삭제되었습니다.".formatted(req.getId())
                         , null));
     }
 }
