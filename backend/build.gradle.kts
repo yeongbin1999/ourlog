@@ -70,33 +70,9 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.2")
     testImplementation("org.springframework.security:spring-security-test")
 
-
-    implementation ("com.querydsl:querydsl-jpa:5.0.0:jakarta")
-    annotationProcessor ("com.querydsl:querydsl-apt:5.0.0:jakarta")
-    annotationProcessor ("jakarta.annotation:jakarta.annotation-api")
-    annotationProcessor ("jakarta.persistence:jakarta.persistence-api")
 }
 
 
 tasks.withType<Test> {
     useJUnitPlatform()
-}
-
-// Querydsl Q타입 생성 디렉토리 (layout.buildDirectory 사용)
-val querydslDir = layout.buildDirectory.dir("generated/querydsl")
-
-sourceSets {
-    main {
-        java {
-            srcDir(querydslDir)
-        }
-    }
-}
-
-tasks.withType<JavaCompile> {
-    options.generatedSourceOutputDirectory.set(querydslDir.get().asFile)
-}
-
-tasks.named<Delete>("clean") {
-    delete(querydslDir)
 }

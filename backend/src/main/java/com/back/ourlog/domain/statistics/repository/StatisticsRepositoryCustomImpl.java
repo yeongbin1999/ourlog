@@ -2,14 +2,7 @@ package com.back.ourlog.domain.statistics.repository;
 
 import com.back.ourlog.domain.content.entity.ContentType;
 
-
-import com.back.ourlog.domain.content.entity.QContent;
-import com.back.ourlog.domain.diary.entity.QDiary;
 import com.back.ourlog.domain.statistics.dto.*;
-import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.StringExpression;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -23,37 +16,32 @@ import java.util.List;
 public class StatisticsRepositoryCustomImpl implements  StatisticsRepositoryCustom{
 
     private final EntityManager em;
-    private final JPAQueryFactory queryFactory;
-
-    QDiary diary = QDiary.diary;
-    QContent content = QContent.content;
 
     @Override
     public List<TypeLineGraphDto> findTypeLineMonthly(Integer userId, LocalDateTime start, LocalDateTime end) {
-        // DB에 맞는 날짜 포맷 함수로 대체하세요.
-        // 예) H2: FORMATDATETIME, MySQL: DATE_FORMAT, PostgreSQL: TO_CHAR 등
-        StringExpression axisLabel = Expressions.stringTemplate(
-                "FORMATDATETIME({0}, 'yyyy-MM')", // H2 기준, 필요 시 DB 방언 맞게 변경
-                diary.createdAt
-        );
+        String sql =
+                "SELECT " +
+                "  FORMATDATETIME(d.created_at, 'yyyy-MM') AS axisLabel, " +
+                "  c.type AS type,"+
+                "  COUNT(*) AS count " +
+                "FROM diary d " +
+                "JOIN content c ON d.content_id = c.id " +
+                "WHERE d.user_id = ? AND d.created_at BETWEEN ? AND ? " +
+                "GROUP BY axisLabel, c.type " +
+                "ORDER BY axisLabel, c.type";
+        List<Object[]> result = em.createNativeQuery(sql)
+                .setParameter(1, userId)
+                .setParameter(2, start)
+                .setParameter(3, end)
+                .getResultList();
 
-        List<TypeLineGraphDto> results = queryFactory
-                .select(Projections.constructor(TypeLineGraphDto.class,
-                        axisLabel,
-                        content.type,
-                        diary.count()
+        return result.stream()
+                .map(row -> new TypeLineGraphDto(
+                        (String) row[0],
+                        ContentType.valueOf((String) row[1]),
+                        ((Number) row[2]).longValue()
                 ))
-                .from(diary)
-                .join(diary.content, content)
-                .where(
-                        diary.user.id.eq(userId)
-                                .and(diary.createdAt.between(start, end))
-                )
-                .groupBy(axisLabel, content.type)
-                .orderBy(axisLabel.asc(), content.type.asc())
-                .fetch();
-
-        return results;
+                .toList();
     }
 
     @Override
