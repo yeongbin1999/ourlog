@@ -46,4 +46,12 @@ public class Comment {
     public void update(String content) {
         this.content = content;
     }
+
+    public void removeDiary() {
+        this.diary = null;
+    }
+
+    public void removeUser() {
+        this.user = null;
+    }
 }

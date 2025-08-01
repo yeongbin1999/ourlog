@@ -24,6 +24,9 @@ public class TmdbMovieDto {
     @JsonProperty("vote_average")
     private double voteAverage;
 
+    @JsonProperty("vote_count")
+    private int voteCount;
+
     @JsonProperty("genres")
     private List<TmdbGenreDto> genres;
 

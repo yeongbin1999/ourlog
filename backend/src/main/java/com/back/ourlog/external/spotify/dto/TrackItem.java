@@ -15,6 +15,7 @@ public class TrackItem {
     private String name;
     private List<SpotifyArtist> artists;
     private SpotifyAlbum album;
+    private int popularity;
 
     @JsonProperty("external_urls")
     private ExternalUrls externalUrls;

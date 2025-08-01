@@ -160,4 +160,52 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.resultCode").value("COMMENT_001"))
                 .andExpect(jsonPath("$.msg").value("존재하지 않는 댓글입니다."));
     }
+
+    @Test
+    @DisplayName("댓글 삭제")
+    void t7() throws Exception {
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", 1);
+
+        String json = objectMapper.writeValueAsString(data);
+
+        ResultActions resultActions = mvc.perform(
+                delete("/api/v1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+        ).andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(CommentController.class))
+                .andExpect(handler().methodName("deleteComment"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value("200-0"))
+                .andExpect(jsonPath("$.msg").value("1번 댓글이 삭제되었습니다."));
+
+        // 1번 댓글이 실제로 사라졌는지 확인
+        Comment comment = commentRepository.findById(1).orElse(null);
+        assertThat(comment).isNull();
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 - 존재하지 않는 댓글 ID")
+    void t8() throws Exception {
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", 1000000);
+
+        String json = objectMapper.writeValueAsString(data);
+
+        ResultActions resultActions = mvc.perform(
+                put("/api/v1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+        ).andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(CommentController.class))
+                .andExpect(handler().methodName("updateComment"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultCode").value("COMMENT_001"))
+                .andExpect(jsonPath("$.msg").value("존재하지 않는 댓글입니다."));
+    }
 }

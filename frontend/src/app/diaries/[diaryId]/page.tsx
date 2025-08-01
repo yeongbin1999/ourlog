@@ -5,24 +5,36 @@ import { Diary, DiaryInfoProps, Comment, Content } from "../types/detail";
 import { FaStar, FaRegStar } from "react-icons/fa"; // 꽉 찬 별, 빈 별
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 {
   /* 페이지 타이틀 */
 }
 function DiaryTitle({ title }: { title: string }) {
   return (
-    <div className="flex items-center justify-between mb-4">
-      <Link href="/" className="text-blue-600 hover:underline text-sm">
+    <>
+      <Link
+        href="/"
+        className="text-blue-600 hover:underline text-lg font-bold"
+      >
         ← Back to Feed
       </Link>
-      <h1 className="text-xl font-bold text-gray-800 text-center flex-1">
-        {title}
-      </h1>
-    </div>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-xl font-bold text-gray-800 text-center flex-1">
+          {title}
+        </h1>
+      </div>
+    </>
   );
 }
 
-function ContentInfo({ content }: { content: Content }) {
+function ContentInfo({
+  content,
+  genreNames,
+  ottNames,
+}: {
+  content: Content;
+  genreNames: string[];
+  ottNames: string[];
+}) {
   return (
     <section className="border rounded-xl p-6 shadow-sm bg-white">
       <div className="flex flex-col md:flex-row items-center gap-8">
@@ -30,7 +42,7 @@ function ContentInfo({ content }: { content: Content }) {
         <div className="w-full md:w-1/2">
           <div className="aspect-[16/9] bg-gray-200 rounded-lg shadow-sm flex items-center justify-center text-gray-400 text-lg overflow-hidden">
             {content.posterUrl ? (
-              <Image
+              <img
                 src={content.posterUrl}
                 alt="포스터 이미지"
                 width={1600}
@@ -49,8 +61,41 @@ function ContentInfo({ content }: { content: Content }) {
             {content.title}
           </h2>
           <p className="text-gray-700 leading-relaxed">{content.description}</p>
+
+          {/* 출시일 */}
           <div className="text-sm text-gray-500">
-            출시일: {new Date(content.releasedAt).toLocaleDateString()}
+            <span className="font-medium text-gray-600">출시일: </span>
+            {new Date(content.releasedAt).toLocaleDateString()}
+          </div>
+
+          {/* 장르 정보 */}
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-gray-600">장르</div>
+            <div className="flex flex-wrap gap-2">
+              {genreNames.map((genre, index) => (
+                <span
+                  key={index}
+                  className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-sm"
+                >
+                  {genre}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* OTT 정보 */}
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-gray-600">OTT</div>
+            <div className="flex flex-wrap gap-2">
+              {ottNames.map((ott, index) => (
+                <span
+                  key={index}
+                  className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-sm"
+                >
+                  {ott}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -74,10 +119,11 @@ function DiaryInfo({ rating, contentText, tagNames }: DiaryInfoProps) {
         <div className="text-yellow-500 text-xl">{rating.toFixed(1)} / 5.0</div>
       </header>
       <p className="text-gray-800">{contentText}</p>
-      <div className="flex gap-2">
+      {/* 감상 태그 */}
+      <div className="flex gap-2 flex-wrap">
         {tagNames.map((tag, index) => (
           <span
-            key={index}
+            key={`tag-${index}`}
             className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-sm"
           >
             #{tag}
@@ -200,6 +246,7 @@ export default function Page() {
           throw new Error("Failed to fetch Diary");
         }
         const json = await res.json();
+        console.log(json.data);
         setDiary(json.data);
       } catch (err) {
         console.error(err);
@@ -262,7 +309,13 @@ export default function Page() {
   return (
     <main className="max-w-3xl mx-auto p-6 space-y-10">
       <DiaryTitle title={diary.title} />
-      {content && <ContentInfo content={content} />}
+      {content && (
+        <ContentInfo
+          content={content}
+          genreNames={diary.genreNames}
+          ottNames={diary.ottNames}
+        />
+      )}
       <DiaryInfo
         rating={diary.rating}
         contentText={diary.contentText}

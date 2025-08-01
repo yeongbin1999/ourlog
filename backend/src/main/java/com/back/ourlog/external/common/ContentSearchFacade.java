@@ -11,6 +11,8 @@ import com.back.ourlog.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class ContentSearchFacade {
@@ -28,6 +30,18 @@ public class ContentSearchFacade {
             };
         } catch (Exception e) {
             throw new RuntimeException("externalId로 콘텐츠 검색 중 오류 발생", e);
+        }
+    }
+
+    public List<ContentSearchResultDto> searchByTitle(ContentType type, String title) {
+        try {
+            return switch (type) {
+                case MUSIC -> spotifyService.searchMusicByTitle(title);
+                case MOVIE -> tmdbService.searchMovieByTitle(title);
+                case BOOK -> libraryService.searchBookByTitle(title);
+            };
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.CONTENT_NOT_FOUND);
         }
     }
 
