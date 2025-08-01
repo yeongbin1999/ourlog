@@ -258,7 +258,13 @@ function CommentForm({
   );
 }
 
-function CommentInfo({ comments }: { comments: Comment[] }) {
+function CommentInfo({
+  comments,
+  setComments,
+}: {
+  comments: Comment[];
+  setComments: React.Dispatch<React.SetStateAction<Comment[]>>;
+}) {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editContent, setEditContent] = useState("");
 
@@ -275,6 +281,18 @@ function CommentInfo({ comments }: { comments: Comment[] }) {
   const handleDelete = async (id: number) => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
     // 삭제 API 요청 후 상태 갱신
+
+    try {
+      const res = await fetch(`http://localhost:8080/api/v1/comments/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete comment");
+      const json = await res.json();
+      console.log(json.data);
+      setComments((prev) => prev.filter((comment) => comment.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleUpdate = async (e: React.FormEvent, id: number) => {
@@ -427,7 +445,7 @@ export default function Page() {
         diaryId={Number(diaryId ?? 1)}
         onCommentAdd={handleCommentAdd}
       />
-      <CommentInfo comments={comments} />
+      <CommentInfo comments={comments} setComments={setComments} />
     </main>
   );
 }
