@@ -1,10 +1,65 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Diary, DiaryInfoProps, Comment, Content } from "../types/detail";
 import { FaStar, FaRegStar } from "react-icons/fa"; // 꽉 찬 별, 빈 별
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { AiOutlineMore } from "react-icons/ai";
+
+function CommentMenuButton({
+  onEdit,
+  onDelete,
+}: {
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        className="text-gray-500 hover:text-gray-700"
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        <AiOutlineMore className="text-2xl" />
+      </button>
+      {open && (
+        <div className="absolute right-0 mt-2 w-24 bg-white border rounded shadow-lg z-10">
+          <button
+            onClick={() => {
+              setOpen(false);
+              onEdit();
+            }}
+            className="block w-full px-3 py-2 text-sm hover:bg-gray-100 text-left"
+          >
+            수정
+          </button>
+          <button
+            onClick={() => {
+              setOpen(false);
+              onDelete();
+            }}
+            className="block w-full px-3 py-2 text-sm hover:bg-gray-100 text-left text-red-500"
+          >
+            삭제
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 {
   /* 페이지 타이틀 */
 }
@@ -203,7 +258,75 @@ function CommentForm({
   );
 }
 
-function CommentInfo({ comments }: { comments: Comment[] }) {
+function CommentInfo({
+  comments,
+  setComments,
+}: {
+  comments: Comment[];
+  setComments: React.Dispatch<React.SetStateAction<Comment[]>>;
+}) {
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editContent, setEditContent] = useState("");
+
+  const handleEdit = (comment: Comment) => {
+    setEditingId(comment.id);
+    setEditContent(comment.content);
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setEditContent("");
+  };
+
+  const handleDelete = async (commentId: number) => {
+    if (!confirm("정말 삭제하시겠습니까?")) return;
+    // 삭제 API 요청 후 상태 갱신
+
+    try {
+      const res = await fetch(
+        `http://localhost:8080/api/v1/comments/${commentId}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (!res.ok) throw new Error("Failed to delete comment");
+      const json = await res.json();
+      console.log(json.data);
+      setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleUpdate = async (e: React.FormEvent, id: number) => {
+    e.preventDefault();
+    // 수정 API 요청 후 상태 갱신
+
+    try {
+      const res = await fetch("http://localhost:8080/api/v1/comments", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id, content: editContent }),
+      });
+
+      if (!res.ok) throw new Error("댓글 수정 실패");
+
+      setComments((prev) =>
+        prev.map((comment) =>
+          comment.id === id ? { ...comment, content: editContent } : comment
+        )
+      );
+
+      setEditingId(null);
+      setEditContent("");
+    } catch (error) {
+      console.error(error);
+      alert("댓글 수정 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <section className="space-y-4">
       {comments.length === 0 ? (
@@ -211,15 +334,39 @@ function CommentInfo({ comments }: { comments: Comment[] }) {
       ) : (
         <div className="border rounded-md bg-white shadow-sm">
           {comments.map((comment) => (
-            <div key={comment.id} className="p-4">
+            <div key={comment.id} className="p-4 group relative">
               <div className="bg-gray-100 text-gray-800 p-4 rounded-xl relative max-w-full md:max-w-[80%]">
-                <p>{comment.content}</p>
-                <div className="absolute -left-2 top-4 w-0 h-0 border-t-8 border-b-8 border-r-8 border-t-transparent border-b-transparent border-r-gray-100"></div>
+                {editingId === comment.id ? (
+                  <form onSubmit={(e) => handleUpdate(e, comment.id)}>
+                    <textarea
+                      className="w-full p-2 border rounded"
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                    />
+                    <div className="mt-2 flex justify-end gap-2">
+                      <button type="button" onClick={handleCancel}>
+                        취소
+                      </button>
+                      <button type="submit" className="text-blue-500">
+                        저장
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <p>{comment.content}</p>
+                )}
+                <div className="absolute -left-2 top-4 w-0 h-0 border-t-8 border-b-8 border-r-8 border-t-transparent border-b-transparent border-r-gray-100" />
               </div>
+
               <div className="text-sm text-gray-500 mt-2 flex gap-2">
-                <span>{comment.profileImageUrl}</span>
                 <span>{comment.nickname}</span>
                 <span>{new Date(comment.createdAt).toLocaleString()}</span>
+                <span>
+                  <CommentMenuButton
+                    onEdit={() => handleEdit(comment)}
+                    onDelete={() => handleDelete(comment.id)}
+                  />
+                </span>
               </div>
             </div>
           ))}
@@ -325,7 +472,7 @@ export default function Page() {
         diaryId={Number(diaryId ?? 1)}
         onCommentAdd={handleCommentAdd}
       />
-      <CommentInfo comments={comments} />
+      <CommentInfo comments={comments} setComments={setComments} />
     </main>
   );
 }

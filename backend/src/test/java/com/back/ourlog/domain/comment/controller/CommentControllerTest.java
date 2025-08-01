@@ -164,15 +164,10 @@ class CommentControllerTest {
     @Test
     @DisplayName("댓글 삭제")
     void t7() throws Exception {
-        Map<String, Object> data = new HashMap<>();
-        data.put("id", 1);
-
-        String json = objectMapper.writeValueAsString(data);
+        int id = 1;
 
         ResultActions resultActions = mvc.perform(
-                delete("/api/v1/comments")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
+                delete("/api/v1/comments/" + id)
         ).andDo(print());
 
         resultActions
@@ -190,20 +185,15 @@ class CommentControllerTest {
     @Test
     @DisplayName("댓글 삭제 - 존재하지 않는 댓글 ID")
     void t8() throws Exception {
-        Map<String, Object> data = new HashMap<>();
-        data.put("id", 1000000);
-
-        String json = objectMapper.writeValueAsString(data);
+        int id = 1000000;
 
         ResultActions resultActions = mvc.perform(
-                put("/api/v1/comments")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
+                delete("/api/v1/comments/" + id)
         ).andDo(print());
 
         resultActions
                 .andExpect(handler().handlerType(CommentController.class))
-                .andExpect(handler().methodName("updateComment"))
+                .andExpect(handler().methodName("deleteComment"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.resultCode").value("COMMENT_001"))
                 .andExpect(jsonPath("$.msg").value("존재하지 않는 댓글입니다."));
