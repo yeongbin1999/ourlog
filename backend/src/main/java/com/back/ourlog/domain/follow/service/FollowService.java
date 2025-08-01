@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +33,26 @@ public class FollowService {
             throw new CustomException(ErrorCode.FOLLOW_ALREADY_EXISTS);
         }
 
+        // 기존 팔로우 여부 확인..
+        Optional<Follow> existing = followRepository.findByFollowerIdAndFolloweeId(followerId, followeeId);
+        if (existing.isPresent()) {
+            Follow existingFollow = existing.get();
+            if (existingFollow.getStatus() == FollowStatus.ACCEPTED || existingFollow.getStatus() == FollowStatus.PENDING) {
+                throw new CustomException(ErrorCode.FOLLOW_ALREADY_EXISTS);
+            }
+        }
+
+        // 상대가 나에게 이미 보낸 요청이 있는 경우 수락..
+        Optional<Follow> reverse = followRepository
+                .findByFollowerIdAndFolloweeIdAndStatus(followeeId, followerId, FollowStatus.PENDING);
+
+        if (reverse.isPresent()) {
+            reverse.get().accept();
+            reverse.get().getFollower().increaseFollowingsCount();
+            reverse.get().getFollowee().increaseFollowersCount();
+            return;
+        }
+
         User follower = userRepository.findById(followerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         User followee = userRepository.findById(followeeId)
@@ -46,17 +67,19 @@ public class FollowService {
 
     // 언팔로우..
     @Transactional
-    public void unfollow(Integer followerId, Integer followeeId) {
-        Follow follow = followRepository.findByFollowerIdAndFolloweeId(followerId, followeeId)
+    public void unfollow(Integer userId1, Integer userId2) {
+        Follow follow = followRepository.findByUsersEitherDirection(userId1, userId2)
                 .orElseThrow(() -> new CustomException(ErrorCode.FOLLOW_NOT_FOUND));
 
         followRepository.delete(follow);
 
-        User follower = follow.getFollower();
-        User followee = follow.getFollowee();
-
-        follower.decreaseFollowingsCount();
-        followee.decreaseFollowersCount();
+        if (follow.getFollower().getId().equals(userId1)) {
+            follow.getFollower().decreaseFollowingsCount();
+            follow.getFollowee().decreaseFollowersCount();
+        } else {
+            follow.getFollower().decreaseFollowingsCount();
+            follow.getFollowee().decreaseFollowersCount();
+        }
     }
 
     // 내가 팔로우한 유저 목록 조회..
@@ -114,4 +137,27 @@ public class FollowService {
         follow.reject();
     }
 
+    // 내가 보낸 팔로우 요청 목록 (PENDING 상태)..
+    public List<FollowUserResponse> getSentPendingRequests(Integer userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        List<Follow> sentRequests = followRepository.findSentPendingRequestsByUserId(userId);
+
+        return sentRequests.stream()
+                .map(f -> FollowUserResponse.from(f.getFollowee()))
+                .toList();
+    }
+
+    // 내가 받은 팔로우 요청 목록 (PENDING 상태)..
+    public List<FollowUserResponse> getPendingRequests(Integer userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        List<Follow> pendingFollows = followRepository.findPendingRequestsByUserId(userId);
+
+        return pendingFollows.stream()
+                .map(f -> FollowUserResponse.from(f.getFollower()))
+                .toList();
+    }
 }
