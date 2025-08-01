@@ -10,7 +10,7 @@ const Header = () => {
   const router = useRouter();
 
   const leftNavItems = [
-    { key: "feed", label: "Feed", href: "/" },
+    { key: "feed", label: "Feed", href: "/social" },
     { key: "diary", label: "Diary", href: "/diaries" },
     { key: "statistics", label: "Statistics", href: "/statistics" },
     { key: "mypage", label: "MyPage", href: "/profile/me" },
@@ -21,7 +21,11 @@ const Header = () => {
       <div className="w-full h-full flex justify-between items-center">
         {/* 왼쪽: 로고 + 메뉴 */}
         <div className="flex items-center pl-8 space-x-16">
-          <h1 className="text-2xl font-bold text-black font-logo">OUR LOG</h1>
+          <Link href="/" passHref>
+            <h1 className="text-2xl font-bold text-black font-logo cursor-pointer">
+              OUR LOG
+            </h1>
+          </Link>
           <nav className="flex items-center space-x-4">
             {leftNavItems.map((item) => (
               <Link key={item.key} href={item.href} passHref>
@@ -44,6 +48,19 @@ const Header = () => {
 
         {/* 오른쪽: 아이콘 + Write */}
         <div className="flex items-center h-full ml-auto pr-0">
+        {/* 검색창 */}
+          <div className="mr-4">
+            <input
+              type="text"
+              placeholder="Search user..."
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  router.push(`/search?keyword=${e.currentTarget.value}`);
+                }
+              }}
+              className="px-3 py-1.5 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-black text-sm"
+            />
+          </div>
           {/* 아이콘 툴팁 */}
           <div className="flex items-center space-x-8 mr-6">
             <Link href="/signup" passHref>
