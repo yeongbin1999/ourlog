@@ -3,6 +3,8 @@ export type Diary = {
     rating: number;
     contentText: string;
     tagNames: string[];
+    genreNames: string[];
+    ottNames: string[];
 };
 
 export type DiaryInfoProps = {
@@ -28,3 +30,9 @@ export type Content = {
     description: string;
     releasedAt: string;
 } 
+
+export type ContentInfoProps = {
+    content: Content;
+    genreNames: string[];
+    ottNames: string[];
+}
