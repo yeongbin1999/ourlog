@@ -278,18 +278,21 @@ function CommentInfo({
     setEditContent("");
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (commentId: number) => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
     // 삭제 API 요청 후 상태 갱신
 
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/comments/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `http://localhost:8080/api/v1/comments/${commentId}`,
+        {
+          method: "DELETE",
+        }
+      );
       if (!res.ok) throw new Error("Failed to delete comment");
       const json = await res.json();
       console.log(json.data);
-      setComments((prev) => prev.filter((comment) => comment.id !== id));
+      setComments((prev) => prev.filter((comment) => comment.id !== commentId));
     } catch (err) {
       console.error(err);
     }
@@ -298,6 +301,30 @@ function CommentInfo({
   const handleUpdate = async (e: React.FormEvent, id: number) => {
     e.preventDefault();
     // 수정 API 요청 후 상태 갱신
+
+    try {
+      const res = await fetch("http://localhost:8080/api/v1/comments", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id, content: editContent }),
+      });
+
+      if (!res.ok) throw new Error("댓글 수정 실패");
+
+      setComments((prev) =>
+        prev.map((comment) =>
+          comment.id === id ? { ...comment, content: editContent } : comment
+        )
+      );
+
+      setEditingId(null);
+      setEditContent("");
+    } catch (error) {
+      console.error(error);
+      alert("댓글 수정 중 오류가 발생했습니다.");
+    }
   };
 
   return (
