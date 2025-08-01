@@ -11,9 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +29,30 @@ public class TmdbService {
         } catch (Exception e) {
             throw new CustomException(ErrorCode.CONTENT_NOT_FOUND);
         }
+    }
+
+    public List<ContentSearchResultDto> searchMovieByTitle(String title) {
+        TmdbSearchResponse response = tmdbClient.searchMovie(title);
+
+        return Optional.ofNullable(response)
+                .map(TmdbSearchResponse::getResults)
+                .orElse(List.of())
+                .stream()
+                .filter(movie -> movie.getTitle() != null &&
+                        movie.getTitle().toLowerCase().contains(title.toLowerCase()))
+                .sorted(Comparator.comparingInt(
+                        movie -> -1 * Optional.ofNullable(movie.getVoteCount()).orElse(0))) // 🔥 정렬 기준 변경
+                .limit(10)
+                .map(movie -> "tmdb-" + movie.getId())
+                .map(id -> {
+                    try {
+                        return searchMovieByExternalId(id);
+                    } catch (CustomException e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     private ContentSearchResultDto toContentSearchResult(TmdbMovieDto movie) {

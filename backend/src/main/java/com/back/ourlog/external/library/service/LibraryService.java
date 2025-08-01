@@ -29,21 +29,22 @@ public class LibraryService {
 
     public ContentSearchResultDto searchBookByExternalId(String externalId) {
         String key = externalId.replace("library-", "");
-
         List<Map<String, Object>> results;
 
-        if (key.matches("\\d{13}")) {
+        if (key.matches("\\d{10}") || key.matches("\\d{13}")) {
             results = getResultFromLibraryByIsbn(key).stream()
                     .filter(doc -> {
                         String eaIsbn = (String) doc.get("EA_ISBN");
-                        return eaIsbn != null && eaIsbn.replaceAll("-", "").trim().equals(key);
+                        boolean match = eaIsbn != null && eaIsbn.replaceAll("-", "").trim().equals(key);
+                        return match;
                     })
                     .toList();
         } else {
             results = getResultFromLibraryByControlNo(key).stream()
                     .filter(doc -> {
                         String controlNo = (String) doc.get("CONTROL_NO");
-                        return controlNo != null && controlNo.trim().equals(key);
+                        boolean match = controlNo != null && controlNo.trim().equals(key);
+                        return match;
                     })
                     .toList();
         }
@@ -52,6 +53,23 @@ public class LibraryService {
                 .findFirst()
                 .map(this::mapToSearchResultDto)
                 .orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+    }
+
+    public List<ContentSearchResultDto> searchBookByTitle(String title) {
+        List<Map<String, Object>> docs = getResultFromLibrary(title);
+
+        return docs.stream()
+                .limit(10)
+                .map(item -> {
+                    String externalId = "library-" + getLibraryExternalId(item);
+                    try {
+                        return searchBookByExternalId(externalId);
+                    } catch (CustomException e) {
+                        return mapToSearchResultDto(item); // fallback
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     private ContentSearchResultDto mapToSearchResultDto(Map<String, Object> item) {
@@ -84,7 +102,11 @@ public class LibraryService {
 
     private String cleanAuthorPrefix(String rawAuthor) {
         if (rawAuthor == null) return null;
-        return rawAuthor.replaceFirst("^지은이:\\s*", "").trim();
+
+        return rawAuthor
+                .replaceAll("(원작자|저자|지은이|글|그림|편저|엮은이)\\s*[:：]\\s*", "")  // 콜론(:, ：) 처리
+                .replaceAll("\\s*;\\s*$", "") // 맨 끝 세미콜론 제거
+                .trim();
     }
 
     private List<String> extractGenres(Map<String, Object> item) {
@@ -95,14 +117,22 @@ public class LibraryService {
         List<String> genres = new ArrayList<>();
 
         if (subject != null && !subject.isBlank()) {
-            genres.addAll(Arrays.stream(subject.split("[,;]"))
+            List<String> subjectList = Arrays.stream(subject.split("[,;]"))
                     .map(String::trim)
                     .filter(s -> !s.isEmpty())
-                    .toList());
+                    .toList();
+
+            for (String s : subjectList) {
+                if (s.matches("^\\d$")) {
+                    genres.add(mapKdcToGenre(s));
+                } else {
+                    genres.add(s);
+                }
+            }
         } else if (kdc != null || classNo != null) {
             String code = kdc != null ? kdc : classNo;
             if (code.length() >= 1) {
-                String mainCategory = code.substring(0, 1) + "00";
+                String mainCategory = code.substring(0, 1);
                 genres.add(mapKdcToGenre(mainCategory));
             }
         }
@@ -190,4 +220,5 @@ public class LibraryService {
             throw new RuntimeException("도서관 API CONTROL_NO 검색 오류", e);
         }
     }
+
 }
