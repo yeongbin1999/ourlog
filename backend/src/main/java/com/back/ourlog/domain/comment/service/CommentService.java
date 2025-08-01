@@ -58,7 +58,8 @@ public class CommentService {
         diary.deleteComment(comment);
 
         User user = comment.getUser();
-        user.deleteComment(comment);
+
+        if(user != null) user.deleteComment(comment);
 
         commentRepository.delete(comment);
     }
