@@ -111,7 +111,8 @@ class DiaryControllerTest {
             "rating": 3.0,
             "isPublic": true,
             "type": "BOOK",
-            "tagIds": [3]
+            "externalId": "library-9791190908207",
+            "tagIds": [%d]
         }
     """.formatted(tag.getId());
 

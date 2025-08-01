@@ -14,9 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -42,6 +40,32 @@ public class SpotifyService {
         } catch (Exception e) {
             throw new CustomException(ErrorCode.CONTENT_NOT_FOUND);
         }
+    }
+
+    public List<ContentSearchResultDto> searchMusicByTitle(String title) {
+        SpotifySearchResponse response = spotifyClient.searchTrack(title);
+
+        return Optional.ofNullable(response)
+                .map(SpotifySearchResponse::getTracks)
+                .map(SpotifySearchResponse.Tracks::getItems)
+                .orElse(List.of())
+                .stream()
+                // 제목이 정확히 포함된 것만 필터링
+                .filter(track -> track.getName() != null && track.getName().toLowerCase().contains(title.toLowerCase()))
+                // 인기순 정렬
+                .sorted(Comparator.comparingInt(TrackItem::getPopularity).reversed())
+                // 최대 10개만
+                .limit(10)
+                .map(track -> {
+                    String externalId = "spotify-" + track.getId();
+                    try {
+                        return searchMusicByExternalId(externalId);
+                    } catch (CustomException e) {
+                        return null; // 실패 시 제외
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     private ContentSearchResultDto toContentSearchResult(TrackItem trackItem, List<String> genres) {
