@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface SearchResult {
   externalId: string;
@@ -19,7 +20,7 @@ function formatDate(dateStr?: string): string {
   return date.toISOString().split("T")[0];
 }
 
-export default function SelectContentPage() {
+function SelectContentClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [type] = useState(searchParams.get("type") || "MOVIE");
@@ -138,16 +139,19 @@ export default function SelectContentPage() {
                       >
                         <div className="flex gap-4 items-start">
                           <div className="flex-shrink-0">
-                            <img
-                              src={item.posterUrl || "/images/no-image.png"}
-                              alt={item.title}
-                              className="w-16 h-28 object-cover rounded-lg shadow-sm"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.onerror = null;
-                                target.src = "/images/no-image.png";
-                              }}
-                            />
+                            <div className="w-16 h-28 relative rounded-lg overflow-hidden shadow-sm">
+                              <Image
+                                src={item.posterUrl || "/images/no-image.png"}
+                                alt={item.title}
+                                fill
+                                className="object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.onerror = null;
+                                  target.src = "/images/no-image.png";
+                                }}
+                              />
+                            </div>
                           </div>
                           <div className="flex-1 min-w-0 space-y-1">
                             <h4 className="font-semibold text-gray-900 text-sm line-clamp-2 leading-tight">
@@ -208,5 +212,39 @@ export default function SelectContentPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-white p-6 font-sans">
+      <div className="max-w-5xl mx-auto space-y-10">
+        <div className="text-center space-y-3">
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">감상 작품 선택</h1>
+          <p className="text-lg text-gray-600">로딩 중...</p>
+        </div>
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-2 h-[650px]">
+            <div className="p-12 flex flex-col justify-center">
+              <div className="max-w-sm mx-auto w-full space-y-4">
+                <div className="w-full h-12 bg-gray-200 rounded-lg animate-pulse"></div>
+                <div className="w-full h-12 bg-gray-200 rounded-lg animate-pulse"></div>
+              </div>
+            </div>
+            <div className="bg-gray-50 p-8 h-full flex flex-col justify-center items-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function SelectContentPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <SelectContentClient />
+    </Suspense>
   );
 }

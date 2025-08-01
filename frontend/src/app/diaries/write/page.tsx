@@ -1,9 +1,10 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import DiaryForm from "@/components/diary/DiaryForm";
 
-export default function DiaryWritePage() {
+function DiaryWriteClient() {
   const searchParams = useSearchParams();
 
   const externalId = searchParams.get("externalId") ?? "";
@@ -31,5 +32,22 @@ export default function DiaryWritePage() {
       releasedAt={releasedAt}
       genres={genres}
     />
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="p-6 text-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+      <p className="mt-4 text-gray-500">로딩 중...</p>
+    </div>
+  );
+}
+
+export default function DiaryWritePage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <DiaryWriteClient />
+    </Suspense>
   );
 }

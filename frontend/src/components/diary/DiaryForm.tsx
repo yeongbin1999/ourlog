@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Image from "next/image";
 
 interface Tag {
   id: number;
@@ -153,11 +154,12 @@ export default function DiaryForm({
           <div className="lg:col-span-2">
             <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8 sticky top-6 text-sm text-gray-500 space-y-3">
               <div className="text-center">
-                <div className="w-48 h-72 mx-auto mb-6">
-                  <img
+                <div className="w-48 h-72 mx-auto mb-6 relative rounded-2xl overflow-hidden shadow">
+                  <Image
                     src={posterUrl || "/images/no-image.png"}
                     alt="포스터"
-                    className="w-full h-full object-cover rounded-2xl shadow"
+                    fill
+                    className="object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.onerror = null;
