@@ -5,6 +5,7 @@ import com.back.ourlog.domain.user.entity.User;
 import com.back.ourlog.domain.user.repository.UserRepository;
 import com.back.ourlog.global.exception.CustomException;
 import com.back.ourlog.global.exception.ErrorCode;
+import com.back.ourlog.global.security.oauth.OAuthAttributes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,24 @@ public class UserService {
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public User registerOrGetOAuthUser(OAuthAttributes attributes) {
+        return userRepository.findByProviderAndProviderId(attributes.getProvider(), attributes.getProviderId())
+                .orElseGet(() -> registerOAuthUser(attributes));
+    }
+
+    private User registerOAuthUser(OAuthAttributes attributes) {
+        User user = User.builder()
+                .email(attributes.getEmail())
+                .nickname(attributes.getName())
+                .provider(attributes.getProvider())
+                .providerId(attributes.getProviderId())
+                .profileImageUrl(attributes.getAttributes().get("profile_image") != null ?
+                        attributes.getAttributes().get("profile_image").toString() : null)
+                .build();
+
+        return userRepository.save(user);
     }
     
     public UserProfileResponse getUserProfile(Integer userId){

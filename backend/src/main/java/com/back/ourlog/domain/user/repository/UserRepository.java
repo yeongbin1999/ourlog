@@ -10,6 +10,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     Optional<User> findByEmail(String email);
 
-    // 닉네임에 키워드가 포함된 유저를 대소문자 구분 없이 조회..
+    Optional<User> findByProviderAndProviderId(String provider, String providerId);
+
     List<User> findByNicknameContainingIgnoreCase(String keyword);
 }
