@@ -5,6 +5,8 @@ import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.follow.entity.Follow;
 import com.back.ourlog.domain.like.entity.Like;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -17,25 +19,42 @@ import java.util.List;
 
 @Entity
 @Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "users")
+@Table(
+        name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"provider", "providerId"}) // 소셜 로그인 중복 방지
+        }
+)
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, unique = true)
+    // 일반 회원가입 시 반드시 필요 / 소셜로그인 시 provider + providerId 기준
+    @Column(unique = true, length = 50)
     private String email;
 
-    @Column(nullable = false, length = 100)
-    private String password;
+    @Column(length = 100)
+    private String password; // 소셜 로그인 유저는 null 가능
 
     @Column(nullable = false, length = 50)
     private String nickname;
 
     private String profileImageUrl;
+
     private String bio;
+
+    // 소셜 로그인 전용 필드
+    @Column(length = 20)
+    private String provider; // ex) "google", "kakao", "naver"
+
+    @Column(length = 100)
+    private String providerId;
 
     @CreatedDate
     @Column(updatable = false)
@@ -45,8 +64,9 @@ public class User {
     private LocalDateTime updatedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role = Role.USER; // 일반 유저 기본값
+    @Column(nullable = false, length = 10)
+    @Builder.Default
+    private Role role = Role.USER;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Diary> diaries = new ArrayList<>();
@@ -57,19 +77,21 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like> likes = new ArrayList<>();
 
-    // 내가 팔로우 한 사람 (팔로잉)
+    // 내가 팔로우
     @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final List<Follow> followings = new ArrayList<>();
 
-    // 나를 팔로우 한 사람 (팔로워)
+    // 내를 팔로우
     @OneToMany(mappedBy = "followee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final List<Follow> followers = new ArrayList<>();
 
     @Column(nullable = false)
-    private Integer followersCount = 0;  // 나를 팔로우하는 사람 수
+    @Builder.Default
+    private Integer followersCount = 0;
 
     @Column(nullable = false)
-    private Integer followingsCount = 0; // 내가 팔로우하는 사람 수
+    @Builder.Default
+    private Integer followingsCount = 0;
 
     public void increaseFollowersCount() {
         this.followersCount++;
@@ -87,12 +109,25 @@ public class User {
         if (this.followingsCount > 0) this.followingsCount--;
     }
 
-    public User(String email, String password, String nickname, String profileImageUrl, String bio) {
-        this.email = email;
-        this.password = password;
-        this.nickname = nickname;
-        this.profileImageUrl = profileImageUrl;
-        this.bio = bio;
+    // === 일반 가입 전용 생성자 ===
+    public static User createNormalUser(String email, String encodedPassword, String nickname, String profileImageUrl, String bio) {
+        return User.builder()
+                .email(email)
+                .password(encodedPassword)
+                .nickname(nickname)
+                .profileImageUrl(profileImageUrl)
+                .bio(bio)
+                .build();
     }
 
+    // === 소셜 가입 전용 생성자 ===
+    public static User createSocialUser(String provider, String providerId, String email, String nickname, String profileImageUrl) {
+        return User.builder()
+                .provider(provider)
+                .providerId(providerId)
+                .email(email)
+                .nickname(nickname)
+                .profileImageUrl(profileImageUrl)
+                .build();
+    }
 }

@@ -1,7 +1,10 @@
 package com.back.ourlog.global.security.jwt;
 
+import java.time.Duration;
+
 public record TokenDto (
         String accessToken,
-        String refreshToken
+        String refreshToken,
+        Duration refreshTokenExpiration
 ) {}
 
