@@ -71,7 +71,7 @@ export default function Page() {
   }, [diaryId]);
 
   const handleCommentAdd = (newComment: Comment) => {
-    setComments((prev) => [...prev, newComment]);
+    setComments((prev) => [newComment, ...prev]);
   };
 
   if (loading) {
