@@ -12,7 +12,7 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment, Integer> {
     int countByDiaryId(Integer diaryId);
 
-    // 하나 diary의 댓글정보 - 작성일이 최근 일수록 List 의 상단에 위치하도록
+    // 댓글정보 - 최신 순 정렬 (최신 댓글 일수록 위에 배치)
     @Query("select c from Comment c where c.diary = :diary order by c.createdAt DESC")
     List<Comment> findByDiaryOrderByCreatedAtDesc(@Param("diary") Diary diary);
 }
