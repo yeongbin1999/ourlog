@@ -1,11 +1,12 @@
 package com.back.ourlog.domain.statistics.repository;
 
 import com.back.ourlog.domain.content.entity.ContentType;
-import com.back.ourlog.domain.diary.entity.Diary;
+
 import com.back.ourlog.domain.statistics.dto.*;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.List;
 @Repository
 @RequiredArgsConstructor
 public class StatisticsRepositoryCustomImpl implements  StatisticsRepositoryCustom{
+
     private final EntityManager em;
 
     @Override

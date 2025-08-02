@@ -10,7 +10,7 @@ const Header = () => {
   const router = useRouter();
 
   const leftNavItems = [
-    { key: "feed", label: "Feed", href: "/" },
+    { key: "feed", label: "Feed", href: "/social" },
     { key: "diary", label: "Diary", href: "/diaries" },
     { key: "statistics", label: "Statistics", href: "/statistics" },
     { key: "mypage", label: "MyPage", href: "/profile/me" },
@@ -43,6 +43,19 @@ const Header = () => {
 
         {/* 오른쪽: 아이콘 + Write */}
         <div className="flex items-center h-full ml-auto pr-0">
+        {/* 검색창 */}
+          <div className="mr-4">
+            <input
+              type="text"
+              placeholder="Search user..."
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  router.push(`/search?keyword=${e.currentTarget.value}`);
+                }
+              }}
+              className="px-3 py-1.5 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-black text-sm"
+            />
+          </div>
           {/* 아이콘 툴팁 */}
           <div className="flex items-center space-x-8 mr-6">
             <Link href="/signup" passHref>
