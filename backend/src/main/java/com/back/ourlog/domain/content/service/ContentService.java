@@ -26,7 +26,7 @@ public class ContentService {
                             "제목 없음",
                             type,
                             "제작자",
-                            "설명 없음",
+                            null,
                             null,
                             LocalDateTime.now(),
                             externalId
