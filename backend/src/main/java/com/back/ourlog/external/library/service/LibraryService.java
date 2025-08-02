@@ -75,9 +75,11 @@ public class LibraryService {
     private ContentSearchResultDto mapToSearchResultDto(Map<String, Object> item) {
         String bookTitle = (String) item.get("TITLE");
         String creatorName = cleanAuthorPrefix((String) item.get("AUTHOR"));
-        String description = (String) item.get("BOOK_INTRODUCTION");
         String posterUrl = (String) item.get("TITLE_URL");
         String releasedAtStr = (String) item.get("PUBLISH_PREDATE");
+
+        // 설명은 책에서는 저장하지 않으므로 null로 처리
+        String description = null;
 
         LocalDateTime releasedAt = null;
         if (releasedAtStr != null && !releasedAtStr.isBlank()) {

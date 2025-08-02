@@ -6,7 +6,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex flex-col space-y-2 items-start">
           {/* 로고 및 제작자 */}
-          <h3 className="text-lg font-logo font-bold">OUR LOG</h3>
+          <h3 className="text-2xl font-logo font-bold">OUR LOG</h3>
           <p className="text-gray-400 text-sm">Made by TeamName</p>
 
           {/* 깃허브 & 연락처 */}

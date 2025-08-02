@@ -21,11 +21,7 @@ const Header = () => {
       <div className="w-full h-full flex justify-between items-center">
         {/* 왼쪽: 로고 + 메뉴 */}
         <div className="flex items-center pl-8 space-x-16">
-          <Link href="/" passHref>
-            <h1 className="text-2xl font-bold text-black font-logo cursor-pointer">
-              OUR LOG
-            </h1>
-          </Link>
+          <h1 className="text-5xl font-bold text-black font-logo">OUR LOG</h1>
           <nav className="flex items-center space-x-4">
             {leftNavItems.map((item) => (
               <Link key={item.key} href={item.href} passHref>
@@ -33,9 +29,8 @@ const Header = () => {
                   className={`inline-block text-base px-4 py-2 rounded-full transition duration-200 ${
                     hoveredItem === item.key
                       ? "bg-black text-white"
-                      : "text-gray-700 hover:text-black"
+                      : "text-gray-700 hover:bg-black hover:text-white"
                   }`}
-                  style={{ textDecoration: "none", color: "inherit" }}
                   onMouseEnter={() => setHoveredItem(item.key)}
                   onMouseLeave={() => setHoveredItem(null)}
                 >

@@ -65,15 +65,19 @@ public class Content {
     }
 
     public static Content of(ContentSearchResultDto result) {
+        // 영화(MOVIE)일 때만 description 저장
+        String description = result.type() == ContentType.MOVIE ? result.description() : null;
+
         return new Content(
                 result.title(),
                 result.type(),
                 result.creatorName(),
-                result.description(),
+                description,
                 result.posterUrl(),
                 result.releasedAt(),
                 result.externalId()
         );
     }
+
 
 }
