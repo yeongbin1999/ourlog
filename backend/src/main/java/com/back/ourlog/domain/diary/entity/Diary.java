@@ -2,14 +2,10 @@ package com.back.ourlog.domain.diary.entity;
 
 import com.back.ourlog.domain.comment.entity.Comment;
 import com.back.ourlog.domain.content.entity.Content;
-import com.back.ourlog.domain.content.entity.ContentType;
 import com.back.ourlog.domain.genre.entity.DiaryGenre;
-import com.back.ourlog.domain.genre.entity.Genre;
 import com.back.ourlog.domain.like.entity.Like;
 import com.back.ourlog.domain.ott.entity.DiaryOtt;
-import com.back.ourlog.domain.ott.entity.Ott;
 import com.back.ourlog.domain.tag.entity.DiaryTag;
-import com.back.ourlog.domain.tag.entity.Tag;
 import com.back.ourlog.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
@@ -77,14 +73,19 @@ public class Diary {
         this.isPublic = isPublic;
     }
 
-    public void update(String title, String contentText, Float rating, Boolean isPublic, String externalId, ContentType type) {
+    public void update(String title, String contentText, float rating, boolean isPublic) {
         this.title = title;
         this.contentText = contentText;
         this.rating = rating;
         this.isPublic = isPublic;
+    }
 
-        // Content 내 필드 업데이트
-        this.content.update(externalId, type);
+    public void setContent(Content content) {
+        this.content = content;
+    }
+
+    public void clearGenres() {
+        this.getDiaryGenres().clear();
     }
 
     public Comment addComment(User user, String content) {
@@ -94,4 +95,8 @@ public class Diary {
         return comment;
     }
 
+    public void deleteComment(Comment comment) {
+        comments.remove(comment);
+        comment.removeDiary();
+    }
 }

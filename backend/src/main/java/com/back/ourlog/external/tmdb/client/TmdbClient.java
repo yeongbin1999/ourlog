@@ -1,15 +1,22 @@
 package com.back.ourlog.external.tmdb.client;
 
 import com.back.ourlog.external.tmdb.dto.TmdbCreditsResponse;
+import com.back.ourlog.external.tmdb.dto.TmdbMovieDto;
 import com.back.ourlog.external.tmdb.dto.TmdbSearchResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriUtils;
 
 import java.nio.charset.StandardCharsets;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TmdbClient {
@@ -53,4 +60,20 @@ public class TmdbClient {
 
         return restTemplate.getForObject(url, TmdbCreditsResponse.class);
     }
+
+    public TmdbMovieDto fetchMovieById(String id) {
+        String url = "https://api.themoviedb.org/3/movie/" + id + "?language=ko-KR&api_key=" + apiKey;
+        try {
+            ResponseEntity<TmdbMovieDto> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    null,
+                    TmdbMovieDto.class
+            );
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            throw e;
+        }
+    }
+
 }

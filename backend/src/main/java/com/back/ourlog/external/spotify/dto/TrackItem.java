@@ -11,39 +11,12 @@ import java.util.List;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TrackItem {
-    private String name;
     private String id;
-
-    private List<Artist> artists;
-    private Album album;
+    private String name;
+    private List<SpotifyArtist> artists;
+    private SpotifyAlbum album;
+    private int popularity;
 
     @JsonProperty("external_urls")
     private ExternalUrls externalUrls;
-
-    @Getter
-    @NoArgsConstructor
-    public static class Artist {
-        private String name;
-    }
-
-    @Getter
-    @NoArgsConstructor
-    public static class Album {
-        @JsonProperty("release_date")
-        private String releaseDate;
-
-        private List<Image> images;
-    }
-
-    @Getter
-    @NoArgsConstructor
-    public static class Image {
-        private String url;
-    }
-
-    @Getter
-    @NoArgsConstructor
-    public static class ExternalUrls {
-        private String spotify;
-    }
 }

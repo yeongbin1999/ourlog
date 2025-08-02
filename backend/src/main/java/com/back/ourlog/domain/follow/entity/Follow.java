@@ -1,5 +1,6 @@
 package com.back.ourlog.domain.follow.entity;
 
+import com.back.ourlog.domain.follow.enums.FollowStatus;
 import com.back.ourlog.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -29,6 +30,18 @@ public class Follow {
     @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
     @JoinColumn(name = "followee_id", nullable = false)
     private User followee;
+
+    @Enumerated(EnumType.STRING) // Enum을 DB에 저장할 때 문자열로 저장되게 함..
+    @Column(nullable = false, columnDefinition = "varchar(10) default 'PENDING'")
+    private FollowStatus status = FollowStatus.PENDING;
+
+    public void accept() {
+        this.status = FollowStatus.ACCEPTED;
+    }
+
+    public void reject() {
+        this.status = FollowStatus.REJECTED;
+    }
 
     public Follow(User following, User followee) {
         this.follower = following;

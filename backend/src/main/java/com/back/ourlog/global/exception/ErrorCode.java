@@ -22,14 +22,27 @@ public enum ErrorCode {
     // 다이어리 관련
     DIARY_NOT_FOUND("DIARY_001", "존재하지 않는 다이어리입니다."),
 
+    // 콘텐츠 관련
+    CONTENT_NOT_FOUND("CONTENT_001", "콘텐츠를 찾을 수 없습니다."),
+
     // 태그/장르/OTT 관련
     TAG_NOT_FOUND("TAG_001", "존재하지 않는 태그입니다."),
     GENRE_NOT_FOUND("GENRE_001", "존재하지 않는 장르입니다."),
     OTT_NOT_FOUND("OTT_001", "존재하지 않는 OTT입니다."),
 
+    // 댓글 관련
+    COMMENT_NOT_FOUND("COMMENT_001", "존재하지 않는 댓글입니다."),
+
     // 서버/시스템 관련 (HTTP 500)
     SERVER_ERROR("SERVER_500", "서버 내부 오류가 발생했습니다."),
     DATABASE_ERROR("SERVER_501", "데이터베이스 오류가 발생했습니다."),
+
+    // 팔로우 관련
+    FOLLOW_ALREADY_EXISTS("FOLLOW_001", "이미 팔로우한 사용자입니다."),
+    FOLLOW_NOT_FOUND("FOLLOW_002", "팔로우 관계가 존재하지 않습니다."),
+    CANNOT_FOLLOW_SELF("FOLLOW_003", "자기 자신은 팔로우할 수 없습니다."),
+    FOLLOW_ALREADY_REJECTED("FOLLOW_004", "이미 거절한 팔로우 요청입니다."),
+    FOLLOW_ALREADY_ACCEPTED("FOLLOW_005", "이미 수락된 팔로우 요청입니다."),
 
     // 공통 에러 (HTTP 400~499 범위, 주로 프레임워크 레벨)
     BAD_REQUEST("COMMON_400", "잘못된 요청입니다."),

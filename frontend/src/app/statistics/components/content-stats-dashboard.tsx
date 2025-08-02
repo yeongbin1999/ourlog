@@ -1,17 +1,12 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { Calendar, BarChart3, Star, CalendarIcon } from "lucide-react"
+import { Calendar, BarChart3, Star } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
-import { Line, LineChart, Pie, PieChart, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts"
-import { Button } from "@/components/ui/button"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { format } from "date-fns"
-import { ko } from "date-fns/locale"
+import { Line, LineChart, Pie, PieChart, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, TooltipProps } from "recharts"
 
 
 const BASE_URL = "http://localhost:8080/api/v1/statistics";
@@ -66,6 +61,19 @@ async function fetchEmotionGraph(period: string): Promise<EmotionGraphResponse> 
   };
   const periodOption = periodMap[period] || "ALL";
   const res = await fetch(`${BASE_URL}/emotion-graph?period=${periodOption}`);
+  return res.json();
+}
+
+async function fetchOttGraph(period: string): Promise<OttGraphResponse> {
+  const periodMap: Record<string, string> = {
+    "전체": "ALL",
+    "이번년도": "THIS_YEAR",
+    "최근6개월": "LAST_6_MONTHS",
+    "최근한달": "LAST_MONTH",
+    "최근일주일": "LAST_WEEK"
+  };
+  const periodOption = periodMap[period] || "ALL";
+  const res = await fetch(`${BASE_URL}/ott-graph?period=${periodOption}`);
   return res.json();
 }
 
@@ -134,16 +142,23 @@ type EmotionGraphResponse = {
     emotionRanking: EmotionRankDto[];
 };
 
+// OTT 타입 정의
+type OttLineGraphDto = {
+  axisLabel: string;
+  ottName: string;
+  count: number;
+};
 
-// 월별 데이터 (기본 데이터) - 장르별, 감정별용
-const monthlyGenreData = [
-    { period: "1월", 드라마: 15, 액션: 10, 로맨스: 8, 공포: 7, 코미디: 6 },
-    { period: "2월", 드라마: 14, 액션: 12, 로맨스: 9, 공포: 6, 코미디: 7 },
-    { period: "3월", 드라마: 13, 액션: 11, 로맨스: 10, 공포: 5, 코미디: 8 },
-    { period: "4월", 드라마: 12, 액션: 9, 로맨스: 11, 공포: 4, 코미디: 9 },
-    { period: "5월", 드라마: 11, 액션: 8, 로맨스: 12, 공포: 3, 코미디: 10 },
-    { period: "6월", 드라마: 10, 액션: 7, 로맨스: 13, 공포: 2, 코미디: 11 },
-]
+type OttRankDto = {
+  ottName: string;
+  totalCount: number;
+};
+
+type OttGraphResponse = {
+  ottLineGraph: OttLineGraphDto[];
+  ottRanking: OttRankDto[];
+};
+
 
 // 타입별 색상 맵 추가
 const typeColors: Record<string, string> = {
@@ -154,9 +169,7 @@ const typeColors: Record<string, string> = {
 };
 
 // 장르명 정규화 함수
-function normalizeGenre(genre: string) {
-  return genre.trim().toLowerCase();
-}
+
 
 // 장르별 색상 맵 추가
 const genreColors: Record<string, string> = {
@@ -182,6 +195,14 @@ const emotionColors: Record<string, string> = {
     "공포": "#ff9ff3",
 };
 
+const ottColors: Record<string, string> = {
+  "Netflix": "#E50914",
+  "Tving": "#00A6B5",
+  "Watcha": "#FF0044",
+  "Coupang Play": "#00A5FF",
+  "Disney+": "#01147C",
+};
+
 // 변환 함수 추가
 type ChartDataPoint = {
   period: string;
@@ -189,46 +210,112 @@ type ChartDataPoint = {
 };
 
 function convertTypeTimeCountsToChartData(timeCounts: TypeLineGraphDto[]): ChartDataPoint[] {
-  // { period: { 드라마: 10, 영화: 8, ... } } 형태로 그룹핑
   const periodMap: Record<string, ChartDataPoint> = {};
-  
-  console.log("변환 전 데이터:", timeCounts);
-  
+  const allKeys = new Set<string>();
+  const allPeriods = new Set<string>();
+
+  timeCounts.forEach(({ axisLabel, type }) => {
+    allPeriods.add(axisLabel);
+    allKeys.add(type);
+  });
+
+  const sortedPeriods = Array.from(allPeriods).sort();
+
+  sortedPeriods.forEach(period => {
+    periodMap[period] = { period };
+    allKeys.forEach(key => {
+      periodMap[period][key] = 0;
+    });
+  });
+
   timeCounts.forEach(({ axisLabel, type, count }) => {
-    if (!periodMap[axisLabel]) periodMap[axisLabel] = { period: axisLabel };
     periodMap[axisLabel][type] = count;
   });
-  
-  const result = Object.values(periodMap);
-  console.log("변환 후 데이터:", result);
-  
-  // 배열로 변환
-  return result;
+
+  return Object.values(periodMap);
 }
 
 // 장르별 그래프 데이터 변환 함수
 function convertGenreLineGraphToChartData(lineGraph: GenreLineGraphDto[]): ChartDataPoint[] {
   const periodMap: Record<string, ChartDataPoint> = {};
+  const allKeys = new Set<string>();
+  const allPeriods = new Set<string>();
+
+  lineGraph.forEach(({ axisLabel, genre }) => {
+    allPeriods.add(axisLabel);
+    allKeys.add(genre);
+  });
+
+  const sortedPeriods = Array.from(allPeriods).sort();
+
+  sortedPeriods.forEach(period => {
+    periodMap[period] = { period };
+    allKeys.forEach(key => {
+      periodMap[period][key] = 0;
+    });
+  });
+
   lineGraph.forEach(({ axisLabel, genre, count }) => {
-    if (!periodMap[axisLabel]) periodMap[axisLabel] = { period: axisLabel };
     periodMap[axisLabel][genre] = count;
   });
+
   return Object.values(periodMap);
 }
 
 function convertEmotionLineGraphToChartData(lineGraph: EmotionLineGraphDto[]): ChartDataPoint[] {
     const periodMap: Record<string, ChartDataPoint> = {};
+    const allKeys = new Set<string>();
+    const allPeriods = new Set<string>();
+
+    lineGraph.forEach(({ axisLabel, emotion }) => {
+        allPeriods.add(axisLabel);
+        allKeys.add(emotion);
+    });
+
+    const sortedPeriods = Array.from(allPeriods).sort();
+
+    sortedPeriods.forEach(period => {
+        periodMap[period] = { period };
+        allKeys.forEach(key => {
+            periodMap[period][key] = 0;
+        });
+    });
+
     lineGraph.forEach(({ axisLabel, emotion, count }) => {
-        if (!periodMap[axisLabel]) periodMap[axisLabel] = { period: axisLabel };
         periodMap[axisLabel][emotion] = count;
     });
+
     return Object.values(periodMap);
+}
+
+function convertOttLineGraphToChartData(lineGraph: OttLineGraphDto[]): ChartDataPoint[] {
+  const periodMap: Record<string, ChartDataPoint> = {};
+  const allKeys = new Set<string>();
+  const allPeriods = new Set<string>();
+
+  lineGraph.forEach(({ axisLabel, ottName }) => {
+    allPeriods.add(axisLabel);
+    allKeys.add(ottName);
+  });
+
+  const sortedPeriods = Array.from(allPeriods).sort();
+
+  sortedPeriods.forEach(period => {
+    periodMap[period] = { period };
+    allKeys.forEach(key => {
+      periodMap[period][key] = 0;
+    });
+  });
+
+  lineGraph.forEach(({ axisLabel, ottName, count }) => {
+    periodMap[axisLabel][ottName] = count;
+  });
+
+  return Object.values(periodMap);
 }
 
 export default function Component() {
     const [selectedPeriod, setSelectedPeriod] = useState("전체")
-    const [startDate, setStartDate] = useState<Date>()
-    const [endDate, setEndDate] = useState<Date>()
     const [activeTab, setActiveTab] = useState("overview")
     const [card, setCard] = useState<StatisticsCardDto | null>(null);
     const [monthlyDiary, setMonthlyDiary] = useState<MonthlyDiaryCount[]>([]);
@@ -236,130 +323,69 @@ export default function Component() {
     const [typeGraph, setTypeGraph] = useState<TypeGraphResponse>({ typeLineGraph: [], typeRanking: [] });
     const [genreGraph, setGenreGraph] = useState<GenreGraphResponse>({ genreLineGraph: [], genreRanking: [] });
     const [emotionGraph, setEmotionGraph] = useState<EmotionGraphResponse>({ emotionLineGraph: [], emotionRanking: [] });
+    const [ottGraph, setOttGraph] = useState<OttGraphResponse>({ ottLineGraph: [], ottRanking: [] });
+    const [highlightedLine, setHighlightedLine] = useState<string | null>(null);
 
     useEffect(() => {
         fetchCard().then(setCard);
         fetchMonthlyDiaryGraph().then(setMonthlyDiary);
         fetchTypeDistribution().then(setTypeDist);
-        fetchTypeGraph(selectedPeriod).then((data) => {
-            console.log("typeGraph API 응답:", data);
-            console.log("typeLineGraph:", data?.typeLineGraph);
-            console.log("typeRanking:", data?.typeRanking);
-            
-            // API 응답이 비어있으면 임시 더미 데이터 사용
-            if (!data || !data.typeLineGraph || data.typeLineGraph.length === 0) {
-                console.log("API 데이터가 비어있어서 더미 데이터 사용");
-                const dummyData = {
-                    typeLineGraph: [
-                        { axisLabel: "2025-01", type: "DRAMA", count: 5 },
-                        { axisLabel: "2025-01", type: "MOVIE", count: 3 },
-                        { axisLabel: "2025-02", type: "DRAMA", count: 7 },
-                        { axisLabel: "2025-02", type: "MOVIE", count: 4 },
-                        { axisLabel: "2025-03", type: "DRAMA", count: 6 },
-                        { axisLabel: "2025-03", type: "MOVIE", count: 8 },
-                    ],
-                    typeRanking: [
-                        { type: "DRAMA", totalCount: 18 },
-                        { type: "MOVIE", totalCount: 15 },
-                        { type: "BOOK", totalCount: 12 },
-                        { type: "MUSIC", totalCount: 10 },
-                    ]
-                };
-                setTypeGraph(dummyData);
-            } else {
-                setTypeGraph(data);
-            }
-        }).catch((error) => {
-            console.error("API 호출 에러:", error);
-            // 에러 발생 시에도 더미 데이터 사용
-            const dummyData = {
-                typeLineGraph: [
-                    { axisLabel: "2025-01", type: "DRAMA", count: 5 },
-                    { axisLabel: "2025-01", type: "MOVIE", count: 3 },
-                    { axisLabel: "2025-02", type: "DRAMA", count: 7 },
-                    { axisLabel: "2025-02", type: "MOVIE", count: 4 },
-                    { axisLabel: "2025-03", type: "DRAMA", count: 6 },
-                    { axisLabel: "2025-03", type: "MOVIE", count: 8 },
-                ],
-                typeRanking: [
-                    { type: "DRAMA", totalCount: 18 },
-                    { type: "MOVIE", totalCount: 15 },
-                    { type: "BOOK", totalCount: 12 },
-                    { type: "MUSIC", totalCount: 10 },
-                ]
-            };
-            setTypeGraph(dummyData);
-        });
-        // 장르별 데이터 fetch
-        fetchGenreGraph(selectedPeriod).then((data) => {
-            if (!data || !data.genreLineGraph || data.genreLineGraph.length === 0) {
-                // 더미 데이터
-                const dummy = {
-                  genreLineGraph: [
-                    { axisLabel: "2025-01", genre: "드라마", count: 10 },
-                    { axisLabel: "2025-01", genre: "액션", count: 5 },
-                    { axisLabel: "2025-02", genre: "드라마", count: 12 },
-                    { axisLabel: "2025-02", genre: "액션", count: 7 },
-                  ],
-                  genreRanking: [
-                    { genre: "드라마", totalCount: 22 },
-                    { genre: "액션", totalCount: 12 },
-                  ]
-                };
-                setGenreGraph(dummy);
-            } else {
-                setGenreGraph(data);
-            }
-        }).catch(() => {
-            // 더미 데이터
-            const dummy = {
-              genreLineGraph: [
-                { axisLabel: "2025-01", genre: "드라마", count: 10 },
-                { axisLabel: "2025-01", genre: "액션", count: 5 },
-                { axisLabel: "2025-02", genre: "드라마", count: 12 },
-                { axisLabel: "2025-02", genre: "액션", count: 7 },
-              ],
-              genreRanking: [
-                { genre: "드라마", totalCount: 22 },
-                { genre: "액션", totalCount: 12 },
-              ]
-            };
-            setGenreGraph(dummy);
-        });
+        fetchTypeGraph(selectedPeriod).then(setTypeGraph);
+        fetchGenreGraph(selectedPeriod).then(setGenreGraph);
         fetchEmotionGraph(selectedPeriod).then(setEmotionGraph);
+        fetchOttGraph(selectedPeriod).then(setOttGraph);
     }, [selectedPeriod]);
 
-    // 기간에 따른 데이터 선택
     const getTimeData = useMemo(() => {
-        const isDaily = selectedPeriod === "최근한달" || selectedPeriod === "최근일주일"
-        const currentRankings = typeGraph?.typeRanking || [] // API 데이터 사용
+        const chartData = convertTypeTimeCountsToChartData(typeGraph?.typeLineGraph ?? []);
+        const ranking = typeGraph?.typeRanking || [];
+        const isDaily = selectedPeriod === "최근한달" || selectedPeriod === "최근일주일";
 
-        const convertedData = convertTypeTimeCountsToChartData(typeGraph?.typeLineGraph ?? []);
-        console.log("변환된 차트 데이터:", convertedData);
-        console.log("순위 데이터:", currentRankings);
+        const allTypes = new Set<string>();
+        chartData.forEach(d => Object.keys(d).forEach(k => k !== 'period' && allTypes.add(k)));
+        ranking.forEach(r => allTypes.add(r.type));
 
-        if (isDaily) {
-            return {
-                typeData: convertedData, // 일별도 변환 함수 사용
-                genreData: monthlyGenreData,
-                periodLabel: "일별",
-                rankings: currentRankings,
+        const dynamicTypeColors: Record<string, string> = { ...typeColors };
+        let colorIndex = Object.keys(typeColors).length;
+        allTypes.forEach(type => {
+            if (!dynamicTypeColors[type]) {
+                dynamicTypeColors[type] = `hsl(${colorIndex * 50}, 70%, 50%)`;
+                colorIndex++;
             }
-        } else {
-            return {
-                typeData: convertedData,
-                genreData: monthlyGenreData,
-                periodLabel: "월별",
-                rankings: currentRankings,
-            }
-        }
-    }, [selectedPeriod, typeGraph])
+        });
 
-    // 장르별 그래프 데이터 변환 함수
+        return {
+            typeData: chartData,
+            periodLabel: isDaily ? "일별" : "월별",
+            rankings: ranking,
+            colors: dynamicTypeColors,
+        };
+    }, [typeGraph, selectedPeriod]);
+
     const getGenreData = useMemo(() => {
-      const chartData = convertGenreLineGraphToChartData(genreGraph.genreLineGraph ?? []);
-      const ranking = genreGraph.genreRanking ?? [];
-      return { chartData, ranking };
+        const chartData = convertGenreLineGraphToChartData(genreGraph.genreLineGraph ?? []);
+        const ranking = genreGraph.genreRanking ?? [];
+        
+        const normalizeGenre = (g: string) => g.trim().toLowerCase();
+
+        const allGenres = new Set<string>();
+        chartData.forEach(d => Object.keys(d).forEach(k => k !== 'period' && allGenres.add(k)));
+        ranking.forEach(r => allGenres.add(r.genre));
+
+        const dynamicGenreColors: Record<string, string> = { ...genreColors };
+        let colorIndex = Object.keys(genreColors).filter(k => !k.includes(":")).length / 2;
+
+        allGenres.forEach(genre => {
+            const normalized = normalizeGenre(genre);
+            if (!dynamicGenreColors[normalized]) {
+                const newColor = `hsl(${colorIndex * 60 + 180}, 70%, 50%)`;
+                dynamicGenreColors[normalized] = newColor;
+                colorIndex++;
+            }
+            dynamicGenreColors[genre] = dynamicGenreColors[normalized];
+        });
+
+        return { chartData, ranking, colors: dynamicGenreColors };
     }, [genreGraph]);
 
     const getEmotionData = useMemo(() => {
@@ -383,8 +409,42 @@ export default function Component() {
         return { chartData, ranking, colors: dynamicEmotionColors };
     }, [emotionGraph]);
 
-    // 1. 장르명 콘솔 출력 (useEffect 등에서)
-    console.log('장르별 데이터:', getGenreData);
+    const getOttData = useMemo(() => {
+      const chartData = convertOttLineGraphToChartData(ottGraph.ottLineGraph ?? []);
+      const ranking = ottGraph.ottRanking ?? [];
+
+      // 모든 OTT 키를 수집하고 동적 색상 맵 생성
+      const allOtts = new Set<string>();
+      chartData.forEach(d => Object.keys(d).forEach(k => k !== 'period' && allOtts.add(k)));
+      ranking.forEach(r => allOtts.add(r.ottName));
+
+      const dynamicOttColors: Record<string, string> = { ...ottColors };
+      let colorIndex = Object.keys(ottColors).length;
+      allOtts.forEach(ott => {
+          if (!dynamicOttColors[ott]) {
+              dynamicOttColors[ott] = `hsl(${colorIndex * 60}, 70%, 50%)`;
+              colorIndex++;
+          }
+      });
+
+      return { chartData, ranking, colors: dynamicOttColors };
+    }, [ottGraph]);
+
+const CustomTooltip = ({ active, payload, label, highlightedLine }: TooltipProps<number, string> & { highlightedLine: string | null }) => {
+  if (active && payload && payload.length && highlightedLine) {
+    const data = payload.find((p) => p.dataKey === highlightedLine);
+    if (!data) return null;
+
+    return (
+      <div className="bg-white p-2 border border-gray-200 rounded shadow-lg">
+        <p className="font-bold">{data.name}</p>
+        <p>{`${label} : ${data.value}`}</p>
+      </div>
+    );
+  }
+
+  return null;
+};
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
@@ -399,7 +459,7 @@ export default function Component() {
                         <p className="text-[#111] mt-1">나의 콘텐츠 감상 패턴을 분석해보세요</p>
                     </div>
 
-                    {(activeTab === "type" || activeTab === "genre" || activeTab === "emotion") && (
+                    {(activeTab === "type" || activeTab === "genre" || activeTab === "emotion" || activeTab === "ott") && (
                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                             <div className="flex items-center gap-2">
                                 <Calendar className="h-5 w-5 text-gray-500" />
@@ -413,46 +473,9 @@ export default function Component() {
                                         <SelectItem value="최근6개월" className="text-[#111]">최근 6개월</SelectItem>
                                         <SelectItem value="최근한달" className="text-[#111]">최근 한달</SelectItem>
                                         <SelectItem value="최근일주일" className="text-[#111]">최근 일주일</SelectItem>
-                                        <SelectItem value="사용자지정" className="text-[#111]">사용자 지정</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
-
-                            {selectedPeriod === "사용자지정" && (
-                                <div className="flex items-center gap-2">
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                className="w-[140px] justify-start text-left font-normal bg-transparent text-[#111]"
-                                            >
-                                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {startDate ? format(startDate, "yyyy-MM-dd", { locale: ko }) : "시작일"}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <CalendarComponent mode="single" selected={startDate} onSelect={setStartDate} />
-                                        </PopoverContent>
-                                    </Popover>
-
-                                    <span className="text-gray-500">~</span>
-
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                className="w-[140px] justify-start text-left font-normal bg-transparent text-[#111]"
-                                            >
-                                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {endDate ? format(endDate, "yyyy-MM-dd", { locale: ko }) : "종료일"}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <CalendarComponent mode="single" selected={endDate} onSelect={setEndDate} />
-                                        </PopoverContent>
-                                    </Popover>
-                                </div>
-                            )}
                         </div>
                     )}
                 </div>
@@ -511,11 +534,12 @@ export default function Component() {
 
                 {/* 탭 네비게이션 */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-                    <TabsList className="grid w-full grid-cols-4">
+                    <TabsList className="grid w-full grid-cols-5">
                         <TabsTrigger value="overview">개요</TabsTrigger>
                         <TabsTrigger value="type">타입별</TabsTrigger>
                         <TabsTrigger value="genre">장르별</TabsTrigger>
                         <TabsTrigger value="emotion">감정별</TabsTrigger>
+                        <TabsTrigger value="ott">OTT별</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="overview" className="space-y-4">
@@ -529,21 +553,27 @@ export default function Component() {
                                     <ChartContainer
                                         className="h-[300px] overflow-hidden"
                                     >
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <LineChart data={monthlyDiary.map(d => ({ period: d.period, 감상수: d.views }))} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="period" />
-                                                <YAxis />
-                                                <ChartTooltip />
-                                                <Line
-                                                    type="monotone"
-                                                    dataKey="감상수"
-                                                    stroke="#3b82f6"
-                                                    strokeWidth={2}
-                                                    dot={{ fill: "#3b82f6" }}
-                                                />
-                                            </LineChart>
-                                        </ResponsiveContainer>
+                                        {monthlyDiary.length === 0 ? (
+                                            <div className="flex items-center justify-center h-full text-gray-400">
+                                                데이터가 없습니다.
+                                            </div>
+                                        ) : (
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <LineChart data={monthlyDiary.map(d => ({ period: d.period, 감상수: d.views }))} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis dataKey="period" />
+                                                    <YAxis />
+                                                    <ChartTooltip />
+                                                    <Line
+                                                        type="monotone"
+                                                        dataKey="감상수"
+                                                        stroke="#3b82f6"
+                                                        strokeWidth={2}
+                                                        dot={{ fill: "#3b82f6" }}
+                                                    />
+                                                </LineChart>
+                                            </ResponsiveContainer>
+                                        )}
                                     </ChartContainer>
                                 </CardContent>
                             </Card>
@@ -557,24 +587,30 @@ export default function Component() {
                                     <ChartContainer
                                         className="h-[300px] overflow-hidden"
                                     >
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <PieChart>
-                                                <Pie
-                                                    data={typeDist}
-                                                    cx="50%"
-                                                    cy="50%"
-                                                    outerRadius={80}
-                                                    dataKey="count"
-                                                    nameKey="type"
-                                                    label={({ type, percent }) => `${type} ${(percent * 100).toFixed(0)}%`}
-                                                >
-                                                    {typeDist.map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={`hsl(${index * 50}, 70%, 50%)`} />
-                                                    ))}
-                                                </Pie>
-                                                <ChartTooltip />
-                                            </PieChart>
-                                        </ResponsiveContainer>
+                                        {typeDist.length === 0 ? (
+                                            <div className="flex items-center justify-center h-full text-gray-400">
+                                                데이터가 없습니다.
+                                            </div>
+                                        ) : (
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <PieChart>
+                                                    <Pie
+                                                        data={typeDist}
+                                                        cx="50%"
+                                                        cy="50%"
+                                                        outerRadius={80}
+                                                        dataKey="count"
+                                                        nameKey="type"
+                                                        label={({ type, percent }) => `${type} ${(percent * 100).toFixed(0)}%`}
+                                                    >
+                                                        {typeDist.map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={`hsl(${index * 50}, 70%, 50%)`} />
+                                                        ))}
+                                                    </Pie>
+                                                    <ChartTooltip />
+                                                </PieChart>
+                                            </ResponsiveContainer>
+                                        )}
                                     </ChartContainer>
                                 </CardContent>
                             </Card>
@@ -599,22 +635,28 @@ export default function Component() {
                                                     데이터가 없습니다.
                                                 </div>
                                             ) : (
-                                                <LineChart data={getTimeData.typeData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                                                <LineChart 
+                                                    data={getTimeData.typeData} 
+                                                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                                                    onMouseLeave={() => setHighlightedLine(null)}
+                                                >
                                                     <CartesianGrid strokeDasharray="3 3" />
                                                     <XAxis dataKey="period" />
                                                     <YAxis />
-                                                    <ChartTooltip />
+                                                    <Tooltip content={<CustomTooltip highlightedLine={highlightedLine} />} />
                                                     {getTimeData.typeData.length > 0 &&
                                                         Object.keys(getTimeData.typeData[0])
                                                             .filter((key) => key !== "period")
-                                                            .map((type, idx) => (
+                                                            .map((type) => (
                                                                 <Line
                                                                     key={type}
                                                                     type="monotone"
                                                                     dataKey={type}
-                                                                    stroke={typeColors[type] || `hsl(${idx * 50}, 70%, 50%)`}
-                                                                    strokeWidth={2}
-                                                                    dot={{ fill: typeColors[type] || `hsl(${idx * 50}, 70%, 50%)`, r: 4 }}
+                                                                    stroke={getTimeData.colors[type]}
+                                                                    strokeWidth={highlightedLine === type ? 4 : 2}
+                                                                    strokeOpacity={highlightedLine && highlightedLine !== type ? 0.3 : 1}
+                                                                    dot={{ r: 3 }}
+                                                                    onMouseEnter={() => setHighlightedLine(type)}
                                                                 />
                                                             ))
                                                     }
@@ -631,16 +673,21 @@ export default function Component() {
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-4">
-                                        {(typeGraph?.typeRanking ?? []).length === 0 ? (
+                                        {(getTimeData.rankings ?? []).length === 0 ? (
                                             <div className="text-center text-gray-400 py-8">
                                                 데이터가 없습니다.
                                             </div>
                                         ) : (
-                                            (typeGraph?.typeRanking ?? []).map((item, index) => (
-                                                <div key={item.type} className="flex items-center gap-3">
+                                            (getTimeData.rankings ?? []).map((item, index) => (
+                                                <div
+                                                    key={item.type}
+                                                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                                                    onMouseEnter={() => setHighlightedLine(item.type)}
+                                                    onMouseLeave={() => setHighlightedLine(null)}
+                                                >
                                                     <div
                                                         className="flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-semibold"
-                                                        style={{ backgroundColor: typeColors[item.type] || `hsl(${index * 50}, 70%, 50%)` }}
+                                                        style={{ backgroundColor: getTimeData.colors[item.type] }}
                                                     >
                                                         {index + 1}
                                                     </div>
@@ -653,8 +700,8 @@ export default function Component() {
                                                             <div
                                                                 className="h-2 rounded-full"
                                                                 style={{
-                                                                    backgroundColor: typeColors[item.type] || `hsl(${index * 50}, 70%, 50%)`,
-                                                                    width: `${(item.totalCount / Math.max(...(typeGraph?.typeRanking ?? []).map((d) => d.totalCount))) * 100}%`,
+                                                                    backgroundColor: getTimeData.colors[item.type],
+                                                                    width: `${(item.totalCount / Math.max(...(getTimeData.rankings ?? []).map((d) => d.totalCount))) * 100}%`,
                                                                 }}
                                                             />
                                                         </div>
@@ -684,22 +731,28 @@ export default function Component() {
                                                     데이터가 없습니다.
                                                 </div>
                                             ) : (
-                                                <LineChart data={getGenreData.chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                                                <LineChart 
+                                                    data={getGenreData.chartData} 
+                                                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                                                    onMouseLeave={() => setHighlightedLine(null)}
+                                                >
                                                     <CartesianGrid strokeDasharray="3 3" />
                                                     <XAxis dataKey="period" />
                                                     <YAxis />
-                                                    <ChartTooltip />
+                                                    <Tooltip content={<CustomTooltip highlightedLine={highlightedLine} />} />
                                                     {getGenreData.chartData.length > 0 &&
                                                         Object.keys(getGenreData.chartData[0])
                                                             .filter((key) => key !== "period")
-                                                            .map((genre, idx) => (
+                                                            .map((genre) => (
                                                                 <Line
                                                                     key={genre}
                                                                     type="monotone"
                                                                     dataKey={genre}
-                                                                    stroke={genreColors[normalizeGenre(genre)] || `hsl(${idx * 50}, 70%, 50%)`}
-                                                                    strokeWidth={2}
-                                                                    dot={{ fill: genreColors[normalizeGenre(genre)] || `hsl(${idx * 50}, 70%, 50%)`, r: 3 }}
+                                                                    stroke={getGenreData.colors[genre]}
+                                                                    strokeWidth={highlightedLine === genre ? 4 : 2}
+                                                                    strokeOpacity={highlightedLine && highlightedLine !== genre ? 0.3 : 1}
+                                                                    dot={{ r: 3 }}
+                                                                    onMouseEnter={() => setHighlightedLine(genre)}
                                                                 />
                                                             ))
                                                     }
@@ -720,10 +773,15 @@ export default function Component() {
                                             <div className="text-center text-gray-400 py-8">데이터가 없습니다.</div>
                                         ) : (
                                             getGenreData.ranking.map((item, index) => (
-                                                <div key={item.genre} className="flex items-center gap-3">
+                                                <div
+                                                    key={item.genre}
+                                                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                                                    onMouseEnter={() => setHighlightedLine(item.genre)}
+                                                    onMouseLeave={() => setHighlightedLine(null)}
+                                                >
                                                     <div
                                                         className="flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-semibold"
-                                                        style={{ backgroundColor: genreColors[normalizeGenre(item.genre)] || `hsl(${index * 50}, 70%, 50%)` }}
+                                                        style={{ backgroundColor: getGenreData.colors[item.genre] }}
                                                     >
                                                         {index + 1}
                                                     </div>
@@ -736,7 +794,7 @@ export default function Component() {
                                                             <div
                                                                 className="h-2 rounded-full"
                                                                 style={{
-                                                                    backgroundColor: genreColors[normalizeGenre(item.genre)] || `hsl(${index * 50}, 70%, 50%)`,
+                                                                    backgroundColor: getGenreData.colors[item.genre],
                                                                     width: `${(item.totalCount / Math.max(...getGenreData.ranking.map((d) => d.totalCount))) * 100}%`,
                                                                 }}
                                                             />
@@ -768,21 +826,27 @@ export default function Component() {
                                                     데이터가 없습니다.
                                                 </div>
                                             ) : (
-                                                <LineChart data={getEmotionData.chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                                                <LineChart 
+                                                    data={getEmotionData.chartData} 
+                                                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                                                    onMouseLeave={() => setHighlightedLine(null)}
+                                                >
                                                     <CartesianGrid strokeDasharray="3 3" />
                                                     <XAxis dataKey="period" />
                                                     <YAxis />
-                                                    <ChartTooltip />
+                                                    <Tooltip content={<CustomTooltip highlightedLine={highlightedLine} />} />
                                                     {Object.keys(getEmotionData.chartData[0] ?? {})
                                                         .filter((key) => key !== "period")
-                                                        .map((emotion, idx) => (
+                                                        .map((emotion) => (
                                                             <Line
                                                                 key={emotion}
                                                                 type="monotone"
                                                                 dataKey={emotion}
                                                                 stroke={getEmotionData.colors[emotion]}
-                                                                strokeWidth={2}
-                                                                dot={{ fill: getEmotionData.colors[emotion], r: 3 }}
+                                                                strokeWidth={highlightedLine === emotion ? 4 : 2}
+                                                                strokeOpacity={highlightedLine && highlightedLine !== emotion ? 0.3 : 1}
+                                                                dot={{ r: 3 }}
+                                                                onMouseEnter={() => setHighlightedLine(emotion)}
                                                             />
                                                         ))}
                                                 </LineChart>
@@ -803,7 +867,12 @@ export default function Component() {
                                             <div className="text-center text-gray-400 py-8">데이터가 없습니다.</div>
                                         ) : (
                                             getEmotionData.ranking.map((item, index) => (
-                                                <div key={item.emotion} className="flex items-center gap-3">
+                                                <div
+                                                    key={item.emotion}
+                                                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                                                    onMouseEnter={() => setHighlightedLine(item.emotion)}
+                                                    onMouseLeave={() => setHighlightedLine(null)}
+                                                >
                                                     <div
                                                         className="flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-semibold"
                                                         style={{ backgroundColor: getEmotionData.colors[item.emotion] }}
@@ -821,6 +890,100 @@ export default function Component() {
                                                                 style={{
                                                                     backgroundColor: getEmotionData.colors[item.emotion],
                                                                     width: `${(item.totalCount / Math.max(...getEmotionData.ranking.map((d) => d.totalCount))) * 100}%`,
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="ott" className="space-y-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* 왼쪽: 차트 */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>OTT별 {getTimeData.periodLabel} 추이</CardTitle>
+                                    <CardDescription>주요 OTT별 {getTimeData.periodLabel} 감상 현황</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <ChartContainer className="h-[350px] overflow-hidden">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            {getOttData.chartData.length === 0 ? (
+                                                <div className="flex items-center justify-center h-full text-gray-400">
+                                                    데이터가 없습니다.
+                                                </div>
+                                            ) : (
+                                                <LineChart 
+                                                    data={getOttData.chartData} 
+                                                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                                                    onMouseLeave={() => setHighlightedLine(null)}
+                                                >
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis dataKey="period" />
+                                                    <YAxis />
+                                                    <Tooltip content={<CustomTooltip highlightedLine={highlightedLine} />} />
+                                                    {getOttData.chartData.length > 0 &&
+                                                        Object.keys(getOttData.chartData[0])
+                                                            .filter((key) => key !== "period")
+                                                            .map((ott, idx) => (
+                                                                <Line
+                                                                    key={ott}
+                                                                    type="monotone"
+                                                                    dataKey={ott}
+                                                                    stroke={getOttData.colors[ott] || `hsl(${idx * 60}, 70%, 50%)`}
+                                                                    strokeWidth={highlightedLine === ott ? 4 : 2}
+                                                                    strokeOpacity={highlightedLine && highlightedLine !== ott ? 0.3 : 1}
+                                                                    dot={{ r: 3 }}
+                                                                    onMouseEnter={() => setHighlightedLine(ott)}
+                                                                />
+                                                            ))
+                                                    }
+                                                </LineChart>
+                                            )}
+                                        </ResponsiveContainer>
+                                    </ChartContainer>
+                                </CardContent>
+                            </Card>
+                            {/* 오른쪽: 순위 */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>OTT별 순위</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-3 max-h-[350px] overflow-y-auto">
+                                        {getOttData.ranking.length === 0 ? (
+                                            <div className="text-center text-gray-400 py-8">데이터가 없습니다.</div>
+                                        ) : (
+                                            getOttData.ranking.map((item, index) => (
+                                                <div
+                                                    key={item.ottName}
+                                                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                                                    onMouseEnter={() => setHighlightedLine(item.ottName)}
+                                                    onMouseLeave={() => setHighlightedLine(null)}
+                                                >
+                                                    <div
+                                                        className="flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-semibold"
+                                                        style={{ backgroundColor: getOttData.colors[item.ottName] || `hsl(${index * 60}, 70%, 50%)` }}
+                                                    >
+                                                        {index + 1}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="font-medium">{item.ottName}</span>
+                                                            <span className="text-sm text-gray-600">{item.totalCount}개</span>
+                                                        </div>
+                                                        <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                                            <div
+                                                                className="h-2 rounded-full"
+                                                                style={{
+                                                                    backgroundColor: getOttData.colors[item.ottName] || `hsl(${index * 60}, 70%, 50%)`,
+                                                                    width: `${(item.totalCount / Math.max(...getOttData.ranking.map((d) => d.totalCount))) * 100}%`,
                                                                 }}
                                                             />
                                                         </div>

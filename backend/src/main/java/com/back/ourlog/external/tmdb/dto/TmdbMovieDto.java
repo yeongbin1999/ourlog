@@ -3,6 +3,8 @@ package com.back.ourlog.external.tmdb.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 public class TmdbMovieDto {
 
@@ -22,5 +24,10 @@ public class TmdbMovieDto {
     @JsonProperty("vote_average")
     private double voteAverage;
 
-    // 기타 필요한 필드는 자유롭게 추가
+    @JsonProperty("vote_count")
+    private int voteCount;
+
+    @JsonProperty("genres")
+    private List<TmdbGenreDto> genres;
+
 }

@@ -225,4 +225,41 @@ public class StatisticsControllerTest {
                     .andExpect(jsonPath("$.emotionRanking.[%d].totalCount".formatted(i)).value(emotionRankDto.getTotalCount()));
         }
     }
+
+    @Test
+    @DisplayName("ott 그래프 조회")
+    void ott_그래프() throws Exception {
+
+        ResultActions resultActions = mvc.perform(
+                get("/api/v1/statistics/ott-graph")
+                        .param("period", "ALL")  // 예시로 MONTH 기간을 사용
+        ).andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(StatisticsController.class))
+                .andExpect(handler().methodName("getOttGraph"))
+                .andExpect(status().isOk());
+
+        OttGraphResponse ottGraphResponse = statisticsService.getOttGraph(1, PeriodOption.ALL);
+
+        List<OttLineGraphDto> line = ottGraphResponse.getOttLineGraph();
+        List<OttRankDto> ranking = ottGraphResponse.getOttRanking();
+
+        for(int i = 0; i < line.size(); i++) {
+            OttLineGraphDto ottLineGraphDto = line.get(i);
+            System.out.println("Axis Label: " + ottLineGraphDto.getAxisLabel() + ", OTT: " + ottLineGraphDto.getOttName() + ", Count: " + ottLineGraphDto.getCount());
+            resultActions
+                    .andExpect(jsonPath("$.ottLineGraph.[%d].axisLabel".formatted(i)).value(ottLineGraphDto.getAxisLabel()))
+                    .andExpect(jsonPath("$.ottLineGraph.[%d].ottName".formatted(i)).value(ottLineGraphDto.getOttName()))
+                    .andExpect(jsonPath("$.ottLineGraph.[%d].count".formatted(i)).value(ottLineGraphDto.getCount()));
+        }
+
+        for(int i = 0; i < ranking.size(); i++) {
+            OttRankDto ottRankDto = ranking.get(i);
+            System.out.println("OTT: " + ottRankDto.getOttName() + ", Count: " + ottRankDto.getTotalCount());
+            resultActions
+                    .andExpect(jsonPath("$.ottRanking.[%d].ottName".formatted(i)).value(ottRankDto.getOttName()))
+                    .andExpect(jsonPath("$.ottRanking.[%d].totalCount".formatted(i)).value(ottRankDto.getTotalCount()));
+        }
+    }
 }

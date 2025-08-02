@@ -5,8 +5,6 @@ import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.follow.entity.Follow;
 import com.back.ourlog.domain.like.entity.Like;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -30,17 +28,15 @@ import java.util.List;
         }
 )
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // 일반 회원가입 시 반드시 필요 / 소셜로그인 시 provider + providerId 기준
     @Column(unique = true, length = 50)
     private String email;
 
     @Column(length = 100)
-    private String password; // 소셜 로그인 유저는 null 가능
+    private String password;
 
     @Column(nullable = false, length = 50)
     private String nickname;
@@ -49,9 +45,8 @@ public class User {
 
     private String bio;
 
-    // 소셜 로그인 전용 필드
     @Column(length = 20)
-    private String provider; // ex) "google", "kakao", "naver"
+    private String provider;
 
     @Column(length = 100)
     private String providerId;
@@ -77,11 +72,11 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like> likes = new ArrayList<>();
 
-    // 내가 팔로우
+    // 내가 팔로우 한 사람 (팔로잉)
     @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final List<Follow> followings = new ArrayList<>();
 
-    // 내를 팔로우
+    // 나를 팔로우 한 사람 (팔로워)
     @OneToMany(mappedBy = "followee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private final List<Follow> followers = new ArrayList<>();
 
@@ -109,6 +104,11 @@ public class User {
         if (this.followingsCount > 0) this.followingsCount--;
     }
 
+    public void deleteComment(Comment comment) {
+        comments.remove(comment);
+        comment.removeUser();
+    }
+
     // === 일반 가입 전용 생성자 ===
     public static User createNormalUser(String email, String encodedPassword, String nickname, String profileImageUrl, String bio) {
         return User.builder()
@@ -130,4 +130,5 @@ public class User {
                 .profileImageUrl(profileImageUrl)
                 .build();
     }
+
 }

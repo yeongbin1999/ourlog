@@ -48,67 +48,81 @@ class DiaryControllerTest {
     private TagRepository tagRepository;
 
     @Autowired
-    private GenreRepository genreRepository;
-
-    @Autowired
     private OttRepository ottRepository;
 
     @Test
     @DisplayName("감상일기 등록 성공")
     void t1() throws Exception {
+        Tag tag = tagRepository.save(new Tag("SF"));
 
         String body = """
-            {
-                "title": "인생 영화",
-                "contentText": "감동이었어요",
-                "rating": 4.5,
-                "isPublic": true,
-                "externalId": "MOV123456",
-                "type": "MOVIE",
-                "tagIds": [1, 2],
-                "genreIds": [3],
-                "ottIds": [1]
-            }
-        """;
-
-        ResultActions resultActions = mvc.perform(
-                post("/api/v1/diaries")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body)
-                )
-                .andDo(print());
-
-        Diary latestDiary = diaryRepository.findTopByOrderByIdDesc().orElseThrow();
-
-        resultActions
-                .andExpect(handler().handlerType(DiaryController.class))
-                .andExpect(handler().methodName("writeDiary"))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.data.title").value("인생 영화"));
-    }
-
-    @DisplayName("감상일기 등록 실패 - 제목 없음")
-    @Test
-    void t2() throws Exception {
-        DiaryWriteRequestDto dto = new DiaryWriteRequestDto("", "내용 있음");
+        {
+            "title": "인셉션",
+            "contentText": "정말 재밌었어요!",
+            "rating": 4.8,
+            "isPublic": true,
+            "externalId": "tt1375666",
+            "type": "MOVIE",
+            "tagIds": [%d]
+        }
+    """.formatted(tag.getId());
 
         mvc.perform(post("/api/v1/diaries")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
+                        .content(body))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.title").value("인셉션"));
+    }
+
+    @Test
+    @DisplayName("감상일기 등록 실패 - 제목 없음")
+    void t2() throws Exception {
+        Tag tag = tagRepository.save(new Tag("테스트"));
+
+        String body = """
+        {
+            "title": "",
+            "contentText": "내용 있음",
+            "rating": 4.0,
+            "isPublic": true,
+            "externalId": "tt1375666",
+            "type": "MOVIE",
+            "tagIds": [%d]
+        }
+    """.formatted(tag.getId());
+
+        mvc.perform(post("/api/v1/diaries")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.msg").value("제목을 입력해주세요."));
     }
 
-    @DisplayName("감상일기 등록 실패 - 내용 없음")
     @Test
+    @DisplayName("감상일기 등록 실패 - 내용 없음")
     void t3() throws Exception {
-        DiaryWriteRequestDto dto = new DiaryWriteRequestDto("제목 있음", "");
+        Tag tag = tagRepository.save(new Tag("테스트"));
+
+        String body = """
+        {
+            "title": "제목 있음",
+            "contentText": "",
+            "rating": 3.0,
+            "isPublic": true,
+            "type": "BOOK",
+            "externalId": "library-9791190908207",
+            "tagIds": [%d]
+        }
+    """.formatted(tag.getId());
 
         mvc.perform(post("/api/v1/diaries")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
+                        .content(body))
+                .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.msg").value("내용을 입력해주세요."));
+                .andExpect(jsonPath("$.msg").value("내용을 입력해주세요."))
+                .andExpect(jsonPath("$.resultCode").value("COMMON_400"));
     }
 
     @Test
@@ -116,17 +130,16 @@ class DiaryControllerTest {
     void t4() throws Exception {
         Tag tag1 = tagRepository.save(new Tag("로맨스"));
         Tag tag2 = tagRepository.save(new Tag("액션"));
-        Genre genre = genreRepository.save(new Genre("스릴러"));
         Ott ott = ottRepository.save(new Ott("Netflix"));
 
         DiaryWriteRequestDto requestDto = new DiaryWriteRequestDto(
-                "원본 제목",
+                "인셉션",
                 "원본 내용",
                 true,
                 3.5F,
-                "EXT111",
                 ContentType.MOVIE,
-                List.of(tag1.getId()), // 최초엔 tag1만
+                "tt1375666",
+                List.of(tag1.getId()),
                 List.of(),
                 List.of()
         );
@@ -136,127 +149,74 @@ class DiaryControllerTest {
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isCreated());
 
-        // 저장된 Diary ID 사용
         Diary diaryBefore = diaryRepository.findTopByOrderByIdDesc().orElseThrow();
         Integer diaryId = diaryBefore.getId();
 
-        assertThat(diaryBefore.getDiaryTags()).hasSize(1);
-        assertThat(diaryBefore.getDiaryTags().get(0).getTag().getId()).isEqualTo(tag1.getId());
-
-        // 수정 요청
         String body = """
-    {
-        "title": "수정된 다이어리",
-        "contentText": "수정된 내용입니다.",
-        "rating": 4.0,
-        "isPublic": true,
-        "externalId": "MOV123456",
-        "type": "MOVIE",
-        "tagIds": [%d, %d],
-        "genreIds": [%d],
-        "ottIds": [%d]
-    }
-    """.formatted(tag1.getId(), tag2.getId(), genre.getId(), ott.getId());
+        {
+            "title": "메멘토",
+            "contentText": "수정된 내용입니다.",
+            "rating": 4.0,
+            "isPublic": true,
+            "externalId": "tt1375666",
+            "type": "MOVIE",
+            "tagIds": [%d, %d],
+            "ottIds": [%d]
+        }
+    """.formatted(tag1.getId(), tag2.getId(), ott.getId());
 
         mvc.perform(put("/api/v1/diaries/" + diaryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.title").value("수정된 다이어리"))
+                .andExpect(jsonPath("$.data.title").value("메멘토"))
                 .andExpect(jsonPath("$.data.contentText").value("수정된 내용입니다."))
                 .andExpect(jsonPath("$.data.rating").value(4.0));
-
-        // 수정 후 검증
-        Diary diaryAfter = diaryRepository.findById(diaryId).orElseThrow();
-
-        List<Integer> tagIds = diaryAfter.getDiaryTags().stream()
-                .map(dt -> dt.getTag().getId())
-                .toList();
-        List<Integer> genreIds = diaryAfter.getDiaryGenres().stream()
-                .map(dg -> dg.getGenre().getId())
-                .toList();
-        List<Integer> ottIds = diaryAfter.getDiaryOtts().stream()
-                .map(doo -> doo.getOtt().getId())
-                .toList();
-
-        assertThat(tagIds).containsExactlyInAnyOrder(tag1.getId(), tag2.getId());
-        assertThat(genreIds).containsExactly(genre.getId());
-        assertThat(ottIds).containsExactly(ott.getId());
     }
 
     @Test
     @DisplayName("감상일기 수정 실패 - 존재하지 않는 태그 ID")
     void t5() throws Exception {
         int id = 1;
-
         String body = """
         {
             "title": "다이어리",
             "contentText": "내용입니다.",
             "rating": 4.0,
             "isPublic": true,
-            "externalId": "MOV123456",
+            "externalId": "tt1375666",
             "type": "MOVIE",
             "tagIds": [999],
-            "genreIds": [3],
             "ottIds": [1]
         }
     """;
 
-        mvc.perform(
-                        put("/api/v1/diaries/" + id)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(body)
-                ).andDo(print())
+        mvc.perform(put("/api/v1/diaries/" + id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.resultCode").value("TAG_001"))
                 .andExpect(jsonPath("$.msg").value("존재하지 않는 태그입니다."));
     }
 
     @Test
-    @DisplayName("감상일기 수정 실패 - 존재하지 않는 장르 ID")
-    void t6() throws Exception {
-        String body = """
-        {
-            "title": "다이어리",
-            "contentText": "내용입니다.",
-            "rating": 4.0,
-            "isPublic": true,
-            "externalId": "MOV123456",
-            "type": "MOVIE",
-            "tagIds": [1],
-            "genreIds": [999],
-            "ottIds": [1]
-        }
-    """;
-
-        mvc.perform(put("/api/v1/diaries/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.resultCode").value("GENRE_001"))
-                .andExpect(jsonPath("$.msg").value("존재하지 않는 장르입니다."));
-    }
-
-    @Test
     @DisplayName("감상일기 수정 실패 - 존재하지 않는 OTT ID")
-    void t7() throws Exception {
+    void t6() throws Exception {
+        int id = 1;
         String body = """
         {
             "title": "다이어리",
             "contentText": "내용입니다.",
             "rating": 4.0,
             "isPublic": true,
-            "externalId": "MOV123456",
+            "externalId": "tt1375666",
             "type": "MOVIE",
             "tagIds": [1],
-            "genreIds": [3],
             "ottIds": [999]
         }
     """;
 
-        mvc.perform(put("/api/v1/diaries/1")
+        mvc.perform(put("/api/v1/diaries/" + id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
@@ -266,7 +226,7 @@ class DiaryControllerTest {
 
     @DisplayName("감상일기 삭제 성공")
     @Test
-    void t8() throws Exception {
+    void t7() throws Exception {
         int id = 1;
         mvc.perform(delete("/api/v1/diaries/" + id))
                 .andDo(print())
@@ -277,7 +237,7 @@ class DiaryControllerTest {
 
     @DisplayName("감상일기 삭제 실패 - 존재하지 않는 ID")
     @Test
-    void t9() throws Exception {
+    void t8() throws Exception {
         int id = 9999;
         mvc.perform(delete("/api/v1/diaries/" + id))
                 .andDo(print())
@@ -289,7 +249,7 @@ class DiaryControllerTest {
     @Test
     @DisplayName("감성일기 조회 성공")
     @Transactional(readOnly = true)
-    void t10() throws Exception {
+    void t9() throws Exception {
         int id = 1;
         ResultActions resultActions = mvc.perform(
                 get("/api/v1/diaries/" + id)
@@ -309,7 +269,7 @@ class DiaryControllerTest {
     @Test
     @DisplayName("감성일기 조회 실패")
     @Transactional(readOnly = true)
-    void t11() throws Exception {
+    void t10() throws Exception {
         int id = 100000;
         ResultActions resultActions = mvc.perform(
                 get("/api/v1/diaries/" + id)

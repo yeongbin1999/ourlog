@@ -4,6 +4,7 @@ import com.back.ourlog.global.common.dto.RsData;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -41,6 +42,17 @@ public class GlobalExceptionHandler {
                 .body(RsData.fail(ErrorCode.BAD_REQUEST, errorMessage));
     }
 
+    // 필수 요청 파라미터 누락 → BAD_REQUEST
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<RsData<Void>> handleMissingServletRequestParameter(MissingServletRequestParameterException e) {
+        String paramName = e.getParameterName();
+        String message = "필수 요청 파라미터 '" + paramName + "'가 누락되었습니다.";
+
+        return ResponseEntity
+                .badRequest()
+                .body(RsData.fail(ErrorCode.BAD_REQUEST, message));
+    }
+
     // 예상 못한 예외 → SERVER_ERROR
     @ExceptionHandler(Exception.class)
     public ResponseEntity<RsData<Void>> handleException(Exception e) {
@@ -72,6 +84,8 @@ public class GlobalExceptionHandler {
         if (code.startsWith("COMMON_404")) return HttpStatus.NOT_FOUND;
 
         if (code.startsWith("SERVER_")) return HttpStatus.INTERNAL_SERVER_ERROR;
+
+        if(code.startsWith("COMMENT_")) return HttpStatus.NOT_FOUND;
 
         return HttpStatus.BAD_REQUEST;
     }

@@ -7,18 +7,34 @@ import java.util.List;
 
 public interface StatisticsRepositoryCustom {
 
-    /** 타입 그래프 데이터 조회 */
+    /** 콘텐츠 타입별 월별 추이 */
     List<TypeLineGraphDto> findTypeLineMonthly(Integer userId, LocalDateTime start, LocalDateTime end);
+    /** 콘텐츠 타입별 일별 추이 */
     List<TypeLineGraphDto> findTypeLineDaily(Integer userId, LocalDateTime start, LocalDateTime end);
+    /** 콘텐츠 타입별 순위 */
     List<TypeRankDto> findTypeRanking(Integer userId, LocalDateTime start, LocalDateTime end);
 
-    /** 장르 그래프 데이터 조회 */
+
+    /** 장르별 월별 추이 */
     List<GenreLineGraphDto> findGenreLineMonthly(Integer userId, LocalDateTime start, LocalDateTime end);
+    /** 장르별 일별 추이 */
     List<GenreLineGraphDto> findGenreLineDaily(Integer userId, LocalDateTime start, LocalDateTime end);
+    /** 장르별 순위 */
     List<GenreRankDto> findGenreRanking(Integer userId, LocalDateTime start, LocalDateTime end);
 
-    /** 감정 그래프 데이터 조회 */
+
+    /** 감정별 월별 추이 */
     List<EmotionLineGraphDto> findEmotionLineMonthly(Integer userId, LocalDateTime start, LocalDateTime end);
+    /** 감정별 일별 추이 */
     List<EmotionLineGraphDto> findEmotionLineDaily(Integer userId, LocalDateTime start, LocalDateTime end);
+    /** 감정별 순위 */
     List<EmotionRankDto> findEmotionRanking(Integer userId, LocalDateTime start, LocalDateTime end);
+
+
+    /** OTT별 월별 추이 */
+    List<OttLineGraphDto> findOttLineMonthly(Integer userId, LocalDateTime start, LocalDateTime end);
+    /** OTT별 일별 추이 */
+    List<OttLineGraphDto> findOttLineDaily(Integer userId, LocalDateTime start, LocalDateTime end);
+    /** OTT별 순위 */
+    List<OttRankDto> findOttRanking(Integer userId, LocalDateTime start, LocalDateTime end);
 }
