@@ -5,6 +5,8 @@ import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.follow.entity.Follow;
 import com.back.ourlog.domain.like.entity.Like;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
