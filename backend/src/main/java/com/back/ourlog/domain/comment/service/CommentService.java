@@ -34,7 +34,9 @@ public class CommentService {
     public List<CommentResponseDto> getComments(int diaryId) {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
-        List<Comment> comments = diary.getComments();
+
+        // 최신 순으로 나열된 댓글 정보
+        List<Comment> comments = commentRepository.findByDiaryOrderByCreatedAtDesc(diary);
 
         return comments.stream()
                 .map(CommentResponseDto::new)
