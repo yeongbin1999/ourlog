@@ -70,9 +70,9 @@ public class DiaryService {
         );
 
         // Tag 매핑
-        req.tagIds().forEach(tagId -> {
-            Tag tag = tagRepository.findById(tagId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.TAG_NOT_FOUND));
+        req.tagNames().forEach(tagName -> {
+            Tag tag = tagRepository.findByName(tagName)
+                    .orElseGet(() -> tagRepository.save(new Tag(tagName)));
             diary.getDiaryTags().add(new DiaryTag(diary, tag));
         });
 
@@ -141,7 +141,7 @@ public class DiaryService {
         diary.update(dto.title(), dto.contentText(), dto.rating(), dto.isPublic());
 
         // 태그 & OTT 갱신
-        updateTags(diary, dto.tagIds());
+        updateTags(diary, dto.tagNames());
         updateOtts(diary, dto.ottIds());
 
         return DiaryResponseDto.from(diary);
@@ -175,25 +175,26 @@ public class DiaryService {
         });
     }
 
-    private void updateTags(Diary diary, List<Integer> newTagIds) {
+    private void updateTags(Diary diary, List<String> newTagNames) {
         List<DiaryTag> current = diary.getDiaryTags();
-        List<Integer> currentTagIds = current.stream()
-                .map(dt -> dt.getTag().getId())
+        List<String> currentNames = current.stream()
+                .map(dt -> dt.getTag().getName())
                 .toList();
 
         // 제거할 항목
         List<DiaryTag> toRemove = current.stream()
-                .filter(dt -> !newTagIds.contains(dt.getTag().getId()))
+                .filter(dt -> !newTagNames.contains(dt.getTag().getName()))
                 .toList();
         diary.getDiaryTags().removeAll(toRemove);
 
         // 추가할 항목
-        List<Integer> toAdd = newTagIds.stream()
-                .filter(id -> !currentTagIds.contains(id))
+        List<String> toAdd = newTagNames.stream()
+                .filter(name -> !currentNames.contains(name))
                 .toList();
-        toAdd.forEach(tagId -> {
-            Tag tag = tagRepository.findById(tagId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.TAG_NOT_FOUND));
+
+        toAdd.forEach(tagName -> {
+            Tag tag = tagRepository.findByName(tagName)
+                    .orElseGet(() -> tagRepository.save(new Tag(tagName)));
             diary.getDiaryTags().add(new DiaryTag(diary, tag));
         });
     }

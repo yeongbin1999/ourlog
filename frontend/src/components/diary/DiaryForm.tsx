@@ -7,7 +7,23 @@ import Image from "next/image";
 interface Tag {
   id: number;
   name: string;
-  color: string;
+  color?: string; 
+}
+
+const tagColors = [
+  "bg-emerald-100 text-emerald-700",
+  "bg-blue-100 text-blue-700",
+  "bg-yellow-100 text-yellow-800",
+  "bg-purple-100 text-purple-700",
+  "bg-pink-100 text-pink-700",
+  "bg-green-100 text-green-700",
+  "bg-indigo-100 text-indigo-700",
+  "bg-red-100 text-red-700",
+];
+
+function getRandomColor() {
+  const randomIndex = Math.floor(Math.random() * tagColors.length);
+  return tagColors[randomIndex];
 }
 
 interface OTTPlatform {
@@ -16,28 +32,12 @@ interface OTTPlatform {
   icon: string;
 }
 
-const DEFAULT_TAGS: Tag[] = [
-  { id: 1, name: "성장", color: "bg-emerald-100 text-emerald-700" },
-  { id: 2, name: "슬픔", color: "bg-blue-100 text-blue-700" },
-  { id: 3, name: "감동", color: "bg-yellow-100 text-yellow-800" },
-  { id: 4, name: "공포", color: "bg-purple-100 text-purple-700" },
-  { id: 5, name: "재미", color: "bg-pink-100 text-pink-700" },
-  { id: 6, name: "평온", color: "bg-green-100 text-green-700" },
-];
-
 const OTT_PLATFORMS: OTTPlatform[] = [
-  { id: 1, name: "넷플릭스", icon: "🎬" },
-  { id: 2, name: "디즈니플러스", icon: "🏰" },
-  { id: 3, name: "아마존 프라임 비디오", icon: "📦" },
-  { id: 4, name: "웨이브", icon: "🌊" },
-  { id: 5, name: "티빙", icon: "📺" },
-  { id: 6, name: "쿠팡플레이", icon: "🛒" },
-  { id: 7, name: "왓챠", icon: "👀" },
-  { id: 8, name: "애플 TV+", icon: "🍎" },
-  { id: 9, name: "U+모바일tv", icon: "📱" },
-  { id: 10, name: "시리즈온", icon: "🎭" },
-  { id: 11, name: "라프텔", icon: "🎨" },
-  { id: 12, name: "영화관", icon: "🎪" },
+  { id: 1, name: "Netflix", icon: "🎬" },
+  { id: 2, name: "Disney+", icon: "🏰" },
+  { id: 3, name: "Prime Video", icon: "📦" },
+  { id: 4, name: "TVING", icon: "📺" },
+  { id: 5, name: "Watcha", icon: "👀" },
 ];
 
 export type ContentType = "MOVIE" | "MUSIC" | "BOOK";
@@ -98,7 +98,7 @@ export default function DiaryForm({
   const [isPublic, setIsPublic] = useState(initialValues?.isPublic ?? true);
   const [rating, setRating] = useState(initialValues?.rating ?? 0);
 
-  const [allTags, setAllTags] = useState<Tag[]>(DEFAULT_TAGS);
+  const [allTags, setAllTags] = useState<Tag[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [selectedOttId, setSelectedOttId] = useState<number | null>(null);
 
@@ -106,16 +106,38 @@ export default function DiaryForm({
   const [isOttDropdownOpen, setIsOttDropdownOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const res = await fetch("http://localhost:8080/api/v1/tags");
+        const json = await res.json();
+  
+        const tagsWithColor = json.data.map((tag: Tag) => ({
+          ...tag,
+          color: getRandomColor(), // 랜덤 색상 부여
+        }));
+  
+        setAllTags(tagsWithColor);
+      } catch (err) {
+        console.error("태그 불러오기 실패:", err);
+      }
+    };
+  
+    fetchTags();
+  }, []);
+
   // 초기 tagIds, ottId 매핑 처리
   useEffect(() => {
-    if (initialValues) {
+    if (initialValues && allTags.length > 0) {
       const tagIds = allTags
         .filter((tag) => initialValues.tagNames.includes(tag.name))
         .map((tag) => tag.id);
       setSelectedTagIds(tagIds);
-
+  
       if (type === "MOVIE") {
-        const ott = OTT_PLATFORMS.find((p) => initialValues.ottNames.includes(p.name));
+        const ott = OTT_PLATFORMS.find((p) =>
+          initialValues.ottNames.includes(p.name)
+        );
         setSelectedOttId(ott?.id ?? null);
       }
     }
@@ -130,7 +152,9 @@ export default function DiaryForm({
       contentText,
       isPublic,
       rating,
-      tagIds: selectedTagIds,
+      tagNames: allTags
+    .filter((tag) => selectedTagIds.includes(tag.id))
+    .map((tag) => tag.name), 
       ottIds: selectedOttId ? [selectedOttId] : [],
       externalId,
       type,
@@ -138,7 +162,7 @@ export default function DiaryForm({
   
     try {
       const res = await fetch(
-        mode === "edit" ? `/api/v1/diaries/${diaryId}` : "/api/v1/diaries",
+        mode === "edit" ? `http://localhost:8080/api/v1/diaries/${diaryId}` : "http://localhost:8080/api/v1/diaries",
         {
           method: mode === "edit" ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
