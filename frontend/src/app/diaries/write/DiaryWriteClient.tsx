@@ -1,10 +1,9 @@
 "use client";
 
-import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import DiaryForm from "@/components/diary/DiaryForm";
 
-function DiaryWriteClient() {
+export default function DiaryWriteClient() {
   const searchParams = useSearchParams();
 
   const externalId = searchParams.get("externalId") ?? "";
@@ -18,21 +17,16 @@ function DiaryWriteClient() {
   const genres = searchParams.get("genres")?.split(",") ?? [];
 
   if (!externalId || !type) {
-    return <div className="p-6 text-center text-gray-500">잘못된 접근입니다. 콘텐츠를 먼저 선택해주세요.</div>;
+    return (
+      <div className="p-6 text-center text-gray-500">
+        잘못된 접근입니다. 콘텐츠를 먼저 선택해주세요.
+      </div>
+    );
   }
 
   return (
     <DiaryForm
       mode="create"
-      initialValues={{
-        title: "",
-        contentText: "",
-        isPublic: true,
-        rating: 0,
-        tagNames: [],
-        ottNames: [],
-        genreNames: genres,
-      }}
       externalId={externalId}
       type={type}
       title={contentTitle}
@@ -41,23 +35,15 @@ function DiaryWriteClient() {
       posterUrl={posterUrl}
       releasedAt={releasedAt}
       genres={genres}
+      initialValues={{
+        title: "",
+        contentText: "",
+        isPublic: true,
+        rating: 0,
+        tagNames: [],
+        genreNames: genres,
+        ottNames: [],
+      }}
     />
-  );  
-}
-
-function LoadingFallback() {
-  return (
-    <div className="p-6 text-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-      <p className="mt-4 text-gray-500">로딩 중...</p>
-    </div>
-  );
-}
-
-export default function DiaryWritePage() {
-  return (
-    <Suspense fallback={<LoadingFallback />}>
-      <DiaryWriteClient />
-    </Suspense>
   );
 }
