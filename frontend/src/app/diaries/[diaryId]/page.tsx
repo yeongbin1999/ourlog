@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Diary, DiaryInfoProps, Comment, Content } from "../types/detail";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import DiaryTitle from "./components/DiaryTitle";
 import DiaryInfo from "./components/DiaryInfo";
 import CommentForm from "./components/CommentForm";
@@ -15,6 +15,7 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState<Content | null>(null);
   const { diaryId } = useParams();
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchDiary() {
@@ -26,7 +27,6 @@ export default function Page() {
           throw new Error("Failed to fetch Diary");
         }
         const json = await res.json();
-        console.log(json.data);
         setDiary(json.data);
       } catch (err) {
         console.error(err);
@@ -50,6 +50,7 @@ export default function Page() {
         setLoading(false);
       }
     }
+
     async function fetchContent() {
       try {
         const res = await fetch(
@@ -74,6 +75,31 @@ export default function Page() {
     setComments((prev) => [newComment, ...prev]);
   };
 
+  const handleDelete = async () => {
+    const confirmed = confirm("정말 삭제하시겠습니까?");
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:8080/api/v1/diaries/${diaryId}`,
+        {
+          method: "DELETE",
+          credentials: "include", // 쿠키 인증 대비
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("삭제 실패");
+      }
+
+      alert("삭제 완료!");
+      router.push("/"); // 홈으로 -> userId 받아오게 되면 프로필 이동으로..
+    } catch (err) {
+      console.error(err);
+      alert("삭제 중 오류 발생");
+    }
+  };
+
   if (loading) {
     return <main className="p-6 text-center">로딩 중...</main>;
   }
@@ -88,6 +114,21 @@ export default function Page() {
 
   return (
     <main className="max-w-3xl mx-auto p-6 space-y-10">
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => router.push(`/diaries/${diaryId}/edit`)}
+          className="px-4 py-2 border rounded hover:bg-gray-100"
+        >
+          수정
+        </button>
+        <button
+          onClick={handleDelete}
+          className="px-4 py-2 border rounded text-red-500 hover:bg-red-50"
+        >
+          삭제
+        </button>
+      </div>
+
       <DiaryTitle title={diary.title} />
       {content && (
         <ContentInfo

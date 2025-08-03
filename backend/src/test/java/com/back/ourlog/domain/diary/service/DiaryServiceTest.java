@@ -53,9 +53,6 @@ class DiaryServiceTest {
     @Test
     @DisplayName("감상일기 등록 → DiaryTag 생성")
     void t1() throws Exception {
-        Tag tag1 = tagRepository.save(new Tag("로맨스"));
-        Tag tag2 = tagRepository.save(new Tag("액션"));
-
         DiaryWriteRequestDto requestDto = new DiaryWriteRequestDto(
                 "인셉션",
                 "테스트 내용",
@@ -63,8 +60,8 @@ class DiaryServiceTest {
                 4.0F,
                 ContentType.MOVIE,
                 "tt1375666",
-                List.of(tag1.getId(), tag2.getId()),
-                List.of(), // genreIds
+                List.of("감동", "분노"),
+                List.of(), // genreNames
                 List.of()  // ottIds
         );
 
@@ -78,61 +75,59 @@ class DiaryServiceTest {
         assertThat(savedDiary.getDiaryTags()).hasSize(2);
         assertThat(savedDiary.getDiaryTags())
                 .extracting(dt -> dt.getTag().getName())
-                .containsExactlyInAnyOrder("로맨스", "액션");
+                .containsExactlyInAnyOrder("감동", "분노");
     }
 
     @Test
     @DisplayName("감상일기 등록 → 외부 API 기반 DiaryGenre 자동 생성")
     void t2() throws Exception {
-        Tag dummyTag = tagRepository.save(new Tag("더미"));
+        tagRepository.save(new Tag("더미"));
 
-        DiaryWriteRequestDto requestDto = new DiaryWriteRequestDto(
-                "인셉션",
-                "장르 테스트",
-                true,
-                4.0F,
-                ContentType.MOVIE,
-                "tt1375666",
-                List.of(dummyTag.getId()),
-                List.of(),  // 외부 API 기반 자동 매핑
-                List.of()
-        );
+        String body = """
+    {
+        "title": "인셉션",
+        "contentText": "장르 테스트",
+        "rating": 4.0,
+        "isPublic": true,
+        "externalId": "tt1375666",
+        "type": "MOVIE",
+        "tagNames": ["더미"]
+    }
+""";
 
         mockMvc.perform(post("/api/v1/diaries")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDto)))
+                        .content(body))
                 .andExpect(status().isCreated());
 
         Diary savedDiary = diaryRepository.findTopByOrderByIdDesc().orElseThrow();
 
         assertThat(savedDiary.getDiaryGenres()).isNotEmpty();
-        System.out.println("추출된 장르 목록:");
-        savedDiary.getDiaryGenres().forEach(g -> System.out.println("- " + g.getGenre().getName()));
     }
 
     @Test
     @DisplayName("감상일기 등록 → DiaryOtt 생성")
     void t3() throws Exception {
-        Tag dummyTag = tagRepository.save(new Tag("더미"));
-
+        tagRepository.save(new Tag("더미"));
         Ott ott1 = ottRepository.save(new Ott("Netflix"));
         Ott ott2 = ottRepository.save(new Ott("Disney+"));
 
-        DiaryWriteRequestDto requestDto = new DiaryWriteRequestDto(
-                "인셉션",
-                "OTT 테스트",
-                true,
-                4.0F,
-                ContentType.MOVIE,
-                "tt1375666",
-                List.of(dummyTag.getId()),
-                List.of(), // genreIds 생략
-                List.of(ott1.getId(), ott2.getId())
-        );
+        String body = """
+    {
+        "title": "인셉션",
+        "contentText": "OTT 테스트",
+        "rating": 4.0,
+        "isPublic": true,
+        "externalId": "tt1375666",
+        "type": "MOVIE",
+        "tagNames": ["더미"],
+        "ottIds": [%d, %d]
+    }
+""".formatted(ott1.getId(), ott2.getId());
 
         mockMvc.perform(post("/api/v1/diaries")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDto)))
+                        .content(body))
                 .andExpect(status().isCreated());
 
         Diary savedDiary = diaryRepository.findTopByOrderByIdDesc().orElseThrow();
