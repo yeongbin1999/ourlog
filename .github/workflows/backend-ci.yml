@@ -2,6 +2,7 @@ name: Backend CI
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, edited]
     branches:
       - dev
     paths:
@@ -10,6 +11,20 @@ on:
 jobs:
   backend-ci:
     runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    env:
+      SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+      SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      LIBRARY_API_KEY: ${{ secrets.LIBRARY_API_KEY }}
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
 
     steps:
       - name: Checkout repository

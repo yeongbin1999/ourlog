@@ -1,0 +1,29 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Asia/Seoul"
+    commit-message:
+      prefix: "deps(frontend)"
+    groups:
+      all-frontend:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "gradle"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Asia/Seoul"
+    commit-message:
+      prefix: "deps(backend)"
+    groups:
+      all-backend:
+        patterns:
+          - "*"
