@@ -6,6 +6,7 @@ import com.back.ourlog.domain.comment.repository.CommentRepository;
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.diary.repository.DiaryRepository;
 import com.back.ourlog.domain.user.entity.User;
+import com.back.ourlog.domain.user.repository.UserRepository;
 import com.back.ourlog.global.exception.CustomException;
 import com.back.ourlog.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +21,15 @@ import java.util.stream.Collectors;
 public class CommentService {
     private final DiaryRepository diaryRepository;
     private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
     @Transactional
-    public CommentResponseDto write(int diaryId, User user, String content) {
+    public CommentResponseDto write(int diaryId, int userId, String content) {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
         Comment comment = diary.addComment(user, content);
         diaryRepository.flush();
 
