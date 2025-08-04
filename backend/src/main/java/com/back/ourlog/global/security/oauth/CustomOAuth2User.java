@@ -9,11 +9,13 @@ import java.util.Map;
 public class CustomOAuth2User extends CustomUserDetails implements OAuth2User {
 
     private final Map<String, Object> attributes;
+    private final String provider;
     private final String providerId;
 
-    public CustomOAuth2User(User user, Map<String, Object> attributes, String providerId) {
+    public CustomOAuth2User(User user, Map<String, Object> attributes, String provider, String providerId) {
         super(user);
         this.attributes = attributes;
+        this.provider = provider;
         this.providerId = providerId;
     }
 
@@ -24,6 +26,6 @@ public class CustomOAuth2User extends CustomUserDetails implements OAuth2User {
 
     @Override
     public String getName() {
-        return providerId;
+        return provider + "_" + providerId;
     }
 }

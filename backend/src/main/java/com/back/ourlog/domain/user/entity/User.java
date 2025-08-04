@@ -26,7 +26,7 @@ import java.util.List;
 @Table(
         name = "users",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"provider", "providerId"}) // 소셜 로그인 중복 방지
+                @UniqueConstraint(columnNames = {"provider", "providerId"})
         }
 )
 public class User {
@@ -119,6 +119,8 @@ public class User {
                 .nickname(nickname)
                 .profileImageUrl(profileImageUrl)
                 .bio(bio)
+                .provider("local")
+                .providerId(email)
                 .build();
     }
 
