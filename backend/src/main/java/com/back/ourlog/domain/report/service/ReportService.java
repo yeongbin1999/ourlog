@@ -1,11 +1,12 @@
 package com.back.ourlog.domain.report.service;
 
+import com.back.ourlog.domain.banHistory.entity.BanHistory;
+import com.back.ourlog.domain.banHistory.repository.BanHistoryRepository;
 import com.back.ourlog.domain.report.entity.Report;
 import com.back.ourlog.domain.report.entity.ReportReason;
 import com.back.ourlog.domain.report.repository.ReportRepository;
 import com.back.ourlog.domain.user.entity.User;
 import com.back.ourlog.domain.user.repository.UserRepository;
-import com.back.ourlog.domain.banHistory.entity.BanHistory;
 import com.back.ourlog.global.common.dto.RsData;
 import com.back.ourlog.global.exception.CustomException;
 import com.back.ourlog.global.exception.ErrorCode;
@@ -24,7 +25,7 @@ public class ReportService {
 
     private final UserRepository userRepository;
     private final ReportRepository reportRepository;
-    private final UserBanHistoryRepository userBanHistoryRepository;
+    private final BanHistoryRepository banHistoryRepository;
     private final RedisTemplate<String, Object> redisTemplate;
 
     private static final int BAN_THRESHOLD = 5; // 신고 누적 시 밴 기준
@@ -36,7 +37,7 @@ public class ReportService {
         }
 
         User target = userRepository.findById(targetUserId)
-                .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         boolean exists = reportRepository.existsByReporterAndTargetAndType(reporter, target, type);
         if (exists) {
@@ -64,7 +65,7 @@ public class ReportService {
         ban.setReason(reason);
         ban.setBannedAt(LocalDateTime.now());
         ban.setExpiredAt(expiredAt);
-        userBanHistoryRepository.save(ban);
+        banHistoryRepository.save(ban);
 
         // Redis 캐싱
         String key = "ban:user:" + target.getId();
