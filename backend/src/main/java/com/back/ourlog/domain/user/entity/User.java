@@ -1,15 +1,12 @@
 package com.back.ourlog.domain.user.entity;
 
+import com.back.ourlog.domain.banHistory.entity.BanHistory;
 import com.back.ourlog.domain.comment.entity.Comment;
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.follow.entity.Follow;
 import com.back.ourlog.domain.like.entity.Like;
-import com.back.ourlog.domain.banHistory.entity.BanHistory;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -20,6 +17,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

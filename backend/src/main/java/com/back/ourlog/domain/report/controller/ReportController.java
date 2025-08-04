@@ -1,5 +1,6 @@
 package com.back.ourlog.domain.report.controller;
 
+import com.back.ourlog.domain.report.dto.ReportRequest;
 import com.back.ourlog.domain.report.service.ReportService;
 import com.back.ourlog.global.common.dto.RsData;
 import com.back.ourlog.global.security.service.CustomUserDetails;
@@ -12,14 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/reports")
+@RequestMapping("/api/v1/reports")
 public class ReportController {
 
     private final ReportService reportService;
 
     @PostMapping
     public RsData<?> reportUser(@RequestBody ReportRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return reportService.reportUser(userDetails.getId(), request.getTargetUserId(), request.getType());
+        return reportService.reportUser(userDetails.getId(), request);
     }
 }
 

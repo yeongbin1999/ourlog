@@ -2,7 +2,6 @@ package com.back.ourlog.domain.auth.controller;
 
 import com.back.ourlog.domain.auth.dto.LoginRequest;
 import com.back.ourlog.domain.auth.dto.SignupRequest;
-import com.back.ourlog.domain.auth.service.AuthService;
 import com.back.ourlog.global.security.jwt.TokenDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
@@ -30,9 +29,6 @@ public class AuthControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private AuthService authService;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @Test
@@ -50,8 +46,7 @@ public class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.msg").value("성공"))
-                .andExpect(jsonPath("$.data").value("회원가입 성공"));
+                .andExpect(jsonPath("$.msg").value("회원가입 성공"));
     }
 
     @Test
@@ -79,8 +74,7 @@ public class AuthControllerTest {
                         .header("X-Device-Id", "device123"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Set-Cookie", containsString("refreshToken=;")))
-                .andExpect(jsonPath("$.msg").value("성공"))
-                .andExpect(jsonPath("$.data").value("로그아웃 성공"));
+                .andExpect(jsonPath("$.msg").value("로그아웃 성공"));
     }
 
     @Test
