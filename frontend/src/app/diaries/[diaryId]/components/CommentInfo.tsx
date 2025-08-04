@@ -1,6 +1,7 @@
 import { useState } from "react";
 import CommentMenuButton from "./CommentMenuButton";
 import { Comment } from "../../types/detail";
+import { useRouter } from "next/navigation";
 
 export default function CommentInfo({
   comments,
@@ -11,6 +12,7 @@ export default function CommentInfo({
 }) {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editContent, setEditContent] = useState("");
+  const router = useRouter();
 
   const handleEdit = (comment: Comment) => {
     setEditingId(comment.id);
@@ -76,41 +78,73 @@ export default function CommentInfo({
       {comments.length === 0 ? (
         <p className="text-gray-500">등록된 댓글이 없습니다.</p>
       ) : (
-        <div className="border rounded-md bg-white shadow-sm">
+        <div className="space-y-4">
           {comments.map((comment) => (
-            <div key={comment.id} className="p-4 group relative">
-              <div className="bg-gray-100 text-gray-800 p-4 rounded-xl relative max-w-full md:max-w-[80%]">
-                {editingId === comment.id ? (
-                  <form onSubmit={(e) => handleUpdate(e, comment.id)}>
-                    <textarea
-                      className="w-full p-2 border rounded"
-                      value={editContent}
-                      onChange={(e) => setEditContent(e.target.value)}
-                    />
-                    <div className="mt-2 flex justify-end gap-2">
-                      <button type="button" onClick={handleCancel}>
-                        취소
-                      </button>
-                      <button type="submit" className="text-blue-500">
-                        저장
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <p>{comment.content}</p>
-                )}
-                <div className="absolute -left-2 top-4 w-0 h-0 border-t-8 border-b-8 border-r-8 border-t-transparent border-b-transparent border-r-gray-100" />
-              </div>
+            <div
+              key={comment.id}
+              className="flex items-start gap-3 bg-white border rounded-lg p-4 shadow-sm"
+            >
+              {/* 프로필 이미지 */}
 
-              <div className="text-sm text-gray-500 mt-2 flex gap-2">
-                <span>{comment.nickname}</span>
-                <span>{new Date(comment.createdAt).toLocaleString()}</span>
-                <span>
+              <img
+                src={comment.profileImageUrl}
+                alt="프로필 이미지"
+                className="w-8 h-8 rounded-full object-cover cursor-pointer"
+                title={`${comment.nickname}님의 프로필로 이동`}
+                onClick={() => router.push(`/profile/${comment.userId}`)}
+              />
+
+              {/* 댓글 본문 */}
+              <div className="flex-1">
+                {/* 닉네임 + 메뉴 */}
+                <div className="flex justify-between items-center">
+                  <span
+                    className="font-semibold text-gray-800 cursor-pointer"
+                    title={`${comment.nickname}님의 프로필로 이동`}
+                    onClick={() => router.push(`/profile/${comment.userId}`)}
+                  >
+                    {comment.nickname}
+                  </span>
                   <CommentMenuButton
                     onEdit={() => handleEdit(comment)}
                     onDelete={() => handleDelete(comment.id)}
                   />
-                </span>
+                </div>
+
+                {/* 댓글 내용 or 수정 폼 */}
+                <div className="bg-gray-100 rounded-xl px-4 py-2 mt-1 text-gray-800 whitespace-pre-wrap">
+                  {editingId === comment.id ? (
+                    <form onSubmit={(e) => handleUpdate(e, comment.id)}>
+                      <textarea
+                        className="w-full p-2 border rounded"
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                      />
+                      <div className="mt-2 flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={handleCancel}
+                          className="text-sm text-gray-500"
+                        >
+                          취소
+                        </button>
+                        <button
+                          type="submit"
+                          className="text-sm text-blue-500 font-medium"
+                        >
+                          저장
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <p>{comment.content}</p>
+                  )}
+                </div>
+
+                {/* 작성일 */}
+                <div className="text-xs text-gray-400 mt-1">
+                  {new Date(comment.createdAt).toLocaleString()}
+                </div>
               </div>
             </div>
           ))}

@@ -2,6 +2,7 @@ export type Diary = {
     title: string;
     rating: number;
     contentText: string;
+    isPublic: boolean;
     tagNames: string[];
     genreNames: string[];
     ottNames: string[];
@@ -15,6 +16,7 @@ export type DiaryInfoProps = {
 
 export type Comment = {
     id: number;
+    userId: number;
     nickname: string;
     profileImageUrl: string;
     content: string;
@@ -23,6 +25,7 @@ export type Comment = {
 
 export type Content = {
     id: number;
+    externalId: string;
     type: string;
     posterUrl: string;
     title: string;

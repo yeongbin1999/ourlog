@@ -27,7 +27,7 @@ public record DiaryUpdateRequestDto(
         ContentType type,
 
         @NotEmpty(message = "태그는 하나 이상 선택해야 합니다.")
-        List<@NotNull Integer> tagIds,
+        List<@NotBlank String> tagNames,
 
         List<@NotNull Integer> genreIds,
         List<@NotNull Integer> ottIds

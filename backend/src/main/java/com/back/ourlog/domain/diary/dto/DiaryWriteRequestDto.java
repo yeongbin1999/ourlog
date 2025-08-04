@@ -27,7 +27,7 @@ public record DiaryWriteRequestDto(
         String externalId,
 
         @NotEmpty(message = "태그는 하나 이상 선택해야 합니다.")
-        List<@NotNull Integer> tagIds,
+        List<@NotBlank String> tagNames,
 
         List<@NotNull Integer> genreIds,
 
@@ -43,7 +43,7 @@ public record DiaryWriteRequestDto(
                 4.5F,
                 ContentType.MOVIE,
                 "externalId",
-                List.of(1, 2),
+                List.of("happy", "funny"),
                 List.of(1, 2),
                 List.of(1, 2)
         );

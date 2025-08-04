@@ -1,27 +1,24 @@
 package com.back.ourlog.domain.diary.controller;
 
-import com.back.ourlog.domain.content.entity.ContentType;
-import com.back.ourlog.domain.diary.dto.DiaryWriteRequestDto;
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.diary.repository.DiaryRepository;
-import com.back.ourlog.domain.ott.entity.Ott;
 import com.back.ourlog.domain.ott.repository.OttRepository;
-import com.back.ourlog.domain.tag.entity.Tag;
 import com.back.ourlog.domain.tag.repository.TagRepository;
+import com.back.ourlog.global.config.RedisConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -29,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
+@Import(RedisConfig.class)
 @Transactional
 class DiaryControllerTest {
 
@@ -50,19 +48,17 @@ class DiaryControllerTest {
     @Test
     @DisplayName("감상일기 등록 성공")
     void t1() throws Exception {
-        Tag tag = tagRepository.save(new Tag("SF"));
-
         String body = """
-        {
-            "title": "인셉션",
-            "contentText": "정말 재밌었어요!",
-            "rating": 4.8,
-            "isPublic": true,
-            "externalId": "tt1375666",
-            "type": "MOVIE",
-            "tagIds": [%d]
-        }
-    """.formatted(tag.getId());
+    {
+        "title": "인셉션",
+        "contentText": "정말 재밌었어요!",
+        "rating": 4.8,
+        "isPublic": true,
+        "externalId": "tt1375666",
+        "type": "MOVIE",
+        "tagNames": ["감동"]
+    }
+    """;
 
         mvc.perform(post("/api/v1/diaries")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -75,19 +71,17 @@ class DiaryControllerTest {
     @Test
     @DisplayName("감상일기 등록 실패 - 제목 없음")
     void t2() throws Exception {
-        Tag tag = tagRepository.save(new Tag("테스트"));
-
         String body = """
-        {
-            "title": "",
-            "contentText": "내용 있음",
-            "rating": 4.0,
-            "isPublic": true,
-            "externalId": "tt1375666",
-            "type": "MOVIE",
-            "tagIds": [%d]
-        }
-    """.formatted(tag.getId());
+    {
+        "title": "",
+        "contentText": "내용 있음",
+        "rating": 4.0,
+        "isPublic": true,
+        "externalId": "tt1375666",
+        "type": "MOVIE",
+        "tagNames": ["슬픔"]
+    }
+    """;
 
         mvc.perform(post("/api/v1/diaries")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -99,19 +93,17 @@ class DiaryControllerTest {
     @Test
     @DisplayName("감상일기 등록 실패 - 내용 없음")
     void t3() throws Exception {
-        Tag tag = tagRepository.save(new Tag("테스트"));
-
         String body = """
-        {
-            "title": "제목 있음",
-            "contentText": "",
-            "rating": 3.0,
-            "isPublic": true,
-            "type": "BOOK",
-            "externalId": "library-9791190908207",
-            "tagIds": [%d]
-        }
-    """.formatted(tag.getId());
+    {
+        "title": "제목 있음",
+        "contentText": "",
+        "rating": 3.0,
+        "isPublic": true,
+        "type": "BOOK",
+        "externalId": "library-9791190908207",
+        "tagNames": ["분노"]
+    }
+    """;
 
         mvc.perform(post("/api/v1/diaries")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -125,46 +117,44 @@ class DiaryControllerTest {
     @Test
     @DisplayName("감상일기 수정 성공")
     void t4() throws Exception {
-        Tag tag1 = tagRepository.save(new Tag("로맨스"));
-        Tag tag2 = tagRepository.save(new Tag("액션"));
-        Ott ott = ottRepository.save(new Ott("Netflix"));
-
-        DiaryWriteRequestDto requestDto = new DiaryWriteRequestDto(
-                "인셉션",
-                "원본 내용",
-                true,
-                3.5F,
-                ContentType.MOVIE,
-                "tt1375666",
-                List.of(tag1.getId()),
-                List.of(),
-                List.of()
-        );
+        // 초기 등록
+        String createBody = """
+    {
+        "title": "인셉션",
+        "contentText": "원본 내용",
+        "rating": 3.5,
+        "isPublic": true,
+        "externalId": "tt1375666",
+        "type": "MOVIE",
+        "tagNames": ["감동"]
+    }
+    """;
 
         mvc.perform(post("/api/v1/diaries")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDto)))
+                        .content(createBody))
                 .andExpect(status().isCreated());
 
-        Diary diaryBefore = diaryRepository.findTopByOrderByIdDesc().orElseThrow();
-        Integer diaryId = diaryBefore.getId();
+        Diary diary = diaryRepository.findTopByOrderByIdDesc().orElseThrow();
+        int id = diary.getId();
 
-        String body = """
-        {
-            "title": "메멘토",
-            "contentText": "수정된 내용입니다.",
-            "rating": 4.0,
-            "isPublic": true,
-            "externalId": "tt1375666",
-            "type": "MOVIE",
-            "tagIds": [%d, %d],
-            "ottIds": [%d]
-        }
-    """.formatted(tag1.getId(), tag2.getId(), ott.getId());
+        // 수정 요청
+        String updateBody = """
+    {
+        "title": "메멘토",
+        "contentText": "수정된 내용입니다.",
+        "rating": 4.0,
+        "isPublic": true,
+        "externalId": "tt1375666",
+        "type": "MOVIE",
+        "tagNames": ["감동", "분노"],
+        "ottIds": [1]
+    }
+    """;
 
-        mvc.perform(put("/api/v1/diaries/" + diaryId)
+        mvc.perform(put("/api/v1/diaries/" + id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .content(updateBody))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.title").value("메멘토"))
                 .andExpect(jsonPath("$.data.contentText").value("수정된 내용입니다."))
@@ -172,50 +162,85 @@ class DiaryControllerTest {
     }
 
     @Test
-    @DisplayName("감상일기 수정 실패 - 존재하지 않는 태그 ID")
+    @DisplayName("감상일기 수정 성공 - 존재하지 않는 태그지만 자동 생성됨")
     void t5() throws Exception {
-        int id = 1;
-        String body = """
-        {
-            "title": "다이어리",
-            "contentText": "내용입니다.",
-            "rating": 4.0,
-            "isPublic": true,
-            "externalId": "tt1375666",
-            "type": "MOVIE",
-            "tagIds": [999],
-            "ottIds": [1]
-        }
+        String createBody = """
+    {
+        "title": "테스트",
+        "contentText": "초기 내용",
+        "rating": 4.0,
+        "isPublic": true,
+        "externalId": "tt1375666",
+        "type": "MOVIE",
+        "tagNames": ["기쁨"]
+    }
+    """;
+
+        mvc.perform(post("/api/v1/diaries")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody))
+                .andExpect(status().isCreated());
+
+        int id = diaryRepository.findTopByOrderByIdDesc().orElseThrow().getId();
+
+        String updateBody = """
+    {
+        "title": "테스트2",
+        "contentText": "새 내용",
+        "rating": 5.0,
+        "isPublic": true,
+        "externalId": "tt1375666",
+        "type": "MOVIE",
+        "tagNames": ["새로운감정태그"],
+        "ottIds": [1]
+    }
     """;
 
         mvc.perform(put("/api/v1/diaries/" + id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.resultCode").value("TAG_001"))
-                .andExpect(jsonPath("$.msg").value("존재하지 않는 태그입니다."));
+                        .content(updateBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.title").value("테스트2"));
     }
 
     @Test
     @DisplayName("감상일기 수정 실패 - 존재하지 않는 OTT ID")
     void t6() throws Exception {
-        int id = 1;
-        String body = """
-        {
-            "title": "다이어리",
-            "contentText": "내용입니다.",
-            "rating": 4.0,
-            "isPublic": true,
-            "externalId": "tt1375666",
-            "type": "MOVIE",
-            "tagIds": [1],
-            "ottIds": [999]
-        }
+        String createBody = """
+    {
+        "title": "테스트",
+        "contentText": "초기 내용",
+        "rating": 4.0,
+        "isPublic": true,
+        "externalId": "tt1375666",
+        "type": "MOVIE",
+        "tagNames": ["놀람"]
+    }
+    """;
+
+        mvc.perform(post("/api/v1/diaries")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createBody))
+                .andExpect(status().isCreated());
+
+        int id = diaryRepository.findTopByOrderByIdDesc().orElseThrow().getId();
+
+        String updateBody = """
+    {
+        "title": "업데이트됨",
+        "contentText": "내용 수정",
+        "rating": 4.2,
+        "isPublic": true,
+        "externalId": "tt1375666",
+        "type": "MOVIE",
+        "tagNames": ["놀람"],
+        "ottIds": [999]
+    }
     """;
 
         mvc.perform(put("/api/v1/diaries/" + id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .content(updateBody))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.resultCode").value("OTT_001"))
                 .andExpect(jsonPath("$.msg").value("존재하지 않는 OTT입니다."));

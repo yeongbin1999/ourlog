@@ -8,7 +8,11 @@ import com.back.ourlog.external.spotify.service.SpotifyService;
 import com.back.ourlog.external.tmdb.service.TmdbService;
 import com.back.ourlog.global.exception.CustomException;
 import com.back.ourlog.global.exception.ErrorCode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -20,10 +24,28 @@ public class ContentSearchFacade {
     private final SpotifyService spotifyService;
     private final TmdbService tmdbService;
     private final LibraryService libraryService;
+    private final CacheManager cacheManager;
+    private final ObjectMapper objectMapper;
 
     public ContentSearchResultDto search(ContentType type, String externalId) {
+        String key = type + ":" + externalId;
+        Cache cache = cacheManager.getCache("externalContent");
+
+        if (cache != null) {
+            Object rawValue = cache.get(key, Object.class);
+            if (rawValue != null) {
+                try {
+                    return objectMapper.convertValue(rawValue, ContentSearchResultDto.class);
+                } catch (IllegalArgumentException e) {
+                    throw new RuntimeException("캐시 역직렬화 실패", e);
+                }
+            }
+        }
+
+        // 캐시가 없거나 실패했을 경우 외부 API 호출
+        ContentSearchResultDto result;
         try {
-            return switch (type) {
+            result = switch (type) {
                 case MUSIC -> spotifyService.searchMusicByExternalId(externalId);
                 case MOVIE -> tmdbService.searchMovieByExternalId(externalId);
                 case BOOK -> libraryService.searchBookByExternalId(externalId);
@@ -31,6 +53,13 @@ public class ContentSearchFacade {
         } catch (Exception e) {
             throw new RuntimeException("externalId로 콘텐츠 검색 중 오류 발생", e);
         }
+
+        // 캐시에 저장
+        if (cache != null && result != null) {
+            cache.put(key, result);
+        }
+
+        return result;
     }
 
     public List<ContentSearchResultDto> searchByTitle(ContentType type, String title) {

@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Data
 public class ContentResponseDto {
     private int id;
+    private String externalId;
     private ContentType type;
     private String posterUrl;
     private String title;
@@ -18,6 +19,7 @@ public class ContentResponseDto {
 
     public ContentResponseDto(Content content) {
         this.id = content.getId();
+        this.externalId = content.getExternalId();
         this.type = content.getType();
         this.posterUrl = content.getPosterUrl();
         this.title = content.getTitle();
