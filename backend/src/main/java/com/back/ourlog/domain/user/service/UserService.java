@@ -51,6 +51,7 @@ public class UserService {
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         return new UserProfileResponse(
+                user.getId(),
                 user.getEmail(),
                 user.getNickname(),
                 user.getProfileImageUrl(),
@@ -63,6 +64,7 @@ public class UserService {
         List<User> users = userRepository.findByNicknameContainingIgnoreCase(keyword);
         return users.stream()
                 .map(user -> new UserProfileResponse(
+                        user.getId(),
                         user.getEmail(),
                         user.getNickname(),
                         user.getProfileImageUrl(),
