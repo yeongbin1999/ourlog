@@ -3,6 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+type FollowUser = {
+  userId: number;
+};
+
 type Props = {
   userId: string;
   userType?: 'sent' | 'received' | 'profile' | 'followers' | 'following';
@@ -57,7 +61,7 @@ export default function UserProfileCard({
       const res = await axios.get(`/api/v1/follows/followings?userId=${myUserId}`);
       const followingList = res.data;
       const isMeFollowing = followingList.some(
-        (user: any) => user.userId === Number(userId)
+        (user: FollowUser) => user.userId === Number(userId)
       );
       setIsFollowing(isMeFollowing);
     } catch (err) {
