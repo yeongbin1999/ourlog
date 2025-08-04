@@ -31,7 +31,6 @@ import com.back.ourlog.global.exception.CustomException;
 import com.back.ourlog.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class DiaryService {
 
@@ -51,6 +49,7 @@ public class DiaryService {
     private final ContentSearchFacade contentSearchFacade;
     private final LibraryService libraryService;
 
+    @Transactional
     public Diary writeWithContentSearch(DiaryWriteRequestDto req, User user) {
         // 외부 콘텐츠 검색
         ContentSearchResultDto result = contentSearchFacade.search(req.type(), req.externalId());
@@ -109,7 +108,8 @@ public class DiaryService {
 
     }
 
-    @CachePut(value = "diaryDetail", key = "#p0")
+    @Transactional
+    @CacheEvict(value = "diaryDetail", key = "#p0")
     public DiaryResponseDto update(int id, DiaryUpdateRequestDto dto) {
         Diary diary = diaryRepository.findById(id)
                 .orElseThrow(DiaryNotFoundException::new);
@@ -230,6 +230,7 @@ public class DiaryService {
         });
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "diaryDetail", key = "#diaryId")
     public DiaryDetailDto getDiaryDetail(int diaryId) {
         Diary diary = diaryRepository.findById(diaryId)
@@ -250,6 +251,7 @@ public class DiaryService {
         return new DiaryDetailDto(diary, tagNames, genreNames, ottNames);
     }
 
+    @Transactional
     @CacheEvict(value = "diaryDetail", key = "#diaryId")
     public void delete(int diaryId) {
         Diary diary = diaryRepository.findById(diaryId)
