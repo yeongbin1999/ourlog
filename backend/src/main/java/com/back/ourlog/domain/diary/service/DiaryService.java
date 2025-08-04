@@ -30,6 +30,9 @@ import com.back.ourlog.external.library.service.LibraryService;
 import com.back.ourlog.global.exception.CustomException;
 import com.back.ourlog.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -106,6 +109,7 @@ public class DiaryService {
 
     }
 
+    @CachePut(value = "diaryDetail", key = "#p0")
     public DiaryResponseDto update(int id, DiaryUpdateRequestDto dto) {
         Diary diary = diaryRepository.findById(id)
                 .orElseThrow(DiaryNotFoundException::new);
@@ -226,6 +230,7 @@ public class DiaryService {
         });
     }
 
+    @Cacheable(value = "diaryDetail", key = "#diaryId")
     public DiaryDetailDto getDiaryDetail(int diaryId) {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
@@ -245,6 +250,7 @@ public class DiaryService {
         return new DiaryDetailDto(diary, tagNames, genreNames, ottNames);
     }
 
+    @CacheEvict(value = "diaryDetail", key = "#diaryId")
     public void delete(int diaryId) {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));

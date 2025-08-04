@@ -4,11 +4,12 @@ import com.back.ourlog.domain.diary.entity.Diary;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class DiaryDetailDto {
+public class DiaryDetailDto implements Serializable {
     private String title;
     private float rating;
     private String contentText;

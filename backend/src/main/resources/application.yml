@@ -31,6 +31,9 @@ spring:
     serialization:
       fail-on-empty-beans: false
 
+  cache:
+    type: redis
+
   data:
     redis:
       host: localhost
