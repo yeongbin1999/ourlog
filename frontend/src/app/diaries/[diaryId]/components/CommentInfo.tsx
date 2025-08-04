@@ -1,6 +1,7 @@
 import { useState } from "react";
 import CommentMenuButton from "./CommentMenuButton";
 import { Comment } from "../../types/detail";
+import { useRouter } from "next/navigation";
 
 export default function CommentInfo({
   comments,
@@ -11,6 +12,7 @@ export default function CommentInfo({
 }) {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editContent, setEditContent] = useState("");
+  const router = useRouter();
 
   const handleEdit = (comment: Comment) => {
     setEditingId(comment.id);
@@ -83,17 +85,24 @@ export default function CommentInfo({
               className="flex items-start gap-3 bg-white border rounded-lg p-4 shadow-sm"
             >
               {/* 프로필 이미지 */}
+
               <img
                 src={comment.profileImageUrl}
                 alt="프로필 이미지"
-                className="w-8 h-8 rounded-full object-cover"
+                className="w-8 h-8 rounded-full object-cover cursor-pointer"
+                title={`${comment.nickname}님의 프로필로 이동`}
+                onClick={() => router.push(`/profile/${comment.userId}`)}
               />
 
               {/* 댓글 본문 */}
               <div className="flex-1">
                 {/* 닉네임 + 메뉴 */}
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold text-gray-800">
+                  <span
+                    className="font-semibold text-gray-800 cursor-pointer"
+                    title={`${comment.nickname}님의 프로필로 이동`}
+                    onClick={() => router.push(`/profile/${comment.userId}`)}
+                  >
                     {comment.nickname}
                   </span>
                   <CommentMenuButton
