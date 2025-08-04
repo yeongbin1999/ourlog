@@ -5,6 +5,7 @@ import com.back.ourlog.domain.comment.dto.CommentResponseDto;
 import com.back.ourlog.domain.comment.dto.CommentUpdateRequestDto;
 import com.back.ourlog.domain.comment.service.CommentService;
 import com.back.ourlog.global.common.dto.RsData;
+import com.back.ourlog.global.security.jwt.JwtProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -21,11 +22,17 @@ import java.util.List;
 @Tag(name = "댓글 API")
 public class CommentController {
     private final CommentService commentService;
+    private final JwtProvider jwtProvider;
     @PostMapping
     @Operation(summary = "댓글 등록")
-    public ResponseEntity<RsData<CommentResponseDto>> writeComment(@RequestBody @Valid CommentRequestDto req) {
-        // 테스트 ver (우선 User가 있다고 가정)
-        CommentResponseDto res = commentService.write(req.getDiaryId(),null, req.getContent());
+    public ResponseEntity<RsData<CommentResponseDto>> writeComment
+            (@RequestHeader String authorization,
+             @RequestBody @Valid CommentRequestDto req) {
+        String accessToken = authorization.replace("Bearer ", "");
+
+        int userId = Integer.parseInt(jwtProvider.getUserIdFromToken(accessToken));
+
+        CommentResponseDto res = commentService.write(req.getDiaryId(), userId, req.getContent());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(RsData.of("201-1", "댓글이 등록되었습니다.", res));
