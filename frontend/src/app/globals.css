@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "@fontsource/anton";
 @import "@fontsource/inter";
+@import "bootstrap/dist/css/bootstrap.min.css";
+
 
 :root {
   --background: #ffffff;
