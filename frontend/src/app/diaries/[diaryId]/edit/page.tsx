@@ -18,7 +18,7 @@ const EditDiaryPage = () => {
           fetch(`/api/v1/diaries/${diaryId}`).then(res => res.json()),
           fetch(`/api/v1/contents/${diaryId}`).then(res => res.json()),
         ]);
-
+        
         setDiary(diaryRes.data);
         setContent(contentRes.data);
       } catch (error) {
@@ -29,10 +29,21 @@ const EditDiaryPage = () => {
       }
     };
 
-    fetchDiaryAndContent();
+    if (diaryId) {
+      fetchDiaryAndContent();
+    }
   }, [diaryId]);
 
-  if (isLoading || !diary || !content) return <div>Loading...</div>;
+  if (isLoading || !diary || !content) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">데이터를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <DiaryForm
@@ -53,7 +64,7 @@ const EditDiaryPage = () => {
         rating: diary.rating,
         tagNames: diary.tagNames,
         genreNames: diary.genreNames,
-        ottNames: diary.ottNames,
+        ottNames: diary.ottNames, 
       }}
     />
   );

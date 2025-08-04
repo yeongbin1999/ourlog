@@ -26,8 +26,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -139,38 +139,26 @@ public class Diary {
     }
 
     public void updateOtts(List<Integer> newOttIds, OttRepository ottRepository) {
-        if (this.getContent().getType() != ContentType.MOVIE || newOttIds == null) {
-            this.getDiaryOtts().clear();
+        if (this.getContent().getType() != ContentType.MOVIE) {
+            this.diaryOtts.clear();
             return;
         }
 
-        List<DiaryOtt> current = this.getDiaryOtts();
-        List<Integer> currentIds = current.stream()
-                .map(doo -> doo.getOtt().getId())
-                .toList();
+        if (newOttIds == null) {
+            newOttIds = new ArrayList<>();
+        }
 
-        List<DiaryOtt> toRemove = current.stream()
-                .filter(doo -> !newOttIds.contains(doo.getOtt().getId()))
-                .toList();
-        this.getDiaryOtts().removeAll(toRemove);
+        this.diaryOtts.clear();
 
-        List<Integer> toAdd = newOttIds.stream()
-                .filter(id -> !currentIds.contains(id))
-                .toList();
-
-        toAdd.forEach(id -> {
-            Ott ott = ottRepository.findById(id)
+        for (Integer ottId : newOttIds) {
+            Ott ott = ottRepository.findById(ottId)
                     .orElseThrow(() -> new CustomException(ErrorCode.OTT_NOT_FOUND));
-            this.getDiaryOtts().add(new DiaryOtt(this, ott));
-        });
+            this.diaryOtts.add(new DiaryOtt(this, ott));
+        }
     }
 
     public void setContent(Content content) {
         this.content = content;
-    }
-
-    public void clearGenres() {
-        this.getDiaryGenres().clear();
     }
 
     public Comment addComment(User user, String content) {

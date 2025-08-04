@@ -23,6 +23,23 @@ public class DiaryDetailDto implements Serializable {
         this.contentText = diary.getContentText();
         this.tagNames = tagNames;
         this.genreNames = genreNames;
-        this.ottNames = ottNames;
+        this.ottNames = ottNames != null ? ottNames : List.of();
     }
+
+    public static DiaryDetailDto of(Diary diary) {
+        List<String> tagNames = diary.getDiaryTags().stream()
+                .map(dt -> dt.getTag().getName())
+                .toList();
+
+        List<String> genreNames = diary.getDiaryGenres().stream()
+                .map(dg -> dg.getGenre().getName())
+                .toList();
+
+        List<String> ottNames = diary.getDiaryOtts().stream()
+                .map(doo -> doo.getOtt().getName())
+                .toList();
+
+        return new DiaryDetailDto(diary, tagNames, genreNames, ottNames);
+    }
+
 }

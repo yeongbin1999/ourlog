@@ -31,8 +31,14 @@ spring:
     serialization:
       fail-on-empty-beans: false
 
+
   cache:
-    type: redis
+    type: simple  # 개발/테스트용 - 메모리 캐시
+      # type: redis  # 운영용
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
 
   data:
     redis:

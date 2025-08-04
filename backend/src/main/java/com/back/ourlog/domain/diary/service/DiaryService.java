@@ -2,8 +2,6 @@ package com.back.ourlog.domain.diary.service;
 
 import com.back.ourlog.domain.content.dto.ContentSearchResultDto;
 import com.back.ourlog.domain.content.entity.Content;
-import com.back.ourlog.domain.content.entity.ContentType;
-import com.back.ourlog.domain.content.repository.ContentRepository;
 import com.back.ourlog.domain.content.service.ContentService;
 import com.back.ourlog.domain.diary.dto.DiaryDetailDto;
 import com.back.ourlog.domain.diary.dto.DiaryResponseDto;
@@ -11,31 +9,31 @@ import com.back.ourlog.domain.diary.dto.DiaryUpdateRequestDto;
 import com.back.ourlog.domain.diary.dto.DiaryWriteRequestDto;
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.diary.exception.DiaryNotFoundException;
+import com.back.ourlog.domain.diary.factory.DiaryFactory;
+import com.back.ourlog.domain.diary.mapper.DiaryMapper;
 import com.back.ourlog.domain.diary.repository.DiaryRepository;
-import com.back.ourlog.domain.genre.entity.DiaryGenre;
-import com.back.ourlog.domain.genre.entity.Genre;
-import com.back.ourlog.domain.genre.repository.GenreRepository;
 import com.back.ourlog.domain.genre.service.GenreService;
-import com.back.ourlog.domain.ott.entity.DiaryOtt;
-import com.back.ourlog.domain.ott.entity.Ott;
 import com.back.ourlog.domain.ott.repository.OttRepository;
-import com.back.ourlog.domain.ott.service.OttService;
-import com.back.ourlog.domain.tag.entity.DiaryTag;
-import com.back.ourlog.domain.tag.entity.Tag;
 import com.back.ourlog.domain.tag.repository.TagRepository;
-import com.back.ourlog.domain.tag.service.TagService;
 import com.back.ourlog.domain.user.entity.User;
 import com.back.ourlog.external.common.ContentSearchFacade;
 import com.back.ourlog.external.library.service.LibraryService;
 import com.back.ourlog.global.exception.CustomException;
 import com.back.ourlog.global.exception.ErrorCode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,17 +41,21 @@ public class DiaryService {
 
     private final DiaryRepository diaryRepository;
     private final ContentService contentService;
+    private final GenreService genreService;
     private final TagRepository tagRepository;
     private final OttRepository ottRepository;
-    private final GenreService genreService;
     private final ContentSearchFacade contentSearchFacade;
     private final LibraryService libraryService;
+    private final DiaryFactory diaryFactory;
+    private final ObjectMapper objectMapper;
+    private final RedisTemplate<String, Object> objectRedisTemplate;
+
+    private static final String CACHE_KEY_PREFIX = "diaryDetail::";
 
     @Transactional
     public Diary writeWithContentSearch(DiaryWriteRequestDto req, User user) {
         // 외부 콘텐츠 검색
         ContentSearchResultDto result = contentSearchFacade.search(req.type(), req.externalId());
-
         if (result == null || result.externalId() == null) {
             throw new CustomException(ErrorCode.CONTENT_NOT_FOUND);
         }
@@ -61,145 +63,64 @@ public class DiaryService {
         // 콘텐츠 저장 or 조회
         Content content = contentService.saveOrGet(result, req.type());
 
-        // Diary 생성
-        Diary diary = new Diary(
-                user,
-                content,
-                req.title(),
-                req.contentText(),
-                req.rating(),
-                req.isPublic()
-        );
+        // Diary 생성 (연관관계 포함)
+        Diary diary = diaryFactory.create(user, content, req.title(), req.contentText(), req.rating(), req.isPublic(), req.tagNames(), result.genres(), req.ottIds());
 
-        // Tag 매핑
-        req.tagNames().forEach(tagName -> {
-            Tag tag = tagRepository.findByName(tagName)
-                    .orElseGet(() -> tagRepository.save(new Tag(tagName)));
-            diary.getDiaryTags().add(new DiaryTag(diary, tag));
-        });
-
-        // Genre 매핑 (외부 API로부터 자동 추출된 장르)
-        if (result.genres() != null) {
-            result.genres().forEach(rawGenre -> {
-                String genreName;
-
-                // BOOK일 때만 KDC 코드 → 장르명 변환
-                if (result.type() == ContentType.BOOK) {
-                    genreName = libraryService.mapKdcToGenre(rawGenre);
-                } else {
-                    genreName = rawGenre; // MOVIE, MUSIC은 그대로 사용
-                }
-
-                Genre genre = genreService.findOrCreateByName(genreName);
-                diary.getDiaryGenres().add(new DiaryGenre(diary, genre));
-            });
-        }
-
-        // OTT 매핑 (MOVIE일 때만 처리)
-        if (req.ottIds() != null && req.type() == ContentType.MOVIE) {
-            req.ottIds().forEach(ottId -> {
-                Ott ott = ottRepository.findById(ottId)
-                        .orElseThrow(() -> new CustomException(ErrorCode.OTT_NOT_FOUND));
-                diary.getDiaryOtts().add(new DiaryOtt(diary, ott));
-            });
-        }
-
+        // 저장
         return diaryRepository.save(diary);
-
     }
 
     @Transactional
-    @CacheEvict(value = "diaryDetail", key = "#p0")
-    public DiaryResponseDto update(int id, DiaryUpdateRequestDto dto) {
-        Diary diary = diaryRepository.findById(id)
+    public DiaryResponseDto update(int diaryId, DiaryUpdateRequestDto dto) {
+        Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(DiaryNotFoundException::new);
 
-        // TODO: 유저 인증 로직은 이후에 추가 예정
-
-        // 기존 콘텐츠 비교
+        // 콘텐츠 변경 시 외부 API 검색 및 재설정
         Content oldContent = diary.getContent();
         boolean contentChanged = !oldContent.getExternalId().equals(dto.externalId())
                 || !oldContent.getType().equals(dto.type());
 
-        Content newContent = oldContent;
-        ContentSearchResultDto result = null;
-
         if (contentChanged) {
-            // 외부 API에서 새 콘텐츠 정보 조회
-            result = contentSearchFacade.search(dto.type(), dto.externalId());
+            ContentSearchResultDto result = contentSearchFacade.search(dto.type(), dto.externalId());
             if (result == null || result.externalId() == null) {
                 throw new CustomException(ErrorCode.CONTENT_NOT_FOUND);
             }
 
-            // 새 Content 저장 or 조회
-            newContent = contentService.saveOrGet(result, dto.type());
+            Content newContent = contentService.saveOrGet(result, dto.type());
             diary.setContent(newContent);
 
-            if (result != null && result.genres() != null) {
+            if (result.genres() != null) {
                 diary.updateGenres(result.genres(), genreService, libraryService);
             }
-
         }
 
-        // 나머지 필드 업데이트
+        // 필드 및 연관관계 업데이트
         diary.update(dto.title(), dto.contentText(), dto.rating(), dto.isPublic());
-
         diary.updateTags(dto.tagNames(), tagRepository);
         diary.updateOtts(dto.ottIds(), ottRepository);
 
-        return DiaryResponseDto.from(diary);
+        // 영속성 반영
+        diaryRepository.flush();
+
+        objectRedisTemplate.delete("diaryDetail::" + diaryId);
+
+        return DiaryMapper.toResponseDto(diary);
     }
 
-    /*
-    private void updateGenres(Diary diary, List<String> newGenreNames) {
-        List<DiaryGenre> current = diary.getDiaryGenres();
-        List<String> currentNames = current.stream()
-                .map(dg -> dg.getGenre().getName())
-                .toList();
+    public DiaryDetailDto getDiaryDetail(Integer diaryId) {
+        String cacheKey = CACHE_KEY_PREFIX + diaryId;
 
-        // BOOK일 경우 KDC 코드를 장르 이름으로 변환
-        ContentType contentType = diary.getContent().getType();
-        List<String> mappedGenreNames = newGenreNames.stream()
-                .map(name -> contentType == ContentType.BOOK ? libraryService.mapKdcToGenre(name) : name)
-                .toList();
+        Object cached = objectRedisTemplate.opsForValue().get(cacheKey);
+        if (cached != null) {
+            return objectMapper.convertValue(cached, DiaryDetailDto.class);
+        }
 
-        // 제거할 항목
-        List<DiaryGenre> toRemove = current.stream()
-                .filter(dg -> !mappedGenreNames.contains(dg.getGenre().getName()))
-                .toList();
-        diary.getDiaryGenres().removeAll(toRemove);
-
-        // 추가할 항목
-        List<String> toAdd = mappedGenreNames.stream()
-                .filter(name -> !currentNames.contains(name))
-                .toList();
-        toAdd.forEach(name -> {
-            Genre genre = genreService.findOrCreateByName(name);
-            diary.getDiaryGenres().add(new DiaryGenre(diary, genre));
-        });
-    }
-
-     */
-
-    @Transactional(readOnly = true)
-    @Cacheable(value = "diaryDetail", key = "#diaryId")
-    public DiaryDetailDto getDiaryDetail(int diaryId) {
         Diary diary = diaryRepository.findById(diaryId)
-                .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
+                .orElseThrow(() -> new DiaryNotFoundException());
 
-        List<String> tagNames = diary.getDiaryTags().stream()
-                .map(diaryTag -> diaryTag.getTag().getName())
-                .toList();
-
-        List<String> genreNames = diary.getDiaryGenres().stream()
-                .map(dg -> dg.getGenre().getName())
-                .toList();
-
-        List<String> ottNames = diary.getDiaryOtts().stream()
-                .map(doo -> doo.getOtt().getName())
-                .toList();
-
-        return new DiaryDetailDto(diary, tagNames, genreNames, ottNames);
+        DiaryDetailDto dto = DiaryDetailDto.of(diary);
+        objectRedisTemplate.opsForValue().set(cacheKey, dto);
+        return dto;
     }
 
     @Transactional

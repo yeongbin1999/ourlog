@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Diary, DiaryInfoProps, Comment, Content } from "../types/detail";
-import { useParams, useRouter } from "next/navigation";
 import DiaryTitle from "./components/DiaryTitle";
 import DiaryInfo from "./components/DiaryInfo";
 import CommentForm from "./components/CommentForm";
@@ -14,62 +14,67 @@ export default function Page() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState<Content | null>(null);
+
   const { diaryId } = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
 
+  async function fetchDiary() {
+    try {
+      const res = await fetch(`http://localhost:8080/api/v1/diaries/${diaryId}`);
+      if (!res.ok) throw new Error("Failed to fetch Diary");
+      const json = await res.json();
+      setDiary(json.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function fetchComments() {
+    try {
+      const res = await fetch(`http://localhost:8080/api/v1/comments/${diaryId}`);
+      if (!res.ok) throw new Error("Failed to fetch comments");
+      const json = await res.json();
+      setComments(json.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function fetchContent() {
+    try {
+      const res = await fetch(`http://localhost:8080/api/v1/contents/${diaryId}`);
+      if (!res.ok) throw new Error("Failed to fetch content");
+      const json = await res.json();
+      setContent(json.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   useEffect(() => {
-    async function fetchDiary() {
-      try {
-        const res = await fetch(
-          `http://localhost:8080/api/v1/diaries/${diaryId}`
-        );
-        if (!res.ok) {
-          throw new Error("Failed to fetch Diary");
-        }
-        const json = await res.json();
-        setDiary(json.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    async function fetchComments() {
-      try {
-        const res = await fetch(
-          `http://localhost:8080/api/v1/comments/${diaryId}`
-        );
-        if (!res.ok) throw new Error("Failed to fetch comments");
-
-        const json = await res.json();
-        setComments(json.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    async function fetchContent() {
-      try {
-        const res = await fetch(
-          `http://localhost:8080/api/v1/contents/${diaryId}`
-        );
-        if (!res.ok) throw new Error("Failed to fetch content");
-        const json = await res.json();
-        setContent(json.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchDiary();
-    fetchComments();
-    fetchContent();
+    if (!diaryId) return;
+    
+    setLoading(true);
+    Promise.all([fetchDiary(), fetchComments(), fetchContent()])
+      .finally(() => setLoading(false));
   }, [diaryId]);
+
+  // refresh 파라미터 처리
+  useEffect(() => {
+    const shouldRefresh = searchParams.get("refresh") === "1";
+    if (shouldRefresh) {
+      // URL에서 refresh 파라미터 제거
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete("refresh");
+      window.history.replaceState({}, "", newUrl.toString());
+      
+      // 강제로 다시 fetch
+      setLoading(true);
+      Promise.all([fetchDiary(), fetchComments(), fetchContent()])
+        .finally(() => setLoading(false));
+    }
+  }, [searchParams]);
 
   const handleCommentAdd = (newComment: Comment) => {
     setComments((prev) => [newComment, ...prev]);
@@ -84,16 +89,14 @@ export default function Page() {
         `http://localhost:8080/api/v1/diaries/${diaryId}`,
         {
           method: "DELETE",
-          credentials: "include", // 쿠키 인증 대비
+          credentials: "include",
         }
       );
 
-      if (!res.ok) {
-        throw new Error("삭제 실패");
-      }
+      if (!res.ok) throw new Error("삭제 실패");
 
       alert("삭제 완료!");
-      router.push("/"); // 홈으로 -> userId 받아오게 되면 프로필 이동으로..
+      router.push("/");
     } catch (err) {
       console.error(err);
       alert("삭제 중 오류 발생");
@@ -134,7 +137,7 @@ export default function Page() {
         <ContentInfo
           content={content}
           genreNames={diary.genreNames}
-          ottNames={diary.ottNames}
+          ottNames={diary.ottNames.slice(0, 1)} 
         />
       )}
       <DiaryInfo
