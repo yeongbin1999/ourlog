@@ -32,11 +32,13 @@ public class Follow {
     private User followee;
 
     @Enumerated(EnumType.STRING) // Enum을 DB에 저장할 때 문자열로 저장되게 함..
-    @Column(nullable = false, columnDefinition = "varchar(10) default 'PENDING'")
+    @Column(nullable = false)
     private FollowStatus status = FollowStatus.PENDING;
 
     public void accept() {
+        System.out.println("[DEBUG] 이전 상태: " + this.status);
         this.status = FollowStatus.ACCEPTED;
+        System.out.println("[DEBUG] 변경 후 상태: " + this.status);
     }
 
     public void reject() {
