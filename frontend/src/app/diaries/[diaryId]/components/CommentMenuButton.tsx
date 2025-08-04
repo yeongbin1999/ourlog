@@ -26,19 +26,21 @@ export default function CommentMenuButton({
   return (
     <div className="relative" ref={menuRef}>
       <button
-        className="text-gray-500 hover:text-gray-700"
+        className="text-gray-400 hover:text-gray-600 transition"
         onClick={() => setOpen((prev) => !prev)}
+        aria-label="댓글 옵션"
       >
-        <AiOutlineMore className="text-2xl" />
+        <AiOutlineMore className="text-xl" />
       </button>
+
       {open && (
-        <div className="absolute right-0 mt-2 w-24 bg-white border rounded shadow-lg z-10">
+        <div className="absolute right-0 top-7 w-32 bg-white border border-gray-200 rounded-xl shadow-lg z-30 overflow-hidden">
           <button
             onClick={() => {
               setOpen(false);
               onEdit();
             }}
-            className="block w-full px-3 py-2 text-sm hover:bg-gray-100 text-left"
+            className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 text-left transition"
           >
             수정
           </button>
@@ -47,7 +49,7 @@ export default function CommentMenuButton({
               setOpen(false);
               onDelete();
             }}
-            className="block w-full px-3 py-2 text-sm hover:bg-gray-100 text-left text-red-500"
+            className="w-full px-4 py-2 text-sm text-red-500 hover:bg-red-50 text-left transition"
           >
             삭제
           </button>

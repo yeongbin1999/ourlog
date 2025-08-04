@@ -76,7 +76,7 @@ export default function CommentInfo({
       {comments.length === 0 ? (
         <p className="text-gray-500">등록된 댓글이 없습니다.</p>
       ) : (
-        <div className="border rounded-md bg-white shadow-sm">
+        <div className="bg-white rounded-2xl">
           {comments.map((comment) => (
             <div key={comment.id} className="p-4 group relative">
               <div className="bg-gray-100 text-gray-800 p-4 rounded-xl relative max-w-full md:max-w-[80%]">
@@ -101,7 +101,7 @@ export default function CommentInfo({
                 )}
                 <div className="absolute -left-2 top-4 w-0 h-0 border-t-8 border-b-8 border-r-8 border-t-transparent border-b-transparent border-r-gray-100" />
               </div>
-
+  
               <div className="text-sm text-gray-500 mt-2 flex gap-2">
                 <span>{comment.nickname}</span>
                 <span>{new Date(comment.createdAt).toLocaleString()}</span>
@@ -118,4 +118,4 @@ export default function CommentInfo({
       )}
     </section>
   );
-}
+}  
