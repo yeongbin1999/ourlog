@@ -94,7 +94,7 @@ apiClient.interceptors.request.use(
   }
 );
 
-// 응답 인터셉터 - 토큰 갱신 처리
+// 응답 인터셉터 - 토큰 갱신 처리 (경쟁 상태 방지)
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -104,6 +104,7 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
+        // 토큰 갱신 시도 (경쟁 상태 방지됨)
         const refreshed = await useAuthStore.getState().refreshAccessToken();
         if (refreshed) {
           const { accessToken } = useAuthStore.getState();
@@ -112,6 +113,8 @@ apiClient.interceptors.response.use(
         }
       } catch (refreshError) {
         console.error('Token refresh failed:', refreshError);
+        // 갱신 실패 시 로그아웃 처리
+        useAuthStore.getState().logout();
       }
     }
 

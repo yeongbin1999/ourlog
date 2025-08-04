@@ -4,6 +4,7 @@ import com.back.ourlog.domain.comment.entity.Comment;
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.follow.entity.Follow;
 import com.back.ourlog.domain.like.entity.Like;
+import com.back.ourlog.domain.banHistory.entity.BanHistory;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -109,6 +110,14 @@ public class User {
     public void deleteComment(Comment comment) {
         comments.remove(comment);
         comment.removeUser();
+    }
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BanHistory> banHistories = new ArrayList<>();
+
+    public boolean isCurrentlyBanned() {
+        return banHistories.stream()
+                .anyMatch(BanHistory::isActiveNow);
     }
 
     // === 일반 가입 전용 생성자 ===

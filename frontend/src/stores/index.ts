@@ -14,5 +14,8 @@ export {
 // UI Store
 export { useUIStore } from './uiStore';
 
+// Device Store
+export { useDeviceStore } from './deviceStore';
+
 // 타입들도 export
 export type { User } from './authStore'; 
