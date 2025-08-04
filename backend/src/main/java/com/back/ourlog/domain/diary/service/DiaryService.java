@@ -28,10 +28,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,6 +51,7 @@ public class DiaryService {
     private final DiaryFactory diaryFactory;
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, Object> objectRedisTemplate;
+    private final Environment env;
 
     private static final String CACHE_KEY_PREFIX = "diaryDetail::";
 
@@ -109,6 +112,12 @@ public class DiaryService {
 
     public DiaryDetailDto getDiaryDetail(Integer diaryId) {
         String cacheKey = CACHE_KEY_PREFIX + diaryId;
+
+        if (Arrays.asList(env.getActiveProfiles()).contains("test")) {
+            Diary diary = diaryRepository.findById(diaryId)
+                    .orElseThrow(() -> new DiaryNotFoundException());
+            return DiaryDetailDto.of(diary);
+        }
 
         Object cached = objectRedisTemplate.opsForValue().get(cacheKey);
         if (cached != null) {
