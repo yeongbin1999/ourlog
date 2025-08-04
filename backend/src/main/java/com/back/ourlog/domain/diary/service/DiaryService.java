@@ -135,22 +135,22 @@ public class DiaryService {
             newContent = contentService.saveOrGet(result, dto.type());
             diary.setContent(newContent);
 
-            // 새 장르 추가
-            if (result.genres() != null) {
-                updateGenres(diary, result.genres());
+            if (result != null && result.genres() != null) {
+                diary.updateGenres(result.genres(), genreService, libraryService);
             }
+
         }
 
         // 나머지 필드 업데이트
         diary.update(dto.title(), dto.contentText(), dto.rating(), dto.isPublic());
 
-        // 태그 & OTT 갱신
-        updateTags(diary, dto.tagNames());
-        updateOtts(diary, dto.ottIds());
+        diary.updateTags(dto.tagNames(), tagRepository);
+        diary.updateOtts(dto.ottIds(), ottRepository);
 
         return DiaryResponseDto.from(diary);
     }
 
+    /*
     private void updateGenres(Diary diary, List<String> newGenreNames) {
         List<DiaryGenre> current = diary.getDiaryGenres();
         List<String> currentNames = current.stream()
@@ -179,56 +179,7 @@ public class DiaryService {
         });
     }
 
-    private void updateTags(Diary diary, List<String> newTagNames) {
-        List<DiaryTag> current = diary.getDiaryTags();
-        List<String> currentNames = current.stream()
-                .map(dt -> dt.getTag().getName())
-                .toList();
-
-        // 제거할 항목
-        List<DiaryTag> toRemove = current.stream()
-                .filter(dt -> !newTagNames.contains(dt.getTag().getName()))
-                .toList();
-        diary.getDiaryTags().removeAll(toRemove);
-
-        // 추가할 항목
-        List<String> toAdd = newTagNames.stream()
-                .filter(name -> !currentNames.contains(name))
-                .toList();
-
-        toAdd.forEach(tagName -> {
-            Tag tag = tagRepository.findByName(tagName)
-                    .orElseGet(() -> tagRepository.save(new Tag(tagName)));
-            diary.getDiaryTags().add(new DiaryTag(diary, tag));
-        });
-    }
-
-    private void updateOtts(Diary diary, List<Integer> newOttIds) {
-        // 영화가 아닐 경우 저장 안함
-        if (diary.getContent().getType() != ContentType.MOVIE || newOttIds == null) {
-            diary.getDiaryOtts().clear(); // 기존 OTT 모두 제거 (없애야 정합성 유지됨)
-            return;
-        }
-
-        List<DiaryOtt> current = diary.getDiaryOtts();
-        List<Integer> currentIds = current.stream()
-                .map(doo -> doo.getOtt().getId())
-                .toList();
-
-        List<DiaryOtt> toRemove = current.stream()
-                .filter(doo -> !newOttIds.contains(doo.getOtt().getId()))
-                .toList();
-        diary.getDiaryOtts().removeAll(toRemove);
-
-        List<Integer> toAdd = newOttIds.stream()
-                .filter(id -> !currentIds.contains(id))
-                .toList();
-        toAdd.forEach(id -> {
-            Ott ott = ottRepository.findById(id)
-                    .orElseThrow(() -> new CustomException(ErrorCode.OTT_NOT_FOUND));
-            diary.getDiaryOtts().add(new DiaryOtt(diary, ott));
-        });
-    }
+     */
 
     @Transactional(readOnly = true)
     @Cacheable(value = "diaryDetail", key = "#diaryId")
