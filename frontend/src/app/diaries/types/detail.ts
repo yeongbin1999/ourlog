@@ -16,6 +16,7 @@ export type DiaryInfoProps = {
 
 export type Comment = {
     id: number;
+    userId: number;
     nickname: string;
     profileImageUrl: string;
     content: string;
