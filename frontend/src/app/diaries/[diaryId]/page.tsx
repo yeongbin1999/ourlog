@@ -106,8 +106,20 @@ export default function Page() {
 
   if (!diary) {
     return (
-      <main className="p-6 text-center text-red-500">
-        데이터를 불러오지 못했습니다.
+      <main className="flex flex-col items-center justify-center h-[60vh] text-center space-y-4">
+        <div className="text-6xl">😢</div>
+        <div className="text-xl font-semibold text-gray-700">
+          존재하지 않는 페이지입니다.
+        </div>
+        <div className="text-gray-500">
+          주소가 잘못 입력되었거나, 삭제된 일기일 수 있어요.
+        </div>
+        <button
+          onClick={() => router.push("/")}
+          className="mt-4 px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
+        >
+          홈으로 이동
+        </button>
       </main>
     );
   }
