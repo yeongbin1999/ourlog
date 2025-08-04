@@ -67,7 +67,7 @@ const SearchPage = () => {
         </div>
       ) : results.length === 0 ? (
         <div className="text-center text-gray-500 text-lg mt-8">
-          No users found for "<span className="font-semibold text-black">{keyword}</span>"
+          No users found for &quot;<span className="font-semibold text-black">{keyword}</span>&quot;
         </div>
       ) : (
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
