@@ -11,51 +11,6 @@ import {
   useSearchContents,
   LoginMutationResult,
 } from '../generated/api/api';
-import type {
-  SearchContentsParams,
-} from '../generated/model';
-
-// 다이어리 관련 API 훅들
-export const useDiaryDetail = (diaryId: number) => {
-  return useGetDiary(diaryId, {
-    query: {
-      enabled: !!diaryId && !!useAuthStore.getState().isAuthenticated,
-    },
-  });
-};
-
-export const useCreateDiary = () => {
-  return useWriteDiary({
-    mutation: {
-      onSuccess: () => {
-        // 성공 시 다이어리 목록 캐시 무효화
-        // queryClient.invalidateQueries({ queryKey: ['diaries'] });
-      },
-    },
-  });
-};
-
-export const useUpdateDiaryMutation = () => {
-  return useUpdateDiary({
-    mutation: {
-      onSuccess: () => {
-        // 성공 시 해당 다이어리 캐시 무효화
-        // queryClient.invalidateQueries({ queryKey: ['diary', id] });
-      },
-    },
-  });
-};
-
-export const useDeleteDiaryMutation = () => {
-  return useDeleteDiary({
-    mutation: {
-      onSuccess: () => {
-        // 성공 시 다이어리 목록 캐시 무효화
-        // queryClient.invalidateQueries({ queryKey: ['diaries'] });
-      },
-    },
-  });
-};
 
 // 사용자 관련 API 훅들
 export const useUserProfile = (userId: number) => {
@@ -112,15 +67,6 @@ export const useLogoutMutation = () => {
       onSuccess: () => {
         useAuthStore.getState().logout();
       },
-    },
-  });
-};
-
-// 콘텐츠 검색을 위한 훅
-export const useSearchContentsQuery = (params: SearchContentsParams) => {
-  return useSearchContents(params, {
-    query: {
-      enabled: !!useAuthStore.getState().isAuthenticated,
     },
   });
 };

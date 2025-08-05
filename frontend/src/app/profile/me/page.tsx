@@ -66,8 +66,8 @@ export default function MyProfilePage() {
 
   const renderTabContent = () => {
     if (!myUserId || selectedTab === null) {
-        return <div className="text-center text-gray-500">탭을 클릭하세요!..</div>;
-      }
+      return <div className="text-center text-gray-500">탭을 클릭하세요!..</div>;
+    }
 
     switch (selectedTab) {
       case 'received':
@@ -89,27 +89,41 @@ export default function MyProfilePage() {
 
       {myUserId && (
         <div className="bg-white rounded-xl shadow-lg p-6 mb-10">
-          {/* MyProfileDisplayCard 내용 직접 삽입 */}
           {!user ? (
             <div className="text-center">⏳ 프로필 로딩 중...</div>
           ) : (
-            <div className="w-full max-w-sm bg-white p-6 rounded-3xl shadow-md border border-black mx-auto flex flex-col items-center text-center">
+            <div className="w-full bg-white p-6 rounded-3xl shadow-md border border-black mx-auto flex flex-row items-center gap-6">
+              {/* 왼쪽: 프로필 이미지 */}
               <div
-                className="w-20 h-20 mb-4 rounded-full bg-center bg-cover"
-                style={{ backgroundImage: `url(${user.profileImageUrl || '/public/images/no-image.png'})` }}
+                className="w-24 h-24 rounded-full bg-center bg-cover border border-gray-300"
+                style={{
+                  backgroundImage: `url(${user.profileImageUrl || '/images/no-image.png'})`,
+                }}
               />
-              <h2 className="text-2xl font-bold mb-1">{user.nickname}</h2>
-              <p className="text-sm text-gray-600 mb-2">{user.bio || '소개글이 없습니다.'}</p>
-              <hr className="my-4 w-full" />
-              <ul className="space-y-2 text-sm text-gray-600 w-full text-left pl-4 ml-28">
-                <li>Email: {user.email}</li>
-                <li>팔로잉: {user.followingsCount ?? 0}</li>
-                <li>팔로워: {user.followersCount ?? 0}</li>
-              </ul>
+
+              {/* 오른쪽: 프로필 정보 */}
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold mb-1">{user.nickname}</h2>
+                <p className="text-sm text-gray-600 mb-3">
+                  {user.bio || '소개글이 없습니다.'}
+                </p>
+
+                <div className="flex gap-4 text-sm text-gray-800">
+                  <div>
+                    <span className="font-semibold">{user.followingsCount ?? 0}</span> 팔로잉
+                  </div>
+                  <div>
+                    <span className="font-semibold">{user.followersCount ?? 0}</span> 팔로워
+                  </div>
+                </div>
+
+                <div className="mt-2 text-xs text-gray-500">📧 {user.email}</div>
+              </div>
             </div>
           )}
 
-          <div className="mt-6 flex justify-around">
+          {/* 탭 버튼 */}
+          <div className="mt-6 flex flex-wrap justify-around gap-3">
             {TAB_ITEMS.map((tab) => (
               <button
                 key={tab.key}
@@ -132,7 +146,7 @@ export default function MyProfilePage() {
         </div>
       )}
 
-      {/* 아래에 탭별 콘텐츠 렌더링 */}
+      {/* 탭 콘텐츠 */}
       {renderTabContent()}
     </div>
   );

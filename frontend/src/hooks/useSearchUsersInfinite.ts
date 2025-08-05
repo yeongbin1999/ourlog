@@ -8,9 +8,8 @@ export const useSearchUsersInfinite = (params: Omit<SearchUsersParams, 'pageable
     queryFn: async ({ pageParam = 0 }) => {
       const response = await searchUsers({
         keyword: params.keyword,
-        pageable: { page: pageParam, size: 10 }, // Pass page and size within pageable object
+        pageable: { page: pageParam, size: 10 },
       });
-      // Assuming RsData<Page<UserProfileResponse>> structure
       return {
         content: response.data?.content || [],
         page: response.data?.page || 0,
@@ -27,6 +26,6 @@ export const useSearchUsersInfinite = (params: Omit<SearchUsersParams, 'pageable
       return undefined;
     },
     initialPageParam: 0,
-    enabled: !!params.keyword, // Only enable query if keyword exists
+    enabled: !!params.keyword,
   });
 };
