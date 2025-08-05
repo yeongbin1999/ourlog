@@ -45,6 +45,8 @@ public enum ErrorCode {
 
     // ======================== 댓글 관련 ========================
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMENT_001", "존재하지 않는 댓글입니다."),
+    COMMENT_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN,"COMMENT_002", "댓글을 삭제할 권한이 없습니다."),
+    COMMENT_UPDATE_FORBIDDEN(HttpStatus.FORBIDDEN,"COMMENT_003", "댓글을 수정할 권한이 없습니다."),
 
     // ======================== 팔로우 관련 ========================
     FOLLOW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "FOLLOW_001", "이미 팔로우한 사용자입니다."),
