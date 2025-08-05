@@ -5,13 +5,15 @@ import com.back.ourlog.domain.comment.dto.CommentResponseDto;
 import com.back.ourlog.domain.comment.dto.CommentUpdateRequestDto;
 import com.back.ourlog.domain.comment.service.CommentService;
 import com.back.ourlog.global.common.dto.RsData;
-import com.back.ourlog.global.security.jwt.JwtProvider;
+import com.back.ourlog.global.security.service.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,19 +24,14 @@ import java.util.List;
 @Tag(name = "댓글 API")
 public class CommentController {
     private final CommentService commentService;
-    private final JwtProvider jwtProvider;
 
     @PostMapping
     @Operation(summary = "댓글 등록")
+    @PreAuthorize("hasAnyRole('USER', 'MODERATOR', 'ADMIN')")
     public ResponseEntity<RsData<CommentResponseDto>> writeComment
-            (@RequestHeader String authorization,
+            (@AuthenticationPrincipal CustomUserDetails customUserDetails,
              @RequestBody @Valid CommentRequestDto req) {
-
-        String accessToken = authorization.replace("Bearer ", "");
-
-        int userId = Integer.parseInt(jwtProvider.getUserIdFromToken(accessToken));
-
-        CommentResponseDto res = commentService.write(req.getDiaryId(), userId, req.getContent());
+        CommentResponseDto res = commentService.write(req.getDiaryId(), customUserDetails.getId(), req.getContent());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(RsData.of("201-1", "댓글이 등록되었습니다.", res));
@@ -51,14 +48,12 @@ public class CommentController {
 
     @PutMapping()
     @Operation(summary = "댓글 수정")
+    @PreAuthorize("hasAnyRole('USER', 'MODERATOR', 'ADMIN')")
     public ResponseEntity<RsData<Void>> updateComment(
-            @RequestHeader String authorization,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestBody CommentUpdateRequestDto req) {
-        String accessToken = authorization.replace("Bearer ", "");
 
-        int userId = Integer.parseInt(jwtProvider.getUserIdFromToken(accessToken));
-
-        commentService.checkCanUpdate(userId, req.getId());
+        commentService.checkCanUpdate(customUserDetails.getId(), req.getId());
 
         commentService.update(req.getId(), req.getContent());
 
@@ -70,14 +65,11 @@ public class CommentController {
 
     @DeleteMapping("/{commentId}")
     @Operation(summary = "댓글 삭제")
+    @PreAuthorize("hasAnyRole('USER', 'MODERATOR', 'ADMIN')")
     public ResponseEntity<RsData<Void>> deleteComment(
-            @RequestHeader String authorization,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @PathVariable("commentId") int commentId) {
-        String accessToken = authorization.replace("Bearer ", "");
-
-        int userId = Integer.parseInt(jwtProvider.getUserIdFromToken(accessToken));
-
-        commentService.checkCanDelete(userId, commentId);
+        commentService.checkCanDelete(customUserDetails.getId(), commentId);
 
         commentService.delete(commentId);
 
