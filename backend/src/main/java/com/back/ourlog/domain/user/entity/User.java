@@ -1,14 +1,12 @@
 package com.back.ourlog.domain.user.entity;
 
+import com.back.ourlog.domain.banHistory.entity.BanHistory;
 import com.back.ourlog.domain.comment.entity.Comment;
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.follow.entity.Follow;
 import com.back.ourlog.domain.like.entity.Like;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -19,6 +17,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,7 +25,7 @@ import java.util.List;
 @Table(
         name = "users",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"provider", "providerId"}) // 소셜 로그인 중복 방지
+                @UniqueConstraint(columnNames = {"provider", "providerId"})
         }
 )
 public class User {
@@ -65,22 +64,27 @@ public class User {
     @Builder.Default
     private Role role = Role.USER;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Builder.Default
     private List<Diary> diaries = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<Comment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<Like> likes = new ArrayList<>();
 
     // 내가 팔로우 한 사람 (팔로잉)
     @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private final List<Follow> followings = new ArrayList<>();
+    @Builder.Default
+    private List<Follow> followings = new ArrayList<>();
 
     // 나를 팔로우 한 사람 (팔로워)
     @OneToMany(mappedBy = "followee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private final List<Follow> followers = new ArrayList<>();
+    @Builder.Default
+    private List<Follow> followers = new ArrayList<>();
 
     @Column(nullable = false)
     @Builder.Default
@@ -111,6 +115,15 @@ public class User {
         comment.removeUser();
     }
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<BanHistory> banHistories = new ArrayList<>();
+
+    public boolean isCurrentlyBanned() {
+        return banHistories.stream()
+                .anyMatch(BanHistory::isActiveNow);
+    }
+
     // === 일반 가입 전용 생성자 ===
     public static User createNormalUser(String email, String encodedPassword, String nickname, String profileImageUrl, String bio) {
         return User.builder()
@@ -119,6 +132,8 @@ public class User {
                 .nickname(nickname)
                 .profileImageUrl(profileImageUrl)
                 .bio(bio)
+                .provider("local")
+                .providerId(email)
                 .build();
     }
 
@@ -132,5 +147,4 @@ public class User {
                 .profileImageUrl(profileImageUrl)
                 .build();
     }
-
 }
