@@ -1,6 +1,7 @@
 import { useState } from "react";
 import CommentMenuButton from "./CommentMenuButton";
 import { Comment } from "../../types/detail";
+import { useRouter } from "next/navigation";
 
 export default function CommentInfo({
   comments,
@@ -11,6 +12,7 @@ export default function CommentInfo({
 }) {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editContent, setEditContent] = useState("");
+  const router = useRouter();
 
   const handleEdit = (comment: Comment) => {
     setEditingId(comment.id);
@@ -33,8 +35,7 @@ export default function CommentInfo({
         }
       );
       if (!res.ok) throw new Error("Failed to delete comment");
-      const json = await res.json();
-      console.log(json.data);
+      await res.json();
       setComments((prev) => prev.filter((comment) => comment.id !== commentId));
     } catch (err) {
       console.error(err);
@@ -84,10 +85,22 @@ export default function CommentInfo({
       {comments.map((comment, index) => (
         <div key={comment.id} className="group">
           <div className="flex gap-4">
-            {/* 아바타 */}
+            {/* 아바타 (클릭 시 프로필 이동) */}
             <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center font-semibold text-lg">
-                {(comment.nickname?.charAt(0).toUpperCase()) || "?"}
+              <div
+                className="w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center font-semibold text-lg cursor-pointer"
+                title={`${comment.nickname}님의 프로필로 이동`}
+                onClick={() => router.push(`/profile/${comment.id}`)}
+              >
+                {comment.profileImageUrl ? (
+                  <img
+                    src={comment.profileImageUrl}
+                    alt={`${comment.nickname}님의 프로필 이미지`}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  (comment.nickname?.charAt(0).toUpperCase()) || "?"
+                )}
               </div>
             </div>
 
@@ -126,7 +139,13 @@ export default function CommentInfo({
               {/* 댓글 메타 정보 */}
               <div className="flex items-center justify-between mt-3 px-2">
                 <div className="flex items-center gap-3 text-sm text-gray-500">
-                  <span className="font-semibold text-gray-700">{comment.nickname || "익명"}</span>
+                  <span
+                    className="font-semibold text-gray-700 cursor-pointer"
+                    title={`${comment.nickname}님의 프로필로 이동`}
+                    onClick={() => router.push(`/profile/${comment.id}`)}
+                  >
+                    {comment.nickname || "익명"}
+                  </span>
                   <span>•</span>
                   <span>{new Date(comment.createdAt).toLocaleDateString('ko-KR', {
                     year: 'numeric',

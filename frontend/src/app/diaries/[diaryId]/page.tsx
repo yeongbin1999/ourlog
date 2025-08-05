@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Diary, Comment, Content } from "../types/detail";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Diary, DiaryInfoProps, Comment, Content } from "../types/detail";
 import DiaryTitle from "./components/DiaryTitle";
 import DiaryInfo from "./components/DiaryInfo";
 import CommentForm from "./components/CommentForm";
@@ -14,8 +14,43 @@ export default function Page() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState<Content | null>(null);
+
   const { diaryId } = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
+
+  async function fetchDiary() {
+    try {
+      const res = await fetch(`http://localhost:8080/api/v1/diaries/${diaryId}`);
+      if (!res.ok) throw new Error("Failed to fetch Diary");
+      const json = await res.json();
+      setDiary(json.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function fetchComments() {
+    try {
+      const res = await fetch(`http://localhost:8080/api/v1/comments/${diaryId}`);
+      if (!res.ok) throw new Error("Failed to fetch comments");
+      const json = await res.json();
+      setComments(json.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function fetchContent() {
+    try {
+      const res = await fetch(`http://localhost:8080/api/v1/contents/${diaryId}`);
+      if (!res.ok) throw new Error("Failed to fetch content");
+      const json = await res.json();
+      setContent(json.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   useEffect(() => {
     async function fetchData() {
@@ -44,7 +79,28 @@ export default function Page() {
     }
 
     fetchData();
+    if (!diaryId) return;
+    
+    setLoading(true);
+    Promise.all([fetchDiary(), fetchComments(), fetchContent()])
+      .finally(() => setLoading(false));
   }, [diaryId]);
+
+  // refresh 파라미터 처리
+  useEffect(() => {
+    const shouldRefresh = searchParams.get("refresh") === "1";
+    if (shouldRefresh) {
+      // URL에서 refresh 파라미터 제거
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete("refresh");
+      window.history.replaceState({}, "", newUrl.toString());
+      
+      // 강제로 다시 fetch
+      setLoading(true);
+      Promise.all([fetchDiary(), fetchComments(), fetchContent()])
+        .finally(() => setLoading(false));
+    }
+  }, [searchParams]);
 
   const handleCommentAdd = (newComment: Comment) => {
     setComments((prev) => [newComment, ...prev]);
@@ -83,11 +139,20 @@ export default function Page() {
 
   if (!diary) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <p className="text-red-600 text-lg font-medium">데이터를 불러오지 못했습니다.</p>
+      <main className="flex flex-col items-center justify-center h-[60vh] text-center space-y-4">
+        <div className="text-6xl">😢</div>
+        <div className="text-xl font-semibold text-gray-700">
+          존재하지 않는 페이지입니다.
         </div>
+        <div className="text-gray-500">
+          주소가 잘못 입력되었거나, 삭제된 일기일 수 있어요.
+        </div>
+        <button
+          onClick={() => router.push("/")}
+          className="mt-4 px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
+        >
+          홈으로 이동
+        </button>
       </main>
     );
   }
