@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Data
 public class CommentResponseDto {
     private int id;
+    private Integer userId;
     private String nickname;
     private String profileImageUrl;
     private String content;
@@ -16,8 +17,9 @@ public class CommentResponseDto {
     // 테스트 ver (user가 있다고 가정)
     public CommentResponseDto(Comment comment) {
         id = comment.getId();
-        nickname = null;
-        profileImageUrl = null;
+        userId = comment.getUser() != null ? comment.getUser().getId() : null;
+        nickname = comment.getUser() != null ? comment.getUser().getNickname() : null;
+        profileImageUrl = comment.getUser() != null ? comment.getUser().getProfileImageUrl() : null;
         content = comment.getContent();
         createdAt = comment.getCreatedAt();
     }

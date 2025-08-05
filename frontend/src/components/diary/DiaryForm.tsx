@@ -52,9 +52,7 @@ export interface DiaryFormProps {
   description: string;
   posterUrl: string;
   releasedAt: string;
-
   genres: string[];
-
   initialValues: {
     title: string;
     contentText: string;
@@ -64,7 +62,6 @@ export interface DiaryFormProps {
     genreNames: string[];
     ottNames: string[];
   };
-
   onSubmit?: (data: {
     title: string;
     contentText: string;
@@ -97,11 +94,9 @@ export default function DiaryForm({
   const [contentText, setContentText] = useState(initialValues?.contentText ?? "");
   const [isPublic, setIsPublic] = useState(initialValues?.isPublic ?? true);
   const [rating, setRating] = useState(initialValues?.rating ?? 0);
-
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [selectedOttId, setSelectedOttId] = useState<number | null>(null);
-
   const [newTagName, setNewTagName] = useState("");
   const [isOttDropdownOpen, setIsOttDropdownOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -111,74 +106,81 @@ export default function DiaryForm({
       try {
         const res = await fetch("http://localhost:8080/api/v1/tags");
         const json = await res.json();
-  
+
         const tagsWithColor = json.data.map((tag: Tag) => ({
           ...tag,
-          color: getRandomColor(), // 랜덤 색상 부여
+          color: getRandomColor(),
         }));
-  
+
         setAllTags(tagsWithColor);
       } catch (err) {
         console.error("태그 불러오기 실패:", err);
       }
     };
-  
+
     fetchTags();
   }, []);
 
-  // 초기 tagIds, ottId 매핑 처리
   useEffect(() => {
     if (initialValues && allTags.length > 0) {
       const tagIds = allTags
         .filter((tag) => initialValues.tagNames.includes(tag.name))
         .map((tag) => tag.id);
       setSelectedTagIds(tagIds);
-  
+
+      // OTT 초기화 수정
       if (type === "MOVIE") {
-        const ott = OTT_PLATFORMS.find((p) =>
+        const valid = OTT_PLATFORMS.find(p =>
           initialValues.ottNames.includes(p.name)
         );
-        setSelectedOttId(ott?.id ?? null);
+        setSelectedOttId(valid?.id ?? null);
+      } else {
+        setSelectedOttId(null);
       }
     }
+
   }, [initialValues, allTags, type]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-  
+
     const payload = {
       title,
       contentText,
       isPublic,
       rating,
-      tagNames: allTags
-    .filter((tag) => selectedTagIds.includes(tag.id))
-    .map((tag) => tag.name), 
+      tagNames: allTags.filter((tag) => selectedTagIds.includes(tag.id)).map((tag) => tag.name),
       ottIds: selectedOttId ? [selectedOttId] : [],
       externalId,
       type,
     };
-  
+
     try {
       const res = await fetch(
-        mode === "edit" ? `http://localhost:8080/api/v1/diaries/${diaryId}` : "http://localhost:8080/api/v1/diaries",
+        mode === "edit"
+          ? `http://localhost:8080/api/v1/diaries/${diaryId}`
+          : "http://localhost:8080/api/v1/diaries",
         {
           method: mode === "edit" ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         }
       );
-  
+
       const data = await res.json();
-  
+
       if (!res.ok) {
         alert(data.msg || "감상일기 저장에 실패했습니다.");
         return;
       }
-  
+
+      console.log("🔍 최종 전송될 payload:", payload);
+
       alert("감상일기가 저장되었습니다.");
-      router.push(`/diaries/${data.data.id ?? diaryId}`);
+      const redirectId = data.data?.id ?? diaryId;
+      const redirectUrl = mode === "edit" ? `/diaries/${redirectId}?refresh=1` : `/diaries/${redirectId}`;
+      router.push(redirectUrl);
     } catch (err) {
       console.error("저장 중 에러 발생:", err);
       alert("오류가 발생했습니다.");
@@ -188,7 +190,9 @@ export default function DiaryForm({
   };
 
   const handleTagToggle = (id: number) => {
-    setSelectedTagIds((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
+    setSelectedTagIds((prev) =>
+      prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]
+    );
   };
 
   const handleOttSelect = (id: number) => {
@@ -207,7 +211,12 @@ export default function DiaryForm({
   };
 
   const handleStarClick = (value: number) => setRating(value);
-  const getTypeLabel = (type: string) => ({ MOVIE: "영화", BOOK: "도서", MUSIC: "음악" }[type] || type);
+
+  const getTypeLabel = (type: string) => ({
+    MOVIE: "영화",
+    BOOK: "도서",
+    MUSIC: "음악",
+  }[type] || type);
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">

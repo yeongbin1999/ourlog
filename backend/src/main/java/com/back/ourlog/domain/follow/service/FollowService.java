@@ -8,6 +8,8 @@ import com.back.ourlog.domain.user.entity.User;
 import com.back.ourlog.domain.user.repository.UserRepository;
 import com.back.ourlog.global.exception.CustomException;
 import com.back.ourlog.global.exception.ErrorCode;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,9 @@ public class FollowService {
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
 
+    @PersistenceContext
+    private EntityManager em;
+
     // 팔로우..
     @Transactional
     public void follow(Integer followerId, Integer followeeId) {
@@ -29,79 +34,119 @@ public class FollowService {
             throw new CustomException(ErrorCode.CANNOT_FOLLOW_SELF);
         }
 
-        if (followRepository.existsByFollowerIdAndFolloweeId(followerId, followeeId)) {
-            throw new CustomException(ErrorCode.FOLLOW_ALREADY_EXISTS);
-        }
-
-        // 기존 팔로우 여부 확인..
-        Optional<Follow> existing = followRepository.findByFollowerIdAndFolloweeId(followerId, followeeId);
-        if (existing.isPresent()) {
-            Follow existingFollow = existing.get();
-            if (existingFollow.getStatus() == FollowStatus.ACCEPTED || existingFollow.getStatus() == FollowStatus.PENDING) {
+        // 기존 Follow 있으면 처리..
+        List<Follow> existingList = followRepository.findAllByFollowerIdAndFolloweeId(followerId, followeeId);
+        for (Follow f : existingList) {
+            if (f.getStatus() == FollowStatus.ACCEPTED || f.getStatus() == FollowStatus.PENDING) {
                 throw new CustomException(ErrorCode.FOLLOW_ALREADY_EXISTS);
+            } else {
+                followRepository.delete(f); // 이전 REJECTED 같은 건 삭제..
             }
         }
 
-        // 상대가 나에게 이미 보낸 요청이 있는 경우 수락..
-        Optional<Follow> reverse = followRepository
-                .findByFollowerIdAndFolloweeIdAndStatus(followeeId, followerId, FollowStatus.PENDING);
+        // 역방향 PENDING 상태가 있다면 자동 수락..
+        Optional<Follow> reversePending = followRepository.findByFollowerIdAndFolloweeIdAndStatus(
+                followeeId, followerId, FollowStatus.PENDING);
 
-        if (reverse.isPresent()) {
-            reverse.get().accept();
-            reverse.get().getFollower().increaseFollowingsCount();
-            reverse.get().getFollowee().increaseFollowersCount();
+        if (reversePending.isPresent()) {
+            reversePending.get().accept();
+            reversePending.get().getFollower().increaseFollowingsCount();
+            reversePending.get().getFollowee().increaseFollowersCount();
             return;
         }
 
+        // 역방향이 ACCEPTED인 경우 → 쌍방으로 만들어야 함..
+        Optional<Follow> reverseAccepted = followRepository.findByFollowerIdAndFolloweeIdAndStatus(
+                followeeId, followerId, FollowStatus.ACCEPTED);
+
+        if (reverseAccepted.isPresent()) {
+            User follower = userRepository.findById(followerId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+            User followee = userRepository.findById(followeeId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+            Follow follow = new Follow(follower, followee);
+            follow.accept();
+            followRepository.save(follow);
+
+            follower.increaseFollowingsCount();
+            followee.increaseFollowersCount();
+            return;
+        }
+
+        // 아무 관계도 없으면 새로 PENDING 생성..
         User follower = userRepository.findById(followerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         User followee = userRepository.findById(followeeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        Follow follow = new Follow(follower, followee);
+        Follow follow = new Follow(follower, followee); // 상태는 기본 PENDING..
         followRepository.save(follow);
 
         follower.increaseFollowingsCount();
         followee.increaseFollowersCount();
     }
 
+
     // 언팔로우..
     @Transactional
-    public void unfollow(Integer userId1, Integer userId2) {
-        Follow follow = followRepository.findByUsersEitherDirection(userId1, userId2)
-                .orElseThrow(() -> new CustomException(ErrorCode.FOLLOW_NOT_FOUND));
+    public void unfollow(Integer myUserId, Integer otherUserId) {
+        List<Follow> follows = followRepository.findAllByUsersEitherDirection(myUserId, otherUserId);
 
-        followRepository.delete(follow);
+        if (follows.isEmpty()) {
+            throw new CustomException(ErrorCode.FOLLOW_NOT_FOUND);
+        }
 
-        if (follow.getFollower().getId().equals(userId1)) {
-            follow.getFollower().decreaseFollowingsCount();
-            follow.getFollowee().decreaseFollowersCount();
-        } else {
+        for (Follow follow : follows) {
+            followRepository.delete(follow);
             follow.getFollower().decreaseFollowingsCount();
             follow.getFollowee().decreaseFollowersCount();
         }
+
+        followRepository.flush();
+        em.clear();
     }
+
+
+
 
     // 내가 팔로우한 유저 목록 조회..
     public List<FollowUserResponse> getFollowings(Integer userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-        List<User> followings = followRepository.findFollowingsByUserId(userId);
+
+        List<Follow> followings = followRepository.findFollowingsByUserId(userId);
+
         return followings.stream()
-                .map(FollowUserResponse::from)
+                .map(f -> FollowUserResponse.fromFollowee(f, true))
                 .toList();
     }
+
 
     // 나를 팔로우한 유저 목록 조회..
     public List<FollowUserResponse> getFollowers(Integer userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        List<User> followers = followRepository.findFollowersByUserId(userId);
-        return followers.stream()
-                .map(FollowUserResponse::from)
+        List<Follow> follows = followRepository.findFollowersByUserId(userId);
+
+        return follows.stream()
+                .map(f -> {
+                    Integer followerId = f.getFollower().getId(); // 여기에 선언..
+                    boolean isFollowing = followRepository
+                            .findByFollowerIdAndFolloweeIdAndStatus(userId, followerId, FollowStatus.ACCEPTED)
+                            .isPresent();
+
+                    System.out.println("[FOLLOWERS DEBUG] userId = " + userId +
+                            ", followerId = " + followerId +
+                            ", isFollowing = " + isFollowing);
+
+                    return FollowUserResponse.fromFollower(f, isFollowing);
+                })
                 .toList();
     }
+
+
 
     // 팔로우 요청을 수락 상태로 변경..
     @Transactional
@@ -118,6 +163,31 @@ public class FollowService {
         }
 
         follow.accept();
+
+        // 쌍방 팔로우 관계 만들기..
+        Integer receiverId = follow.getFollowee().getId();  // 나..
+        Integer requesterId = follow.getFollower().getId(); // 상대방..
+
+        boolean alreadyReverse = followRepository
+                .findByFollowerIdAndFolloweeIdAndStatus(receiverId, requesterId, FollowStatus.ACCEPTED)
+                .isPresent();
+
+        if (!alreadyReverse) {
+            // 내가 상대방을 아직 팔로우 안 했으면 자동 생성 + ACCEPTED 처리..
+            User me = follow.getFollowee();     // 나..
+            User target = follow.getFollower(); // 상대방..
+
+            Follow reverse = new Follow(me, target); // 내가 상대방 팔로우..
+            reverse.accept();
+            followRepository.save(reverse);
+
+            me.increaseFollowingsCount();
+            target.increaseFollowersCount();
+        }
+
+        followRepository.save(follow);
+        followRepository.flush();
+
     }
 
     // 팔로우 요청을 거절 상태로 변경..
@@ -145,7 +215,7 @@ public class FollowService {
         List<Follow> sentRequests = followRepository.findSentPendingRequestsByUserId(userId);
 
         return sentRequests.stream()
-                .map(f -> FollowUserResponse.from(f.getFollowee()))
+                .map(FollowUserResponse::fromFollowee)
                 .toList();
     }
 
@@ -157,7 +227,7 @@ public class FollowService {
         List<Follow> pendingFollows = followRepository.findPendingRequestsByUserId(userId);
 
         return pendingFollows.stream()
-                .map(f -> FollowUserResponse.from(f.getFollower()))
+                .map(FollowUserResponse::fromFollower)
                 .toList();
     }
 }

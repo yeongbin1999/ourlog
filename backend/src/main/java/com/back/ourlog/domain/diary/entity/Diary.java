@@ -2,11 +2,21 @@ package com.back.ourlog.domain.diary.entity;
 
 import com.back.ourlog.domain.comment.entity.Comment;
 import com.back.ourlog.domain.content.entity.Content;
+import com.back.ourlog.domain.content.entity.ContentType;
 import com.back.ourlog.domain.genre.entity.DiaryGenre;
+import com.back.ourlog.domain.genre.entity.Genre;
+import com.back.ourlog.domain.genre.service.GenreService;
 import com.back.ourlog.domain.like.entity.Like;
 import com.back.ourlog.domain.ott.entity.DiaryOtt;
+import com.back.ourlog.domain.ott.entity.Ott;
+import com.back.ourlog.domain.ott.repository.OttRepository;
 import com.back.ourlog.domain.tag.entity.DiaryTag;
+import com.back.ourlog.domain.tag.entity.Tag;
+import com.back.ourlog.domain.tag.repository.TagRepository;
 import com.back.ourlog.domain.user.entity.User;
+import com.back.ourlog.external.library.service.LibraryService;
+import com.back.ourlog.global.exception.CustomException;
+import com.back.ourlog.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -16,8 +26,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -80,12 +90,75 @@ public class Diary {
         this.isPublic = isPublic;
     }
 
-    public void setContent(Content content) {
-        this.content = content;
+    public void updateTags(List<String> newTagNames, TagRepository tagRepository) {
+        List<DiaryTag> current = this.getDiaryTags();
+        List<String> currentNames = current.stream()
+                .map(dt -> dt.getTag().getName())
+                .toList();
+
+        List<DiaryTag> toRemove = current.stream()
+                .filter(dt -> !newTagNames.contains(dt.getTag().getName()))
+                .toList();
+        this.getDiaryTags().removeAll(toRemove);
+
+        List<String> toAdd = newTagNames.stream()
+                .filter(name -> !currentNames.contains(name))
+                .toList();
+
+        toAdd.forEach(tagName -> {
+            Tag tag = tagRepository.findByName(tagName)
+                    .orElseGet(() -> tagRepository.save(new Tag(tagName)));
+            this.getDiaryTags().add(new DiaryTag(this, tag));
+        });
     }
 
-    public void clearGenres() {
-        this.getDiaryGenres().clear();
+    public void updateGenres(List<String> newGenreNames, GenreService genreService, LibraryService libraryService) {
+        List<DiaryGenre> current = this.getDiaryGenres();
+        List<String> currentNames = current.stream()
+                .map(dg -> dg.getGenre().getName())
+                .toList();
+
+        ContentType contentType = this.getContent().getType();
+        List<String> mappedGenreNames = newGenreNames.stream()
+                .map(name -> contentType == ContentType.BOOK ? libraryService.mapKdcToGenre(name) : name)
+                .toList();
+
+        List<DiaryGenre> toRemove = current.stream()
+                .filter(dg -> !mappedGenreNames.contains(dg.getGenre().getName()))
+                .toList();
+        this.getDiaryGenres().removeAll(toRemove);
+
+        List<String> toAdd = mappedGenreNames.stream()
+                .filter(name -> !currentNames.contains(name))
+                .toList();
+
+        toAdd.forEach(name -> {
+            Genre genre = genreService.findOrCreateByName(name);
+            this.getDiaryGenres().add(new DiaryGenre(this, genre));
+        });
+    }
+
+    public void updateOtts(List<Integer> newOttIds, OttRepository ottRepository) {
+        if (this.getContent().getType() != ContentType.MOVIE) {
+            this.diaryOtts.clear();
+            return;
+        }
+
+        if (newOttIds == null) {
+            newOttIds = new ArrayList<>();
+        }
+
+        this.diaryOtts.clear();
+
+        for (Integer ottId : newOttIds) {
+            Ott ott = ottRepository.findById(ottId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.OTT_NOT_FOUND));
+            this.diaryOtts.add(new DiaryOtt(this, ott));
+        }
+    }
+
+    public void setContent(Content content) {
+        this.content = content;
     }
 
     public Comment addComment(User user, String content) {

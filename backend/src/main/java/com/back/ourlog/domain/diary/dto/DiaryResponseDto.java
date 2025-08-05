@@ -2,6 +2,7 @@ package com.back.ourlog.domain.diary.dto;
 
 import com.back.ourlog.domain.diary.entity.Diary;
 
+import java.io.Serializable;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -19,7 +20,8 @@ public record DiaryResponseDto(
         List<String> genres,
         List<String> tags,
         List<String> otts
-) {
+) implements Serializable {
+
     public static DiaryResponseDto from(Diary diary) {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 

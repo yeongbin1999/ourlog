@@ -29,7 +29,7 @@ export default function TimelinePage() {
 
   return (
     <main className="container mt-5">
-      <h2 className="mb-4">🧾 타임라인 테스트..</h2>
+
 
       {loading && <p>⏳ 불러오는 중...</p>}
       {error && <p className="text-danger">{error}</p>}
