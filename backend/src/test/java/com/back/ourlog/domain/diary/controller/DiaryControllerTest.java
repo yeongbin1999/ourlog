@@ -241,7 +241,7 @@ class DiaryControllerTest {
         mvc.perform(put("/api/v1/diaries/" + id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updateBody))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.resultCode").value("OTT_001"))
                 .andExpect(jsonPath("$.msg").value("존재하지 않는 OTT입니다."));
     }

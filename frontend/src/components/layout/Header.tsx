@@ -11,9 +11,9 @@ const Header = () => {
 
   const leftNavItems = [
     { key: "feed", label: "Feed", href: "/social" },
-    { key: "diary", label: "Diary", href: "/diaries" },
+    { key: "diary", label: "Diary", href: "/diaries/select-type" },
     { key: "statistics", label: "Statistics", href: "/statistics" },
-    { key: "mypage", label: "MyPage", href: "/profile/me" },
+    { key: "mypage", label: "MyPage", href: "/profile/me" }, // 나중에 useAuth 적용
   ];
 
   return (
@@ -21,7 +21,12 @@ const Header = () => {
       <div className="w-full h-full flex justify-between items-center">
         {/* 왼쪽: 로고 + 메뉴 */}
         <div className="flex items-center pl-8 space-x-16">
-          <h1 className="text-5xl font-bold text-black font-logo">OUR LOG</h1>
+          <Link href="/" passHref>
+            <h1 className="text-5xl font-bold text-black font-logo cursor-pointer">
+              OUR LOG
+            </h1>
+          </Link>
+
           <nav className="flex items-center space-x-4">
             {leftNavItems.map((item) => (
               <Link key={item.key} href={item.href} passHref>

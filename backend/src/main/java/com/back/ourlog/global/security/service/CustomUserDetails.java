@@ -26,7 +26,7 @@ public class CustomUserDetails implements UserDetails {
         this.authorities = List.of(new SimpleGrantedAuthority(user.getRole().getKey()));
     }
 
-    @Override public String getUsername() { return email.toString(); }
+    @Override public String getUsername() { return email; }
     @Override public String getPassword() { return null; }
     @Override public boolean isAccountNonExpired() { return true; }
     @Override public boolean isAccountNonLocked() { return true; }

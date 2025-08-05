@@ -27,11 +27,12 @@ public class AuthService {
             throw new CustomException(ErrorCode.USER_DUPLICATE_EMAIL);
         }
 
-        User user = User.builder()
-                .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
-                .nickname(request.nickname())
-                .build();
+        User user = User.createNormalUser(
+                request.email(),
+                passwordEncoder.encode(request.password()),
+                request.nickname(),
+                request.profileImageUrl(),
+                request.bio());
 
         userRepository.save(user);
     }
