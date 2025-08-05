@@ -77,8 +77,10 @@ export default function Page() {
         setLoading(false);
       }
     }
+  }
 
     fetchData();
+  
     if (!diaryId) return;
     
     setLoading(true);

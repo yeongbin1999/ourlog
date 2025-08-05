@@ -41,6 +41,8 @@ dependencies {
 
     // --- Redis ---
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
     // --- JWT ---
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
