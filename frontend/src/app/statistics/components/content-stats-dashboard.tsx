@@ -534,13 +534,27 @@ const CustomTooltip = ({ active, payload, label, highlightedLine }: TooltipProps
 
                 {/* 탭 네비게이션 */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-                    <TabsList className="grid w-full grid-cols-5">
-                        <TabsTrigger value="overview">개요</TabsTrigger>
-                        <TabsTrigger value="type">타입별</TabsTrigger>
-                        <TabsTrigger value="genre">장르별</TabsTrigger>
-                        <TabsTrigger value="emotion">감정별</TabsTrigger>
-                        <TabsTrigger value="ott">OTT별</TabsTrigger>
-                    </TabsList>
+                <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
+                    {[
+                        { id: "overview", label: "개요" },
+                        { id: "type", label: "타입별" },
+                        { id: "genre", label: "장르별" },
+                        { id: "emotion", label: "감정별" },
+                        { id: "ott", label: "OTT별" }
+                    ].map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`flex-1 px-6 py-3 rounded-lg font-medium text-sm transition-all ${
+                                activeTab === tab.id
+                                    ? 'bg-white text-black shadow-sm'
+                                    : 'text-gray-600 hover:text-black'
+                            }`}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
 
                     <TabsContent value="overview" className="space-y-4">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

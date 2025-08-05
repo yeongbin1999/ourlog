@@ -9,63 +9,65 @@ export default function CommentForm({
   onCommentAdd: (newComment: Comment) => void;
 }) {
   const [content, setContent] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (!content.trim()) {
       alert("댓글 내용을 입력해주세요");
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
       const response = await fetch("http://localhost:8080/api/v1/comments", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ diaryId, content }),
       });
 
-      if (!response.ok) {
-        throw new Error("댓글 등록 실패");
-      }
+      if (!response.ok) throw new Error("댓글 등록 실패");
 
       const result = await response.json();
-
-      // 입력 초기화
       setContent("");
-      console.log(result.data);
-      // 상태 업데이트
       onCommentAdd(result.data);
-
-      alert("댓글 등록에 성공하였습니다.");
     } catch (error) {
       console.error(error);
       alert("댓글 등록 중 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <>
-      <h2 className="text-xl font-semibold">댓글</h2>
-      <section className="p-6 border rounded-xl shadow-sm bg-white space-y-4">
-        <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
-          <label className="text-sm text-gray-600">Nickname</label>
-          <textarea
-            className="border p-2 rounded-md h-24 resize-none"
-            name="content"
-            placeholder="댓글을 입력하세요"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
-          <button
-            type="submit"
-            className="self-end px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-          >
-            등록
-          </button>
+    <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden">
+      <div className="p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">댓글 작성</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <textarea
+              className="w-full border-2 border-gray-200 rounded-2xl p-4 h-32 resize-none text-gray-800 placeholder-gray-500 focus:outline-none focus:border-gray-900 transition-colors duration-200"
+              placeholder="이 작품에 대한 당신의 생각을 들려주세요..."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              disabled={isSubmitting}
+            />
+            <div className="absolute bottom-4 right-4 text-sm text-gray-400">
+              {content.length}/500
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={isSubmitting || !content.trim()}
+              className="bg-gray-900 text-white px-8 py-3 rounded-2xl font-semibold hover:bg-gray-700 transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              {isSubmitting ? "등록 중..." : "댓글 등록"}
+            </button>
+          </div>
         </form>
-      </section>
-    </>
+      </div>
+    </div>
   );
 }

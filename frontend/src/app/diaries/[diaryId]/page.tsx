@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Diary, DiaryInfoProps, Comment, Content } from "../types/detail";
+import { Diary, Comment, Content } from "../types/detail";
 import DiaryTitle from "./components/DiaryTitle";
 import DiaryInfo from "./components/DiaryInfo";
 import CommentForm from "./components/CommentForm";
@@ -19,62 +19,52 @@ export default function Page() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  async function fetchDiary() {
+  const fetchData = useCallback(async () => {
+    if (!diaryId) return;
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/diaries/${diaryId}`);
-      if (!res.ok) throw new Error("Failed to fetch Diary");
-      const json = await res.json();
-      setDiary(json.data);
+      const [diaryRes, commentsRes, contentRes] = await Promise.all([
+        fetch(`http://localhost:8080/api/v1/diaries/${diaryId}`),
+        fetch(`http://localhost:8080/api/v1/comments/${diaryId}`),
+        fetch(`http://localhost:8080/api/v1/contents/${diaryId}`),
+      ]);
+
+      if (!diaryRes.ok || !commentsRes.ok || !contentRes.ok) {
+        throw new Error("데이터 로딩 실패");
+      }
+
+      const diaryData = await diaryRes.json();
+      const commentsData = await commentsRes.json();
+      const contentData = await contentRes.json();
+
+      setDiary(diaryData.data);
+      setComments(commentsData.data);
+      setContent(contentData.data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
-  }
+  }, [diaryId]);
 
-  async function fetchComments() {
-    try {
-      const res = await fetch(`http://localhost:8080/api/v1/comments/${diaryId}`);
-      if (!res.ok) throw new Error("Failed to fetch comments");
-      const json = await res.json();
-      setComments(json.data);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  async function fetchContent() {
-    try {
-      const res = await fetch(`http://localhost:8080/api/v1/contents/${diaryId}`);
-      if (!res.ok) throw new Error("Failed to fetch content");
-      const json = await res.json();
-      setContent(json.data);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
+  // 최초 & diaryId 변경 시 로딩
   useEffect(() => {
     if (!diaryId) return;
-    
     setLoading(true);
-    Promise.all([fetchDiary(), fetchComments(), fetchContent()])
-      .finally(() => setLoading(false));
-  }, [diaryId]);
+    fetchData();
+  }, [diaryId, fetchData]);
 
   // refresh 파라미터 처리
   useEffect(() => {
     const shouldRefresh = searchParams.get("refresh") === "1";
     if (shouldRefresh) {
-      // URL에서 refresh 파라미터 제거
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.delete("refresh");
       window.history.replaceState({}, "", newUrl.toString());
-      
-      // 강제로 다시 fetch
+
       setLoading(true);
-      Promise.all([fetchDiary(), fetchComments(), fetchContent()])
-        .finally(() => setLoading(false));
+      fetchData();
     }
-  }, [searchParams]);
+  }, [searchParams, fetchData]);
 
   const handleCommentAdd = (newComment: Comment) => {
     setComments((prev) => [newComment, ...prev]);
@@ -85,13 +75,10 @@ export default function Page() {
     if (!confirmed) return;
 
     try {
-      const res = await fetch(
-        `http://localhost:8080/api/v1/diaries/${diaryId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
+      const res = await fetch(`http://localhost:8080/api/v1/diaries/${diaryId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
       if (!res.ok) throw new Error("삭제 실패");
 
@@ -104,7 +91,14 @@ export default function Page() {
   };
 
   if (loading) {
-    return <main className="p-6 text-center">로딩 중...</main>;
+    return (
+      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">로딩 중...</p>
+        </div>
+      </main>
+    );
   }
 
   if (!diary) {
@@ -128,40 +122,41 @@ export default function Page() {
   }
 
   return (
-    <main className="max-w-3xl mx-auto p-6 space-y-10">
-      <div className="flex justify-end gap-2">
-        <button
-          onClick={() => router.push(`/diaries/${diaryId}/edit`)}
-          className="px-4 py-2 border rounded hover:bg-gray-100"
-        >
-          수정
-        </button>
-        <button
-          onClick={handleDelete}
-          className="px-4 py-2 border rounded text-red-500 hover:bg-red-50"
-        >
-          삭제
-        </button>
-      </div>
+    <main className="bg-gray-50 min-h-screen py-8 lg:py-12">
+      <div className="max-w-5xl mx-auto px-4 lg:px-6 space-y-8">
+        <DiaryTitle title={diary.title} />
 
-      <DiaryTitle title={diary.title} />
-      {content && (
-        <ContentInfo
-          content={content}
-          genreNames={diary.genreNames}
-          ottNames={diary.ottNames.slice(0, 1)} 
+        {content && (
+          <ContentInfo
+            content={content}
+            genreNames={diary.genreNames}
+            ottNames={diary.ottNames}
+          />
+        )}
+
+        <DiaryInfo
+          rating={diary.rating}
+          contentText={diary.contentText}
+          tagNames={diary.tagNames}
+          onEdit={() => router.push(`/diaries/${diaryId}/edit`)}
+          onDelete={handleDelete}
         />
-      )}
-      <DiaryInfo
-        rating={diary.rating}
-        contentText={diary.contentText}
-        tagNames={diary.tagNames}
-      />
-      <CommentForm
-        diaryId={Number(diaryId ?? 1)}
-        onCommentAdd={handleCommentAdd}
-      />
-      <CommentInfo comments={comments} setComments={setComments} />
+
+        {/* 댓글 섹션 */}
+        <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden">
+          <div className="p-8">
+            <div className="flex items-center gap-3 mb-8">
+              <h2 className="text-2xl font-bold text-gray-900">댓글</h2>
+              <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
+                {comments.length}
+              </span>
+            </div>
+            <CommentInfo comments={comments} setComments={setComments} />
+          </div>
+        </div>
+
+        <CommentForm diaryId={Number(diaryId)} onCommentAdd={handleCommentAdd} />
+      </div>
     </main>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { AiOutlineMore } from "react-icons/ai";
 
 export default function CommentMenuButton({
   onEdit,
@@ -26,30 +25,35 @@ export default function CommentMenuButton({
   return (
     <div className="relative" ref={menuRef}>
       <button
-        className="text-gray-500 hover:text-gray-700"
+        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200"
         onClick={() => setOpen((prev) => !prev)}
+        aria-label="댓글 옵션"
       >
-        <AiOutlineMore className="text-2xl" />
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+        </svg>
       </button>
+
       {open && (
-        <div className="absolute right-0 mt-2 w-24 bg-white border rounded shadow-lg z-10">
+        <div className="absolute right-0 top-12 w-36 bg-white border border-gray-200 rounded-2xl shadow-xl z-30 overflow-hidden animate-in fade-in duration-200">
           <button
             onClick={() => {
               setOpen(false);
               onEdit();
             }}
-            className="block w-full px-3 py-2 text-sm hover:bg-gray-100 text-left"
+            className="w-full px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors duration-200 font-medium"
           >
-            수정
+            수정하기
           </button>
+          <div className="border-t border-gray-100" />
           <button
             onClick={() => {
               setOpen(false);
               onDelete();
             }}
-            className="block w-full px-3 py-2 text-sm hover:bg-gray-100 text-left text-red-500"
+            className="w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 text-left transition-colors duration-200 font-medium"
           >
-            삭제
+            삭제하기
           </button>
         </div>
       )}
