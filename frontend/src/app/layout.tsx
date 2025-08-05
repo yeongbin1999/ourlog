@@ -4,6 +4,7 @@ import "./globals.css";
 
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import QueryProvider from "@/components/QueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,9 +45,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Header />
-        <main className="min-h-screen pt-24 px-4 pb-8">{children}</main>
-        <Footer />
+        <QueryProvider>
+          <Header />
+          <main className="min-h-screen pt-24 px-4 pb-8">{children}</main>
+          <Footer />
+        </QueryProvider>
       </body>
     </html>
   );

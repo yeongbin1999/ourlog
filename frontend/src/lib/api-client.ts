@@ -14,20 +14,16 @@ const axiosInstance = axios.create({
   },
 });
 
-// 요청 인터셉터 - 토큰 및 디바이스 ID 자동 추가
+// 요청 인터셉터
 axiosInstance.interceptors.request.use(
-  (config) => {
-    // 인증 토큰 추가
+  (config) => { 
     const token = useAuthStore.getState().accessToken;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
-    // 디바이스 ID 추가 (실무적으로 모든 요청에 포함)
     const deviceId = getDeviceId();
     config.headers['X-Device-ID'] = deviceId;
     
-    // User-Agent 정보도 추가 (선택사항)
     if (typeof window !== 'undefined') {
       config.headers['X-User-Agent'] = navigator.userAgent;
     }

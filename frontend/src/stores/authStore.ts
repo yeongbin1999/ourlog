@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import axios, { AxiosError } from 'axios';
+import { getMe } from '@/generated/api/api';
+import axiosInstance from '@/lib/api-client';
 
 export interface User {
   id: string;
@@ -49,7 +51,7 @@ export const useAuthStore = create<AuthStore>()(
       login: async (credentials) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await axios.post(
+          const response = await axiosInstance.post(
             '/api/v1/auth/login',
             credentials,
             {
@@ -58,8 +60,24 @@ export const useAuthStore = create<AuthStore>()(
             },
           );
           const { accessToken, user } = response.data;
+
+          let currentUser = user;
+          if (!currentUser && accessToken) {
+            try {
+              const meResponse = await getMe();
+              currentUser = {
+                id: meResponse.userId?.toString() || '',
+                email: meResponse.email || '',
+                nickname: meResponse.nickname || '',
+                profileImageUrl: meResponse.profileImageUrl,
+              };
+            } catch (meError) {
+              console.error('Failed to fetch user profile after login:', meError);
+            }
+          }
+
           set({
-            user,
+            user: currentUser,
             accessToken,
             isAuthenticated: true,
             isLoading: false,
@@ -72,7 +90,7 @@ export const useAuthStore = create<AuthStore>()(
               type: 'login',
               timestamp: Date.now(),
               accessToken,
-              user,
+              user: currentUser,
             }),
           );
 
@@ -92,7 +110,7 @@ export const useAuthStore = create<AuthStore>()(
       logout: async () => {
         set({ isLoading: true });
         try {
-          await axios.post('/api/v1/auth/logout', {},
+          await axiosInstance.post('/api/v1/auth/logout', {},
             {
               withCredentials: true,
             });
@@ -124,7 +142,7 @@ export const useAuthStore = create<AuthStore>()(
 
         refreshPromise = (async () => {
           try {
-            const response = await axios.post(
+            const response = await axiosInstance.post(
               '/api/v1/auth/refresh',
               {},
               {
@@ -173,7 +191,7 @@ export const useAuthStore = create<AuthStore>()(
           }
         } else {
           try {
-            await axios.get('/api/v1/auth/verify', {
+            await axiosInstance.get('/api/v1/auth/verify', {
               headers: { Authorization: `Bearer ${accessToken}` },
               withCredentials: true,
             });

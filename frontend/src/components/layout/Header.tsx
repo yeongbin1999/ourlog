@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogIn, UserPlus } from "lucide-react";
+import { UserMenu } from "./UserMenu";
 
 const Header = () => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
@@ -63,22 +64,7 @@ const Header = () => {
           </div>
           {/* 아이콘 툴팁 */}
           <div className="flex items-center space-x-8 mr-6">
-            <Link href="/signup" passHref>
-              <div className="relative group cursor-pointer">
-                <UserPlus className="w-6 h-6 text-black" />
-                <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                  SignUp
-                </div>
-              </div>
-            </Link>
-            <Link href="/login" passHref>
-              <div className="relative group cursor-pointer">
-                <LogIn className="w-6 h-6 text-black" />
-                <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                  Login
-                </div>
-              </div>
-            </Link>
+            <UserMenu />
           </div>
 
           {/* Write 버튼 */}
