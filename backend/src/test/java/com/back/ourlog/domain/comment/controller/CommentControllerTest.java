@@ -74,7 +74,12 @@ class CommentControllerTest {
 
     @Test
     @DisplayName("댓글 작성 - 댓글 내용이 없음")
+    @WithUserDetails("user1@test.com")
     void t2() throws Exception {
+        // user1의 accessToken 생성
+        CustomUserDetails userDetails = getCurrentUserDetails();
+        String accessToken = jwtProvider.createAccessToken(userDetails);
+
         Map<String, Object> data = new HashMap<>();
         data.put("diaryId", 1);
         data.put("content", "");
@@ -85,6 +90,7 @@ class CommentControllerTest {
                 post("/api/v1/comments")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
+                        .header("Authorization", "Bearer " + accessToken)
         ).andDo(print());
 
         resultActions
@@ -132,6 +138,10 @@ class CommentControllerTest {
     @DisplayName("댓글 수정")
     @WithUserDetails("user1@test.com")
     void t5() throws Exception {
+        // user1의 accessToken 생성
+        CustomUserDetails userDetails = getCurrentUserDetails();
+        String accessToken = jwtProvider.createAccessToken(userDetails);
+
         Map<String, Object> data = new HashMap<>();
         data.put("id", 1);
         data.put("content", "안녕하시렵니까?");
@@ -142,6 +152,7 @@ class CommentControllerTest {
                 put("/api/v1/comments")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
+                        .header("Authorization", "Bearer " + accessToken)
         ).andDo(print());
 
         resultActions
@@ -158,7 +169,12 @@ class CommentControllerTest {
 
     @Test
     @DisplayName("댓글 수정 - 존재하지 않는 댓글 ID")
+    @WithUserDetails("user1@test.com")
     void t6() throws Exception {
+        // user1의 accessToken 생성
+        CustomUserDetails userDetails = getCurrentUserDetails();
+        String accessToken = jwtProvider.createAccessToken(userDetails);
+
         Map<String, Object> data = new HashMap<>();
         data.put("id", 1000000);
         data.put("content", "안녕하시렵니까?");
@@ -169,6 +185,7 @@ class CommentControllerTest {
                 put("/api/v1/comments")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
+                        .header("Authorization", "Bearer " + accessToken)
         ).andDo(print());
 
         resultActions
@@ -184,9 +201,14 @@ class CommentControllerTest {
     @WithUserDetails("user1@test.com")
     void t7() throws Exception {
         int id = 1;
+        // user1의 accessToken 생성
+        CustomUserDetails userDetails = getCurrentUserDetails();
+        String accessToken = jwtProvider.createAccessToken(userDetails);
 
         ResultActions resultActions = mvc.perform(
                 delete("/api/v1/comments/" + id)
+                        .header("Authorization", "Bearer " + accessToken)
+
         ).andDo(print());
 
         resultActions
@@ -203,11 +225,16 @@ class CommentControllerTest {
 
     @Test
     @DisplayName("댓글 삭제 - 존재하지 않는 댓글 ID")
+    @WithUserDetails("user1@test.com")
     void t8() throws Exception {
         int id = 1000000;
+        // user1의 accessToken 생성
+        CustomUserDetails userDetails = getCurrentUserDetails();
+        String accessToken = jwtProvider.createAccessToken(userDetails);
 
         ResultActions resultActions = mvc.perform(
                 delete("/api/v1/comments/" + id)
+                        .header("Authorization", "Bearer " + accessToken)
         ).andDo(print());
 
         resultActions
