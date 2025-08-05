@@ -11,6 +11,6 @@ export interface RsDataListTagResponse {
   resultCode?: string;
   msg?: string;
   data?: TagResponse[];
-  fail?: boolean;
   success?: boolean;
+  fail?: boolean;
 }

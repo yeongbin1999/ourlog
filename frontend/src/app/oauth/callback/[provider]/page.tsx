@@ -1,0 +1,74 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter, useSearchParams, useParams } from 'next/navigation';
+import { useAuthStore } from '@/stores/authStore';
+import { toast } from 'sonner';
+import { axiosInstance } from '@/lib/api-client';
+import { useDeviceStore } from '@/stores/deviceStore';
+
+const OAuthCallbackPage = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const params = useParams();
+  const provider = params.provider as string;
+  const { setAuthInfo } = useAuthStore();
+  const { deviceInfo } = useDeviceStore();
+
+  useEffect(() => {
+    const code = searchParams.get('code');
+    const error = searchParams.get('error');
+
+    if (error) {
+      toast.error(`${provider} OAuth Error: ${error}`);
+      router.push('/login');
+      return;
+    }
+
+    if (code) {
+      const handleOAuthLogin = async () => {
+        try {
+          // 백엔드 OAuth 로그인 API 호출
+          // 백엔드 API 엔드포인트는 /api/v1/auth/oauth/{provider} 로 가정합니다.
+          const FRONTEND_REDIRECT_URI = `http://localhost:3000/oauth/callback/${provider}`;
+
+          const response = await axiosInstance.post(
+            `/api/v1/auth/oauth/callback/${provider}`,
+            { code, redirectUri: FRONTEND_REDIRECT_URI }, // 인증 코드와 redirectUri를 백엔드로 전송
+            {
+              headers: {
+                'X-Device-Id': deviceInfo.deviceId,
+              },
+            },
+          );
+
+          if (response.data.success) {
+            const { accessToken, user } = response.data.data;
+            setAuthInfo({ accessToken, user, isAuthenticated: true });
+            toast.success(`${provider} 로그인 성공!`);
+            router.push('/');
+          } else {
+            toast.error(response.data.msg || `${provider} 로그인 중 오류가 발생했습니다.`);
+            router.push('/login');
+          }
+        } catch (err) {
+          console.error(`Error during ${provider} OAuth login:`, err);
+          toast.error(`${provider} 로그인 중 오류가 발생했습니다.`);
+          router.push('/login');
+        }
+      };
+      handleOAuthLogin();
+    } else {
+      toast.error(`${provider} OAuth 인증 코드를 받지 못했습니다.`);
+      router.push('/login');
+    }
+  }, [searchParams, router, provider, setAuthInfo, deviceInfo.deviceId]);
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-100">
+      <p>{provider} 로그인 처리 중...</p>
+    </div>
+  );
+};
+
+export default OAuthCallbackPage;

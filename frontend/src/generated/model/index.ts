@@ -84,3 +84,4 @@ export * from "./typeRankDtoType";
 export * from "./unfollowUserParams";
 export * from "./userProfileResponse";
 export * from "./userSummary";
+export * from "./oAuthCallbackRequest";

@@ -11,6 +11,6 @@ export interface RsDataVoid {
   resultCode?: string;
   msg?: string;
   data?: RsDataVoidData;
-  fail?: boolean;
   success?: boolean;
+  fail?: boolean;
 }

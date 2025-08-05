@@ -61,4 +61,20 @@ public class AuthService {
     private Integer extractUserId(String accessToken) {
         return Integer.parseInt(tokenService.getJwtProvider().getUserIdFromToken(accessToken));
     }
+
+        @Transactional
+    public CustomUserDetails findOrCreateOAuthUser(String providerId, String nickname, String profileImageUrl, String provider) {
+        return userRepository.findByProviderAndProviderId(provider, providerId)
+                .map(CustomUserDetails::new)
+                .orElseGet(() -> {
+                    User newUser = User.createSocialUser(
+                            provider,
+                            providerId,
+                            null, // email은 없을 수 있으므로 null
+                            nickname,
+                            profileImageUrl
+                    );
+                    return new CustomUserDetails(userRepository.save(newUser));
+                });
+    }
 }

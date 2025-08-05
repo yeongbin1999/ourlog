@@ -11,6 +11,6 @@ export interface RsDataListCommentResponseDto {
   resultCode?: string;
   msg?: string;
   data?: CommentResponseDto[];
-  fail?: boolean;
   success?: boolean;
+  fail?: boolean;
 }

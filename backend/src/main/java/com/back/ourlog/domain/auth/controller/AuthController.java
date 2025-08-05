@@ -2,9 +2,12 @@ package com.back.ourlog.domain.auth.controller;
 
 import com.back.ourlog.domain.auth.dto.LoginRequest;
 import com.back.ourlog.domain.auth.dto.LoginResponse;
+import com.back.ourlog.domain.auth.dto.OAuthCallbackRequest;
 import com.back.ourlog.domain.auth.dto.SignupRequest;
 import com.back.ourlog.domain.auth.service.AuthService;
+import com.back.ourlog.domain.auth.service.OAuthService;
 import com.back.ourlog.global.common.dto.RsData;
+import com.back.ourlog.global.security.jwt.TokenDto;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final OAuthService oauthService;
 
     @Value("${cookie.secure}")
     private boolean secure;
@@ -89,5 +93,26 @@ public class AuthController {
         response.addHeader("Set-Cookie", refreshTokenCookie.toString());
 
         return RsData.success("토큰 재발급 성공", new LoginResponse(newTokens.accessToken()));
+    }
+
+    @PostMapping("/oauth/callback/{provider}")
+    public RsData<LoginResponse> oauthCallback(@PathVariable String provider,
+                                               @RequestBody OAuthCallbackRequest request,
+                                               @RequestHeader(value = "X-Device-Id", required = false) String deviceId,
+                                               HttpServletResponse response) {
+
+        TokenDto tokenDto = oauthService.handleOAuthCallback(provider, request, deviceId);
+
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", tokenDto.refreshToken())
+                .httpOnly(true)
+                .secure(secure)
+                .path("/")
+                .maxAge(tokenDto.refreshTokenExpiration())
+                .sameSite("Strict")
+                .build();
+
+        response.addHeader("Set-Cookie", refreshTokenCookie.toString());
+
+        return RsData.success("OAuth 로그인 성공", new LoginResponse(tokenDto.accessToken()));
     }
 }

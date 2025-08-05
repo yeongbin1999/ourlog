@@ -3,7 +3,6 @@ package com.back.ourlog.global.security.config;
 import com.back.ourlog.global.security.exception.CustomAccessDeniedHandler;
 import com.back.ourlog.global.security.exception.CustomAuthenticationEntryPoint;
 import com.back.ourlog.global.security.filter.JwtAuthenticationFilter;
-import com.back.ourlog.global.security.oauth.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +26,6 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
@@ -54,7 +52,10 @@ public class SecurityConfig {
                                 "/api/v1/auth/signup",
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/reissue",
-                                "/api/login/oauth2/**"
+                                "/api/v1/auth/oauth/callback/**",
+                                "/h2-console/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers("/api/v1/auth/logout").authenticated()
 
@@ -72,12 +73,6 @@ public class SecurityConfig {
 
                         // 그 외 모든 요청은 인증 필요
                         .anyRequest().authenticated()
-                )
-
-                // 5. OAuth2 로그인 처리
-                .oauth2Login(oauth2 -> oauth2
-                                .successHandler(oAuth2SuccessHandler)
-                        // .failureHandler(oAuth2FailureHandler) // 필요 시 주석 해제
                 )
 
                 // 6. JWT 필터 등록

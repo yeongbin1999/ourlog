@@ -33,6 +33,7 @@ interface AuthActions {
   setLoading: (loading: boolean) => void;
   clearError: () => void;
   initializeAuth: () => Promise<void>;
+  setAuthInfo: (info: { accessToken: string | null; user: User | null; isAuthenticated: boolean }) => void;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -196,6 +197,16 @@ export const useAuthStore = create<AuthStore>()(
       setLoading: (loading) => set({ isLoading: loading }),
 
       clearError: () => set({ error: null }),
+
+      setAuthInfo: (info) => {
+        set({
+          accessToken: info.accessToken,
+          user: info.user,
+          isAuthenticated: info.isAuthenticated,
+          isLoading: false,
+          error: null,
+        });
+      },
 
       initializeAuth: async () => {
         const { accessToken } = get();

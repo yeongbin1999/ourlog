@@ -47,6 +47,7 @@ import type {
   LikeResponse,
   LoginRequest,
   MonthlyDiaryCount,
+  OAuthCallbackRequest,
   OttGraphResponse,
   ReportRequest,
   RsDataCommentResponseDto,
@@ -1377,6 +1378,90 @@ export const useReissue = <TError = unknown, TContext = unknown>(
   TContext
 > => {
   const mutationOptions = getReissueMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+export const oauthCallback = (
+  provider: string,
+  oAuthCallbackRequest: OAuthCallbackRequest,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<RsDataLoginResponse>(
+    {
+      url: `/api/v1/auth/oauth/callback/${provider}`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: oAuthCallbackRequest,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getOauthCallbackMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof oauthCallback>>,
+    TError,
+    { provider: string; data: OAuthCallbackRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof oauthCallback>>,
+  TError,
+  { provider: string; data: OAuthCallbackRequest },
+  TContext
+> => {
+  const mutationKey = ["oauthCallback"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof oauthCallback>>,
+    { provider: string; data: OAuthCallbackRequest }
+  > = (props) => {
+    const { provider, data } = props ?? {};
+
+    return oauthCallback(provider, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type OauthCallbackMutationResult = NonNullable<
+  Awaited<ReturnType<typeof oauthCallback>>
+>;
+export type OauthCallbackMutationBody = OAuthCallbackRequest;
+export type OauthCallbackMutationError = unknown;
+
+export const useOauthCallback = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof oauthCallback>>,
+      TError,
+      { provider: string; data: OAuthCallbackRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof oauthCallback>>,
+  TError,
+  { provider: string; data: OAuthCallbackRequest },
+  TContext
+> => {
+  const mutationOptions = getOauthCallbackMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
