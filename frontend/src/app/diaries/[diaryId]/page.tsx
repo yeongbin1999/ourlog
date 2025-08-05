@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Diary, DiaryInfoProps, Comment, Content } from "../types/detail";
+import { Diary, Comment, Content } from "../types/detail";
 import DiaryTitle from "./components/DiaryTitle";
 import DiaryInfo from "./components/DiaryInfo";
 import CommentForm from "./components/CommentForm";
@@ -19,88 +19,52 @@ export default function Page() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  async function fetchDiary() {
-    try {
-      const res = await fetch(`http://localhost:8080/api/v1/diaries/${diaryId}`);
-      if (!res.ok) throw new Error("Failed to fetch Diary");
-      const json = await res.json();
-      setDiary(json.data);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  async function fetchComments() {
-    try {
-      const res = await fetch(`http://localhost:8080/api/v1/comments/${diaryId}`);
-      if (!res.ok) throw new Error("Failed to fetch comments");
-      const json = await res.json();
-      setComments(json.data);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  async function fetchContent() {
-    try {
-      const res = await fetch(`http://localhost:8080/api/v1/contents/${diaryId}`);
-      if (!res.ok) throw new Error("Failed to fetch content");
-      const json = await res.json();
-      setContent(json.data);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [diaryRes, commentsRes, contentRes] = await Promise.all([
-          fetch(`http://localhost:8080/api/v1/diaries/${diaryId}`),
-          fetch(`http://localhost:8080/api/v1/comments/${diaryId}`),
-          fetch(`http://localhost:8080/api/v1/contents/${diaryId}`),
-        ]);
-
-        if (!diaryRes.ok || !commentsRes.ok || !contentRes.ok)
-          throw new Error("데이터 로딩 실패");
-
-        const diaryData = await diaryRes.json();
-        const commentsData = await commentsRes.json();
-        const contentData = await contentRes.json();
-
-        setDiary(diaryData.data);
-        setComments(commentsData.data);
-        setContent(contentData.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
+  const fetchData = useCallback(async () => {
     if (!diaryId) return;
-    
-    setLoading(true);
-    Promise.all([fetchDiary(), fetchComments(), fetchContent()])
-      .finally(() => setLoading(false));
+    try {
+      const [diaryRes, commentsRes, contentRes] = await Promise.all([
+        fetch(`http://localhost:8080/api/v1/diaries/${diaryId}`),
+        fetch(`http://localhost:8080/api/v1/comments/${diaryId}`),
+        fetch(`http://localhost:8080/api/v1/contents/${diaryId}`),
+      ]);
+
+      if (!diaryRes.ok || !commentsRes.ok || !contentRes.ok) {
+        throw new Error("데이터 로딩 실패");
+      }
+
+      const diaryData = await diaryRes.json();
+      const commentsData = await commentsRes.json();
+      const contentData = await contentRes.json();
+
+      setDiary(diaryData.data);
+      setComments(commentsData.data);
+      setContent(contentData.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, [diaryId]);
+
+  // 최초 & diaryId 변경 시 로딩
+  useEffect(() => {
+    if (!diaryId) return;
+    setLoading(true);
+    fetchData();
+  }, [diaryId, fetchData]);
 
   // refresh 파라미터 처리
   useEffect(() => {
     const shouldRefresh = searchParams.get("refresh") === "1";
     if (shouldRefresh) {
-      // URL에서 refresh 파라미터 제거
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.delete("refresh");
       window.history.replaceState({}, "", newUrl.toString());
-      
-      // 강제로 다시 fetch
+
       setLoading(true);
-      Promise.all([fetchDiary(), fetchComments(), fetchContent()])
-        .finally(() => setLoading(false));
+      fetchData();
     }
-  }, [searchParams]);
+  }, [searchParams, fetchData]);
 
   const handleCommentAdd = (newComment: Comment) => {
     setComments((prev) => [newComment, ...prev]);
