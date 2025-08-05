@@ -6,6 +6,7 @@ import com.back.ourlog.domain.comment.repository.CommentRepository;
 import com.back.ourlog.domain.diary.entity.Diary;
 import com.back.ourlog.domain.diary.repository.DiaryRepository;
 import com.back.ourlog.domain.user.entity.User;
+import com.back.ourlog.domain.user.repository.UserRepository;
 import com.back.ourlog.global.exception.CustomException;
 import com.back.ourlog.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +21,18 @@ import java.util.stream.Collectors;
 public class CommentService {
     private final DiaryRepository diaryRepository;
     private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
     @Transactional
     public CommentResponseDto write(int diaryId, User user, String content) {
+        if(user == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
+
+
+
         Comment comment = diary.addComment(user, content);
         diaryRepository.flush();
 
@@ -61,8 +70,36 @@ public class CommentService {
 
         User user = comment.getUser();
 
-        if(user != null) user.deleteComment(comment);
+        user.deleteComment(comment);
 
         commentRepository.delete(comment);
+    }
+
+    @Transactional(readOnly = true)
+    public void checkCanDelete(User user, int commentId) {
+        if(user == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+
+        if(!comment.getUser().equals(user)) {
+            throw new CustomException(ErrorCode.COMMENT_DELETE_FORBIDDEN);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public void checkCanUpdate(User user, int commentId) {
+        if(user == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+
+        if(!comment.getUser().equals(user)) {
+            throw new CustomException(ErrorCode.COMMENT_UPDATE_FORBIDDEN);
+        }
     }
 }

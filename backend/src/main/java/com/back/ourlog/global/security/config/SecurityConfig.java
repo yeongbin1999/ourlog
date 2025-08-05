@@ -51,7 +51,13 @@ public class SecurityConfig {
                         // 나머지 다이어리 관련 요청은 USER만
                         .requestMatchers("/api/v1/diaries/**").hasRole("USER")
 
+                        .requestMatchers(HttpMethod.GET,"/api/v1/comments/*").permitAll()
+                        .requestMatchers("/api/v1/comments/**").authenticated()
+
                         .requestMatchers("/api/v1/auth/logout").authenticated()
+                                .requestMatchers(HttpMethod.GET,"/api/v1/comments/*").permitAll()
+                                .requestMatchers("/api/v1/comments/**").authenticated()
+//                        .anyRequest().authenticated()
                         .anyRequest().permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2
