@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -38,6 +39,7 @@ public class StatisticsControllerTest {
 
     @Test
     @DisplayName("통계 카드 조회")
+    @WithUserDetails("user1@test.com")
     void 통계_카드_조회() throws Exception {
 
         ResultActions resultActions = mvc.perform(
@@ -70,6 +72,7 @@ public class StatisticsControllerTest {
 
     @Test
     @DisplayName("최근 6개월 월 별 감상 수 조회")
+    @WithUserDetails("user1@test.com")
     void 최근_6개월_월_별_감상_수_조회() throws Exception {
 
         ResultActions resultActions = mvc.perform(
@@ -94,6 +97,7 @@ public class StatisticsControllerTest {
 
     @Test
     @DisplayName("콘텐츠 타입 분포 조회")
+    @WithUserDetails("user1@test.com")
     void 콘텐츠_타입_분포_조회() throws Exception {
 
         ResultActions resultActions = mvc.perform(
@@ -118,6 +122,7 @@ public class StatisticsControllerTest {
 
     @Test
     @DisplayName("타입 그래프 조회")
+    @WithUserDetails("user1@test.com")
     void 타입_그래프() throws Exception {
 
         ResultActions resultActions = mvc.perform(
@@ -155,6 +160,7 @@ public class StatisticsControllerTest {
 
     @Test
     @DisplayName("장르 그래프 조회")
+    @WithUserDetails("user1@test.com")
     void 장르_그래프() throws Exception {
 
         ResultActions resultActions = mvc.perform(
@@ -192,6 +198,7 @@ public class StatisticsControllerTest {
 
     @Test
     @DisplayName("감정 그래프 조회")
+    @WithUserDetails("user1@test.com")
     void 감정_그래프() throws Exception {
 
         ResultActions resultActions = mvc.perform(
@@ -228,6 +235,7 @@ public class StatisticsControllerTest {
 
     @Test
     @DisplayName("ott 그래프 조회")
+    @WithUserDetails("user1@test.com")
     void ott_그래프() throws Exception {
 
         ResultActions resultActions = mvc.perform(

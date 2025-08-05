@@ -14,7 +14,6 @@ public class CommentResponseDto {
     private String content;
     private LocalDateTime createdAt;
 
-    // 테스트 ver (user가 있다고 가정)
     public CommentResponseDto(Comment comment) {
         id = comment.getId();
         userId = comment.getUser() != null ? comment.getUser().getId() : null;

@@ -1,11 +1,14 @@
 package com.back.ourlog.domain.statistics.repository;
 
 import com.back.ourlog.domain.statistics.dto.*;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface StatisticsRepositoryCustom {
+
+    List<MonthlyDiaryCount> countMonthlyDiaryByUserId(Integer userId, LocalDateTime startDate);
 
     /** 콘텐츠 타입별 월별 추이 */
     List<TypeLineGraphDto> findTypeLineMonthly(Integer userId, LocalDateTime start, LocalDateTime end);
