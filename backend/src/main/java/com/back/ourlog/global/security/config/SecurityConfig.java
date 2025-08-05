@@ -43,6 +43,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/signup", "/api/v1/auth/login", "/api/v1/auth/reissue", "/oauth2/**").permitAll()
                         .requestMatchers("/api/v1/auth/logout").authenticated()
                                 .requestMatchers(HttpMethod.POST,"/api/v1/comments").authenticated()
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/comments").authenticated()
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/comments/**").authenticated()
 //                        .anyRequest().authenticated()
                         .anyRequest().permitAll()
                 )

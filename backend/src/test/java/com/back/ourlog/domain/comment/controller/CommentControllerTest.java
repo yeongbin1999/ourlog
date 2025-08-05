@@ -130,6 +130,7 @@ class CommentControllerTest {
 
     @Test
     @DisplayName("댓글 수정")
+    @WithUserDetails("user1@test.com")
     void t5() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("id", 1);
@@ -180,6 +181,7 @@ class CommentControllerTest {
 
     @Test
     @DisplayName("댓글 삭제")
+    @WithUserDetails("user1@test.com")
     void t7() throws Exception {
         int id = 1;
 
