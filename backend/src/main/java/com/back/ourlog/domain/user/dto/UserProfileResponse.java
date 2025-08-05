@@ -1,16 +1,25 @@
 package com.back.ourlog.domain.user.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.back.ourlog.domain.user.entity.User;
 
-// 유저 프로필 응답 DTO..
-@Getter
-@AllArgsConstructor
-public class UserProfileResponse {
-    private Integer userId;
-    private String email;
-    private String nickname;
-    private String profileImageUrl;
-    private String bio;
-    private Integer followId;
+public record UserProfileResponse(
+        Integer userId,
+        String email,
+        String nickname,
+        String profileImageUrl,
+        String bio,
+        Integer followingsCount,
+        Integer followersCount
+) {
+    public static UserProfileResponse from(User user) {
+        return new UserProfileResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getNickname(),
+                user.getProfileImageUrl(),
+                user.getBio(),
+                user.getFollowingsCount(),
+                user.getFollowersCount()
+        );
+    }
 }
