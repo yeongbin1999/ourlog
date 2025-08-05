@@ -7,6 +7,7 @@ import com.back.ourlog.global.security.oauth.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -39,9 +40,18 @@ public class SecurityConfig {
                 .headers(headers -> headers.contentSecurityPolicy(csp -> csp.policyDirectives("frame-ancestors 'self'")))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/signup", "/api/v1/auth/login", "/api/v1/auth/reissue", "/oauth2/**").permitAll()
+                        .requestMatchers(
+                                "/api/v1/auth/signup",
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/reissue",
+                                "/oauth2/**").permitAll()
+                        // 다이어리 조회(GET)은 모두 허용
+                        .requestMatchers(HttpMethod.GET, "/api/v1/diaries/**").permitAll()
+
+                        // 나머지 다이어리 관련 요청은 USER만
+                        .requestMatchers("/api/v1/diaries/**").hasRole("USER")
+
                         .requestMatchers("/api/v1/auth/logout").authenticated()
-//                        .anyRequest().authenticated()
                         .anyRequest().permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2
