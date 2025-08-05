@@ -23,7 +23,7 @@ export function UserMenu() {
     return (
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <User className="w-5 h-5" />
+          <User className="w-7 h-7" />
         </DropdownMenuTrigger>
         <DropdownMenuContent className="bg-white shadow-lg rounded-xl">
           <DropdownMenuItem
@@ -54,7 +54,7 @@ export function UserMenu() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Avatar className="w-8 h-8 cursor-pointer">
+        <Avatar className="w-10 h-10 cursor-pointer">
           <AvatarImage src={user?.profileImageUrl || ''} alt={user?.nickname || 'User'} />
           <AvatarFallback>{user?.nickname?.charAt(0) || 'U'}</AvatarFallback>
         </Avatar>
