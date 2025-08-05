@@ -62,6 +62,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/likes/**").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/likes/count").permitAll()
 
+                        .requestMatchers(HttpMethod.GET, "/api/v1/comments/**").permitAll()
+                        .requestMatchers("/api/v1/comments/**").authenticated()
+
                         .requestMatchers("/api/v1/auth/logout").authenticated()
                         .anyRequest().permitAll()
                 )
