@@ -47,3 +47,4 @@ build/
 # OS별 파일
 Thumbs.db
 
+*.tar
