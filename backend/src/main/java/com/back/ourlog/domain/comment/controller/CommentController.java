@@ -52,7 +52,14 @@ public class CommentController {
     @PutMapping()
     @Operation(summary = "댓글 수정")
     public ResponseEntity<RsData<Void>> updateComment(
+            @RequestHeader String authorization,
             @RequestBody CommentUpdateRequestDto req) {
+        String accessToken = authorization.replace("Bearer ", "");
+
+        int userId = Integer.parseInt(jwtProvider.getUserIdFromToken(accessToken));
+
+        commentService.checkCanUpdate(userId, req.getId());
+
         commentService.update(req.getId(), req.getContent());
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -63,7 +70,15 @@ public class CommentController {
 
     @DeleteMapping("/{commentId}")
     @Operation(summary = "댓글 삭제")
-    public ResponseEntity<RsData<Void>> deleteComment(@PathVariable("commentId") int commentId) {
+    public ResponseEntity<RsData<Void>> deleteComment(
+            @RequestHeader String authorization,
+            @PathVariable("commentId") int commentId) {
+        String accessToken = authorization.replace("Bearer ", "");
+
+        int userId = Integer.parseInt(jwtProvider.getUserIdFromToken(accessToken));
+
+        commentService.checkCanDelete(userId, commentId);
+
         commentService.delete(commentId);
 
         return ResponseEntity.status(HttpStatus.OK)
