@@ -4,6 +4,9 @@ import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 
+console.log("API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
+
+
 interface SearchResult {
   externalId: string;
   title: string;
@@ -33,8 +36,9 @@ function SelectContentClient() {
     if (!type || !keyword.trim()) return;
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/v1/contents/search?type=${type}&title=${encodeURIComponent(keyword)}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/contents/search?type=${type}&title=${encodeURIComponent(keyword)}`);
       const json = await res.json();
+
       setResults(json.data || []);
     } catch (err) {
       console.error("검색 실패:", err);

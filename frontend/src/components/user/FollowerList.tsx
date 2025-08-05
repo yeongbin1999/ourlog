@@ -25,7 +25,7 @@ export default function FollowerList({ myUserId }: Props) {
 
   const fetchFollowers = async () => {
     try {
-      const res = await axios.get(`/api/v1/follows/followers?userId=${myUserId}`);
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/followers?userId=${myUserId}`);
       setFollowers(res.data);
     } catch (err) {
       console.error('팔로워 목록 불러오기 실패', err);
