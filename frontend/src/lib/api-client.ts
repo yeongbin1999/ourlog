@@ -1,13 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig, AxiosInstance, AxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/stores/authStore';
 
-/**
- * @file api-client.ts
- * @description 프로젝트 전역에서 사용될 Axios 인스턴스를 생성하고 설정합니다.
- * @module lib/api-client
- */
-
-// API의 기본 URL을 환경 변수에서 가져오거나, 없을 경우 기본값을 사용합니다.
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/';
 
 /**
@@ -68,23 +61,31 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true; // 재시도 플래그를 설정하여 무한 재시도를 방지합니다.
 
-      // Auth 스토어에서 토큰 갱신 함수를 가져옵니다.
       const { refreshAccessToken, logout } = useAuthStore.getState();
+      interface BackendErrorResponse {
+        status: number;
+        code: string;
+        message: string;
+      }
+      const errorCode = (error.response.data as BackendErrorResponse)?.code;
 
+      // 로그아웃 요청이거나, 토큰 만료가 아닌 다른 401 에러인 경우 즉시 로그아웃 처리
+      if (originalRequest.url === '/api/v1/auth/logout' || errorCode !== 'AUTH_002') {
+        await logout(true);
+        return Promise.reject(error);
+      }
+
+      // 토큰 만료 (AUTH_002)인 경우에만 토큰 갱신 시도
       try {
-        // 토큰 갱신을 시도합니다.
         const refreshed = await refreshAccessToken();
 
         if (refreshed) {
-          // 토큰 갱신에 성공하면, 이전 요청을 다시 시도합니다.
           return axiosInstance(originalRequest);
         } else {
-          // 갱신에 실패하면 로그아웃 처리합니다.
-          await logout();
+          await logout(true);
         }
       } catch (refreshError) {
-        // 토큰 갱신 중 에러가 발생하면 로그아웃 처리합니다.
-        await logout();
+        await logout(true);
         return Promise.reject(refreshError);
       }
     }

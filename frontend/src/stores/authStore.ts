@@ -27,7 +27,7 @@ interface AuthActions {
   login: (
     credentials: { email: string; password: string },
   ) => Promise<{ success: boolean; error?: string }>;
-  logout: () => Promise<void>;
+  logout: (skipApiCall?: boolean) => Promise<void>;
   refreshAccessToken: () => Promise<boolean>;
   updateUser: (userData: Partial<User>) => void;
   setLoading: (loading: boolean) => void;
@@ -60,19 +60,23 @@ export const useAuthStore = create<AuthStore>()(
               withCredentials: true,
             },
           );
-          const { accessToken, user } = response.data;
+          const { accessToken } = response.data.data;
 
-          let currentUser = user;
-          if (!currentUser && accessToken) {
+          let currentUser = null;
+          if (accessToken) {
             try {
-              const meResponse = await getMe();
+              const meResponse = await getMe({
+                request: {
+                  headers: { Authorization: `Bearer ${accessToken}` },
+                },
+              });
               const meData = meResponse.data;
-              if (meData) {
+              if (meData && meData.data) {
                 currentUser = {
-                  id: meData.userId?.toString() || '',
-                  email: meData.email || '',
-                  nickname: meData.nickname || '',
-                  profileImageUrl: meData.profileImageUrl,
+                  id: meData.data.userId?.toString() || '',
+                  email: meData.data.email || '',
+                  nickname: meData.data.nickname || '',
+                  profileImageUrl: meData.data.profileImageUrl,
                 };
               }
             } catch (meError) {
@@ -111,16 +115,23 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      logout: async () => {
+      logout: async (skipApiCall?: boolean) => {
         set({ isLoading: true });
-        try {
-          await axiosInstance.post(
-            '/api/v1/auth/logout',
-            {},
-            { withCredentials: true },
-          );
-        } catch (error) {
-          console.error('Logout API error:', error);
+        if (!skipApiCall) {
+          try {
+            await axiosInstance.post(
+              '/api/v1/auth/logout',
+              {},
+              { withCredentials: true },
+            );
+          } catch (error) {
+            const axiosError = error as AxiosError;
+            if (axiosError.response?.status === 401) {
+              console.warn('Logout API returned 401, proceeding with client-side logout.');
+            } else {
+              console.error('Logout API error:', error);
+            }
+          }
         }
         set({
           user: null,
@@ -129,6 +140,9 @@ export const useAuthStore = create<AuthStore>()(
           isLoading: false,
           error: null,
         });
+
+        // localStorage에서 인증 정보 완전히 제거
+        window.localStorage.removeItem('auth-storage');
 
         window.localStorage.setItem(
           'authEvent',

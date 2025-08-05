@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { User, LogIn, UserPlus, LogOut, Settings, HelpCircle } from 'lucide-react';
+import { User, LogIn, UserPlus, LogOut, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -94,26 +94,6 @@ export function UserMenu() {
           <div className="flex items-center space-x-2">
             <User className="w-4 h-4" />
             <span>내 정보</span>
-          </div>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => {
-            setTimeout(() => router.push('/settings'), 0);
-          }}
-        >
-          <div className="flex items-center space-x-2">
-            <Settings className="w-4 h-4" />
-            <span>설정</span>
-          </div>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => {
-            setTimeout(() => router.push('/help'), 0);
-          }}
-        >
-          <div className="flex items-center space-x-2">
-            <HelpCircle className="w-4 h-4" />
-            <span>도움말</span>
           </div>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

@@ -1,6 +1,8 @@
 package com.back.ourlog.domain.auth.controller;
 
-import com.back.ourlog.domain.auth.dto.*;
+import com.back.ourlog.domain.auth.dto.LoginRequest;
+import com.back.ourlog.domain.auth.dto.LoginResponse;
+import com.back.ourlog.domain.auth.dto.SignupRequest;
 import com.back.ourlog.domain.auth.service.AuthService;
 import com.back.ourlog.global.common.dto.RsData;
 import jakarta.servlet.http.HttpServletResponse;

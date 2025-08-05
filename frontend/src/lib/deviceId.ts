@@ -50,4 +50,4 @@ export const regenerateDeviceId = (): string => {
   const newDeviceId = generateDeviceId();
   localStorage.setItem(DEVICE_ID_KEY, newDeviceId);
   return newDeviceId;
-}; 
+};

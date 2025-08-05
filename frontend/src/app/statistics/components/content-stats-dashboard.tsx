@@ -17,11 +17,13 @@ async function fetchCard(): Promise<StatisticsCardDto> {
 }
 async function fetchMonthlyDiaryGraph(): Promise<MonthlyDiaryCount[]> {
     const res = await fetch(`${BASE_URL}/monthly-diary-graph`);
-    return res.json();
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
 }
 async function fetchTypeDistribution(): Promise<TypeCountDto[]> {
     const res = await fetch(`${BASE_URL}/type-distribution`);
-    return res.json();
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
 }
 async function fetchTypeGraph(period: string): Promise<TypeGraphResponse> {
   // period를 PeriodOption enum 값으로 변환

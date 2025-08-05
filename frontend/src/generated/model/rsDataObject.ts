@@ -11,6 +11,6 @@ export interface RsDataObject {
   resultCode?: string;
   msg?: string;
   data?: RsDataObjectData;
-  success?: boolean;
   fail?: boolean;
+  success?: boolean;
 }

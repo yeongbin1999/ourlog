@@ -11,6 +11,6 @@ export interface RsDataUserProfileResponse {
   resultCode?: string;
   msg?: string;
   data?: UserProfileResponse;
-  success?: boolean;
   fail?: boolean;
+  success?: boolean;
 }

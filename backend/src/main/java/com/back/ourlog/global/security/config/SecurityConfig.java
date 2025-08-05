@@ -22,54 +22,73 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
-@EnableGlobalMethodSecurity(prePostEnabled = true, jsr250Enabled = true)
 @RequiredArgsConstructor
+@EnableGlobalMethodSecurity(prePostEnabled = true, jsr250Enabled = true)
 public class SecurityConfig {
 
-    private final OAuth2SuccessHandler oAuth2SuccessHandler;
-//    private final OAuth2FailureHandler oAuth2FailureHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
+        http
+                // 1. CSRF & CORS
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .headers(headers -> headers.contentSecurityPolicy(csp -> csp.policyDirectives("frame-ancestors 'self'")))
+
+                // 2. Stateless 세션 정책
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/v1/auth/signup",
-                                "/api/v1/auth/login",
-                                "/api/v1/auth/reissue",
-                                "/oauth2/**").permitAll()
-                        // 다이어리 조회(GET)은 모두 허용
-                        .requestMatchers(HttpMethod.GET, "/api/v1/diaries/**").permitAll()
 
-                        // 나머지 다이어리 관련 요청은 USER만
-                        .requestMatchers("/api/v1/diaries/**").hasRole("USER")
-
-                        .requestMatchers(HttpMethod.GET,"/api/v1/comments/*").permitAll()
-                        .requestMatchers("/api/v1/comments/**").authenticated()
-
-                        .requestMatchers("/api/v1/auth/logout").authenticated()
-                                .requestMatchers(HttpMethod.GET,"/api/v1/comments/*").permitAll()
-                                .requestMatchers("/api/v1/comments/**").authenticated()
-//                        .anyRequest().authenticated()
-                        .anyRequest().permitAll()
-                )
-                .oauth2Login(oauth2 -> oauth2
-                        .successHandler(oAuth2SuccessHandler)
-//                        .failureHandler(oAuth2FailureHandler)
-                )
+                // 3. 예외 핸들링 (401, 403)
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler)
                 )
+
+                // 4. URL 기반 접근 제어
+                .authorizeHttpRequests(auth -> auth
+                        // 인증 없이 접근 허용
+                        .requestMatchers(
+                                "/api/v1/auth/signup",
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/reissue",
+                                "/api/login/oauth2/**"
+                        ).permitAll()
+                        .requestMatchers("/api/v1/auth/logout").authenticated()
+
+                        // 다이어리 조회는 전체 공개
+                        .requestMatchers(HttpMethod.GET, "/api/v1/diaries/**").permitAll()
+
+                        // 다이어리 작성/수정/삭제는 USER만
+                        .requestMatchers("/api/v1/diaries/**").hasRole("USER")
+
+                        // 댓글 조회는 전체 공개
+                        .requestMatchers(HttpMethod.GET, "/api/v1/comments/*").permitAll()
+
+                        // 댓글 작성/삭제는 로그인한 사용자만
+                        .requestMatchers("/api/v1/comments/**").authenticated()
+
+                        // 그 외 모든 요청은 인증 필요
+                        .anyRequest().authenticated()
+                )
+
+                // 5. OAuth2 로그인 처리
+                .oauth2Login(oauth2 -> oauth2
+                                .successHandler(oAuth2SuccessHandler)
+                        // .failureHandler(oAuth2FailureHandler) // 필요 시 주석 해제
+                )
+
+                // 6. JWT 필터 등록
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
+
+                // 7. CSP 보안 헤더 설정 (옵션)
+                .headers(headers -> headers
+                        .contentSecurityPolicy(csp -> csp.policyDirectives("frame-ancestors 'self'"))
+                );
+
+        return http.build();
     }
 
     @Bean
@@ -80,15 +99,13 @@ public class SecurityConfig {
                 "http://localhost:3000",
                 "http://127.0.0.1:3000"
         ));
-
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
-        config.setExposedHeaders(List.of("Authorization"));
+        config.setExposedHeaders(List.of("Authorization")); // JWT 토큰 헤더
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-
         return source;
     }
 
