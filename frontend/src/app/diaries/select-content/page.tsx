@@ -30,10 +30,12 @@ function SelectContentClient() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSearch = async () => {
+    console.log("API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL); // 브라우저 콘솔에서 확인 가능
+
     if (!type || !keyword.trim()) return;
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/v1/contents/search?type=${type}&title=${encodeURIComponent(keyword)}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/contents/search?type=${type}&title=${encodeURIComponent(keyword)}`);
       const json = await res.json();
       setResults(json.data || []);
     } catch (err) {
