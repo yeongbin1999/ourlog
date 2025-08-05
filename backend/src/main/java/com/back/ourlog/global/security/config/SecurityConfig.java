@@ -7,7 +7,6 @@ import com.back.ourlog.global.security.oauth.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -42,9 +41,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/signup", "/api/v1/auth/login", "/api/v1/auth/reissue", "/oauth2/**").permitAll()
                         .requestMatchers("/api/v1/auth/logout").authenticated()
-                                .requestMatchers(HttpMethod.POST,"/api/v1/comments").authenticated()
-                                .requestMatchers(HttpMethod.PUT, "/api/v1/comments").authenticated()
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/comments/**").authenticated()
 //                        .anyRequest().authenticated()
                         .anyRequest().permitAll()
                 )
