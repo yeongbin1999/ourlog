@@ -72,23 +72,29 @@ export default function Page() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#f9fafb] flex items-center justify-center text-gray-500 text-sm">
-        로딩 중...
+      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">로딩 중...</p>
+        </div>
       </main>
     );
   }
 
   if (!diary) {
     return (
-      <main className="min-h-screen bg-[#f9fafb] flex items-center justify-center text-red-500">
-        데이터를 불러오지 못했습니다.
+      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <p className="text-red-600 text-lg font-medium">데이터를 불러오지 못했습니다.</p>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="bg-[#f9fafb] min-h-screen py-12 px-4">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <main className="bg-gray-50 min-h-screen py-8 lg:py-12">
+      <div className="max-w-5xl mx-auto px-4 lg:px-6 space-y-8">
         <DiaryTitle title={diary.title} />
 
         {content && (
@@ -107,14 +113,20 @@ export default function Page() {
           onDelete={handleDelete}
         />
 
-        <section className="space-y-4">
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900">댓글</h2>
+        {/* 댓글 섹션 */}
+        <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden">
+          <div className="p-8">
+            <div className="flex items-center gap-3 mb-8">
+              <h2 className="text-2xl font-bold text-gray-900">댓글</h2>
+              <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
+                {comments.length}
+              </span>
+            </div>
             <CommentInfo comments={comments} setComments={setComments} />
           </div>
+        </div>
 
-          <CommentForm diaryId={Number(diaryId)} onCommentAdd={handleCommentAdd} />
-        </section>
+        <CommentForm diaryId={Number(diaryId)} onCommentAdd={handleCommentAdd} />
       </div>
     </main>
   );
