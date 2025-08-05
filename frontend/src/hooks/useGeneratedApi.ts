@@ -1,21 +1,22 @@
 import { useAuthStore } from '../stores';
-import { 
-  useGetDiary, 
-  useWriteDiary, 
-  useUpdateDiary, 
+import {
+  useGetDiary,
+  useWriteDiary,
+  useUpdateDiary,
   useDeleteDiary,
   useGetUserProfile,
   useLogin,
   useSignup,
   useLogout,
-  useSearchContents
+  useSearchContents,
+  LoginMutationResult,
 } from '../generated/api/api';
-import type { 
+import type {
   DiaryWriteRequestDto,
   DiaryUpdateRequestDto,
   LoginRequest,
   SignupRequest,
-  SearchContentsParams
+  SearchContentsParams,
 } from '../generated/model';
 
 // 다이어리 관련 API 훅들
@@ -23,7 +24,7 @@ export const useDiaryDetail = (diaryId: number) => {
   return useGetDiary(diaryId, {
     query: {
       enabled: !!diaryId && !!useAuthStore.getState().isAuthenticated,
-    }
+    },
   });
 };
 
@@ -65,7 +66,7 @@ export const useUserProfile = (userId: number) => {
   return useGetUserProfile(userId, {
     query: {
       enabled: !!userId && !!useAuthStore.getState().isAuthenticated,
-    }
+    },
   });
 };
 
@@ -73,12 +74,12 @@ export const useUserProfile = (userId: number) => {
 export const useLoginMutation = () => {
   return useLogin({
     mutation: {
-      onSuccess: (response) => {
+      onSuccess: (response: LoginMutationResult) => {
         // API 응답에서 토큰 추출하여 상태 업데이트
-        const token = (response as any)?.data?.accessToken;
-        if (token) {
+        const accessToken = response.data?.accessToken;
+        if (accessToken) {
           useAuthStore.setState({
-            accessToken: token,
+            accessToken,
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -93,11 +94,12 @@ export const useRegister = () => {
   return useSignup({
     mutation: {
       onSuccess: (response) => {
-        // API 응답에서 토큰 추출하여 상태 업데이트
-        const token = (response as any)?.data?.accessToken;
-        if (token) {
+        // Orval 생성 타입에 따라 response가 RsDataObject일 수 있음
+        // 로그인과 동일한 응답을 기대한다면 백엔드 확인 필요
+        const accessToken = (response.data as { accessToken?: string })?.accessToken;
+        if (accessToken) {
           useAuthStore.setState({
-            accessToken: token,
+            accessToken,
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -123,6 +125,7 @@ export const useSearchContentsQuery = (params: SearchContentsParams) => {
   return useSearchContents(params, {
     query: {
       enabled: !!useAuthStore.getState().isAuthenticated,
-    }
+    },
   });
-}; 
+};
+ 

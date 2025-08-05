@@ -1,14 +1,15 @@
 import { create } from 'zustand';
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { useAuthStore } from './authStore';
 
-interface ApiState<T = any> {
+// 제네릭 타입을 명확하게 하고, 기본값을 unknown으로 설정
+interface ApiState<T = unknown> {
   data: T | null;
   loading: boolean;
   error: string | null;
 }
 
-interface ApiActions<T = any> {
+interface ApiActions<T = unknown> {
   execute: (config?: AxiosRequestConfig) => Promise<T | null>;
   reset: () => void;
   setData: (data: T | null) => void;
@@ -16,34 +17,38 @@ interface ApiActions<T = any> {
   setError: (error: string | null) => void;
 }
 
-type ApiStore<T = any> = ApiState<T> & ApiActions<T>;
+type ApiStore<T = unknown> = ApiState<T> & ApiActions<T>;
 
 // 제네릭 API 스토어 생성 함수
-export const createApiStore = <T = any>(storeName: string) => {
-  return create<ApiStore<T>>((set, get) => ({
+export const createApiStore = <T = unknown>() => {
+  return create<ApiStore<T>>((set) => ({
     data: null,
     loading: false,
     error: null,
 
     execute: async (config?: AxiosRequestConfig) => {
       set({ loading: true, error: null });
-      
+
       try {
         if (!config) {
           throw new Error('API config is required');
         }
-        
-        const response: AxiosResponse<T> = await axios(config);
-        
+
+        const response: AxiosResponse<T> = await apiClient(config); // 수정: 전역 apiClient 사용
+
         set({
           data: response.data,
           loading: false,
           error: null,
         });
-        
+
         return response.data;
-      } catch (error: any) {
-        const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
+      } catch (error) {
+        const axiosError = error as AxiosError<{ message?: string }>;
+        const errorMessage =
+          axiosError.response?.data?.message ||
+          axiosError.message ||
+          'An error occurred';
         set({
           data: null,
           loading: false,
@@ -67,11 +72,12 @@ export const createApiStore = <T = any>(storeName: string) => {
   }));
 };
 
-// 자주 사용하는 API 스토어들 미리 생성
-export const useUserApiStore = createApiStore<any>('user-api');
-export const useDiaryApiStore = createApiStore<any>('diary-api');
-export const useCommentApiStore = createApiStore<any>('comment-api');
-export const useStatisticsApiStore = createApiStore<any>('statistics-api');
+// 자주 사용하는 API 스토어들 미리 생성 (타입을 unknown으로 유지)
+export const useUserApiStore = createApiStore<unknown>();
+export const useDiaryApiStore = createApiStore<unknown>();
+export const useCommentApiStore = createApiStore<unknown>();
+export const useStatisticsApiStore = createApiStore<unknown>();
+
 
 // 전역 API 설정
 export const apiClient = axios.create({

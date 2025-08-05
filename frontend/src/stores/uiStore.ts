@@ -13,7 +13,7 @@ interface UIState {
   } | null;
   loading: boolean;
   searchTerm: string;
-  filters: Record<string, any>;
+  filters: Record<string, unknown>; // any 대신 unknown 사용
 }
 
 interface UIActions {
@@ -22,11 +22,14 @@ interface UIActions {
   setSidebarOpen: (open: boolean) => void;
   openModal: (type: string) => void;
   closeModal: () => void;
-  showToast: (message: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
+  showToast: (
+    message: string,
+    type?: 'success' | 'error' | 'warning' | 'info',
+  ) => void;
   hideToast: () => void;
   setLoading: (loading: boolean) => void;
   setSearchTerm: (term: string) => void;
-  setFilter: (key: string, value: any) => void;
+  setFilter: (key: string, value: unknown) => void; // any 대신 unknown 사용
   clearFilters: () => void;
   resetUI: () => void;
 }

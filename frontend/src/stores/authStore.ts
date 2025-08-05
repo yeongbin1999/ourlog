@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   nickname: string;
@@ -19,7 +19,9 @@ interface AuthState {
 }
 
 interface AuthActions {
-  login: (credentials: { email: string; password: string }) => Promise<{ success: boolean; error?: string }>;
+  login: (
+    credentials: { email: string; password: string },
+  ) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshAccessToken: () => Promise<boolean>;
   updateUser: (userData: Partial<User>) => void;
@@ -47,10 +49,14 @@ export const useAuthStore = create<AuthStore>()(
       login: async (credentials) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await axios.post('/api/v1/auth/login', credentials, {
-            headers: { 'Content-Type': 'application/json' },
-            withCredentials: true,
-          });
+          const response = await axios.post(
+            '/api/v1/auth/login',
+            credentials,
+            {
+              headers: { 'Content-Type': 'application/json' },
+              withCredentials: true,
+            },
+          );
           const { accessToken, user } = response.data;
           set({
             user,
@@ -60,16 +66,21 @@ export const useAuthStore = create<AuthStore>()(
             error: null,
           });
 
-          window.localStorage.setItem('authEvent', JSON.stringify({
-            type: 'login',
-            timestamp: Date.now(),
-            accessToken,
-            user,
-          }));
+          window.localStorage.setItem(
+            'authEvent',
+            JSON.stringify({
+              type: 'login',
+              timestamp: Date.now(),
+              accessToken,
+              user,
+            }),
+          );
 
           return { success: true };
-        } catch (error: any) {
-          const errorMessage = error.response?.data?.message || '로그인에 실패했습니다.';
+        } catch (error) {
+          const axiosError = error as AxiosError<{ message?: string }>;
+          const errorMessage =
+            axiosError.response?.data?.message || '로그인에 실패했습니다.';
           set({
             isLoading: false,
             error: errorMessage,
@@ -81,9 +92,10 @@ export const useAuthStore = create<AuthStore>()(
       logout: async () => {
         set({ isLoading: true });
         try {
-          await axios.post('/api/v1/auth/logout', {}, {
-            withCredentials: true,
-          });
+          await axios.post('/api/v1/auth/logout', {},
+            {
+              withCredentials: true,
+            });
         } catch (error) {
           console.error('Logout API error:', error);
         }
@@ -95,10 +107,13 @@ export const useAuthStore = create<AuthStore>()(
           error: null,
         });
 
-        window.localStorage.setItem('authEvent', JSON.stringify({
-          type: 'logout',
-          timestamp: Date.now(),
-        }));
+        window.localStorage.setItem(
+          'authEvent',
+          JSON.stringify({
+            type: 'logout',
+            timestamp: Date.now(),
+          }),
+        );
       },
 
       refreshAccessToken: async () => {
@@ -109,9 +124,13 @@ export const useAuthStore = create<AuthStore>()(
 
         refreshPromise = (async () => {
           try {
-            const response = await axios.post('/api/v1/auth/refresh', {}, {
-              withCredentials: true,
-            });
+            const response = await axios.post(
+              '/api/v1/auth/refresh',
+              {},
+              {
+                withCredentials: true,
+              },
+            );
             const { accessToken } = response.data;
             set({
               accessToken,
@@ -175,8 +194,8 @@ export const useAuthStore = create<AuthStore>()(
         accessToken: state.accessToken,
         isAuthenticated: state.isAuthenticated,
       }),
-    }
-  )
+    },
+  ),
 );
 
 // 탭 간 동기화 이벤트 처리
@@ -185,9 +204,14 @@ if (typeof window !== 'undefined') {
     if (e.key === 'authEvent' && e.newValue) {
       try {
         const event = JSON.parse(e.newValue);
-        const lastTimestamp = window.localStorage.getItem('lastAuthEventTimestamp');
+        const lastTimestamp = window.localStorage.getItem(
+          'lastAuthEventTimestamp',
+        );
         if (lastTimestamp === event.timestamp.toString()) return;
-        window.localStorage.setItem('lastAuthEventTimestamp', event.timestamp.toString());
+        window.localStorage.setItem(
+          'lastAuthEventTimestamp',
+          event.timestamp.toString(),
+        );
 
         if (event.type === 'logout') {
           useAuthStore.getState().logout();

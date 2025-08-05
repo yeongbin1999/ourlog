@@ -63,7 +63,7 @@ export const customInstance = <T>(
     cancelToken: source.token,
   }).then(({ data }) => data);
 
-  // @ts-expect-error
+  // @ts-expect-error: Orval generated code requires this to allow cancellation.
   promise.cancel = () => {
     source.cancel('Query was cancelled');
   };
