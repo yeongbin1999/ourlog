@@ -1,0 +1,59 @@
+// FollowRequestList.tsx
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import UserProfileCard from './UserProfileCard'; // 상대 프로필 카드 (공용 컴포넌트)
+
+type Props = {
+  myUserId: number;
+};
+
+type FollowUserResponse = {
+  userId: number;
+  nickname: string;
+  email: string;
+  bio: string;
+  profileImageUrl: string;
+  followId: number; // 수락/거절용 ID..
+};
+
+// 나에게 팔로우 요청한 사람들..
+export default function FollowRequestList({ myUserId }: Props) {
+  const [requests, setRequests] = useState<FollowUserResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchRequests = async () => {
+    try {
+      const res = await axios.get(`/api/v1/follows/requests?userId=${myUserId}`);
+      setRequests(res.data);
+    } catch (err) {
+      console.error('받은 요청 불러오기 실패', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = () => fetchRequests();
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  if (loading) return <div className="text-center mt-10">로딩 중...</div>;
+  if (requests.length === 0) return <div className="text-center mt-10"> 받은 요청이 없습니다.</div>;
+
+  return (
+    <div className="space-y-6">
+      {requests.map((user) => (
+        <UserProfileCard
+          key={user.userId}
+          userId={String(user.userId)}
+          userType="received"
+          followId={user.followId}
+          onActionCompleted={handleRefresh}
+        />
+      ))}
+    </div>
+  );
+}

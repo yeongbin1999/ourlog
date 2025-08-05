@@ -55,7 +55,8 @@ public class UserService {
                 user.getEmail(),
                 user.getNickname(),
                 user.getProfileImageUrl(),
-                user.getBio()
+                user.getBio(),
+                user.getId()
         );
     }
 
@@ -68,7 +69,8 @@ public class UserService {
                         user.getEmail(),
                         user.getNickname(),
                         user.getProfileImageUrl(),
-                        user.getBio()
+                        user.getBio(),
+                        user.getId()
                 ))
                 .collect(Collectors.toList());
     }

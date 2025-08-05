@@ -51,6 +51,7 @@ public class FollowController {
     @PostMapping("/{followId}/accept")
     @Operation(summary = "팔로우 요청 수락")
     public ResponseEntity<String> acceptFollow(@PathVariable Integer followId) {
+        System.out.println("[DEBUG] 컨트롤러 진입, followId = " + followId);
         followService.acceptFollow(followId);
         return ResponseEntity.ok("팔로우 요청 수락 완료!");
     }

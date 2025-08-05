@@ -64,23 +64,18 @@ const SearchClient = () => {
       ) : (
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {results.map((user) => (
-            <li
-              key={user.userId}
-              className="cursor-pointer flex items-center space-x-4 border p-4 rounded-md hover:bg-gray-100 transition"
-            >
-              <Link href={`/profile/${user.userId}`}>
-                <div className="flex items-center space-x-4">
-                  <img
-                    src={user.profileImageUrl || DEFAULT_IMAGE}
-                    alt={user.nickname}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                  <span className="text-lg font-semibold">
-                    {highlightKeyword(user.nickname, keyword)}
-                  </span>
-                </div>
-              </Link>
-            </li>
+            <Link key={user.userId} href={`/profile/${user.userId}`}>
+              <li className="cursor-pointer flex items-center space-x-4 border p-4 rounded-md hover:bg-gray-100 transition">
+                <img
+                  src={user.profileImageUrl || DEFAULT_IMAGE}
+                  alt={user.nickname}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <span className="text-lg font-semibold">
+                  {highlightKeyword(user.nickname, keyword)}
+                </span>
+              </li>
+            </Link>
           ))}
         </ul>
       )}
