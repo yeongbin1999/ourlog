@@ -71,4 +71,24 @@ public class CommentService {
 
         commentRepository.delete(comment);
     }
+
+    @Transactional(readOnly = true)
+    public void checkCanDelete(int userId, int commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+
+        if(comment.getUser().getId() != userId) {
+            throw new CustomException(ErrorCode.COMMENT_DELETE_FORBIDDEN);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public void checkCanUpdate(int userId, int commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+
+        if(comment.getUser().getId() != userId) {
+            throw new CustomException(ErrorCode.COMMENT_UPDATE_FORBIDDEN);
+        }
+    }
 }
