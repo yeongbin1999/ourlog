@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StopWatch;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -127,21 +128,34 @@ public class StatisticsService {
     /** 특정 회원의 장르 타입 그래프 조회 */
     @Transactional(readOnly = true)
     public GenreGraphResponse getGenreGraph(int userId, PeriodOption period) {
+        StopWatch stopWatch = new StopWatch();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime start = calculateStart(period, now);
         LocalDateTime end = now.plusDays(1);
 
         List<GenreLineGraphDto> line;
         switch (period) {
-            case LAST_MONTH, LAST_WEEK -> line = statisticsRepository.findGenreLineDaily(userId, start, end);
-            default -> line = statisticsRepository.findGenreLineMonthly(userId, start, end);
+            case LAST_MONTH, LAST_WEEK -> {
+                stopWatch.start("findGenreLineDaily");
+                line = statisticsRepository.findGenreLineDaily(userId, start, end);
+                stopWatch.stop();
+            }
+            default -> {
+                stopWatch.start("findGenreLineMonthly");
+                line = statisticsRepository.findGenreLineMonthly(userId, start, end);
+                stopWatch.stop();
+            }
         }
 
+        stopWatch.start("findGenreRanking");
         List<GenreRankDto> ranking = statisticsRepository.findGenreRanking(userId, start, end);
+        stopWatch.stop();
 
+        log.info("StatisticsService.getGenreGraph - StopWatch: {}", stopWatch.prettyPrint());
         return new GenreGraphResponse(line, ranking);
     }
 
+    /** 특정 회원의 감정 그래프 조회 */
     public EmotionGraphResponse getEmotionGraph(int userId, PeriodOption period) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime start = calculateStart(period, now);
@@ -158,6 +172,7 @@ public class StatisticsService {
         return new EmotionGraphResponse(line, ranking);
     }
 
+    /** 특정 회원의 OTT 그래프 조회 */
     public OttGraphResponse getOttGraph(int userId, PeriodOption period) {
         LocalDateTime now   = LocalDateTime.now();
         LocalDateTime start = calculateStart(period, now);

@@ -5,6 +5,7 @@ import com.back.ourlog.domain.statistics.dto.FavoriteEmotionAndCountDto;
 import com.back.ourlog.domain.statistics.dto.FavoriteTypeAndCountDto;
 import com.back.ourlog.domain.statistics.dto.MonthlyDiaryCount;
 import com.back.ourlog.domain.statistics.dto.TypeCountDto;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -45,16 +46,6 @@ public interface StatisticsRepository extends JpaRepository<Diary, Integer>,Stat
         ORDER BY favoriteEmotionCount DESC
         LIMIT 1""", nativeQuery = true)
     Optional<FavoriteEmotionAndCountDto> findFavoriteEmotionAndCountByUserId(@Param("userId") int userId);
-
-
-    @Query(value = "SELECT FORMATDATETIME(created_at, 'yyyy-MM') AS period, COUNT(*) AS views " +
-            "FROM diary " +
-            "WHERE user_id = :userId AND created_at >= :startDate " +
-            "GROUP BY FORMATDATETIME(created_at, 'yyyy-MM') " +
-            "ORDER BY FORMATDATETIME(created_at, 'yyyy-MM') ASC",
-            nativeQuery = true)
-    List<MonthlyDiaryCount> countMonthlyDiaryByUserId(@Param("userId") Integer userId,
-                                                      @Param("startDate") LocalDateTime startDate);
 
     @Query(value = "SELECT c.type as type, COUNT(d.id) as count " +
             "FROM diary d JOIN content c ON d.content_id = c.id " +

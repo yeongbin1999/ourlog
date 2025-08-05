@@ -5,6 +5,7 @@ import com.back.ourlog.domain.content.entity.ContentType;
 import com.back.ourlog.domain.statistics.dto.*;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 
@@ -17,11 +18,38 @@ public class StatisticsRepositoryCustomImpl implements  StatisticsRepositoryCust
 
     private final EntityManager em;
 
+    @Value("${app.sql.lineMonthly}")
+    private String lineMonthlySql;
+
+    @Value("${app.sql.lineDaily}")
+    private String lineDailySql;
+
+    @Override
+    public List<MonthlyDiaryCount> countMonthlyDiaryByUserId(Integer userId, LocalDateTime startDate) {
+        String sql =
+                "SELECT " + lineMonthlySql + " AS period, COUNT(*) AS views " +
+                        "FROM diary d " +
+                        "WHERE user_id = ? AND created_at >= ? " +
+                        "GROUP BY  "+ lineMonthlySql +
+                        " ORDER BY "+ lineMonthlySql +" ASC";
+
+        List<Object[]> rows = em.createNativeQuery(sql)
+                .setParameter(1, userId)
+                .setParameter(2, startDate)
+                .getResultList();
+
+        return rows.stream()
+                .map(row -> new MonthlyDiaryCount(
+                        (String) row[0],
+                        ((Number) row[1]).longValue()
+                ))
+                .toList();
+    }
+
     @Override
     public List<TypeLineGraphDto> findTypeLineMonthly(Integer userId, LocalDateTime start, LocalDateTime end) {
         String sql =
-                "SELECT " +
-                "  FORMATDATETIME(d.created_at, 'yyyy-MM') AS axisLabel, " +
+                "SELECT " + lineMonthlySql + " AS axisLabel, " +
                 "  c.type AS type,"+
                 "  COUNT(*) AS count " +
                 "FROM diary d " +
@@ -47,8 +75,7 @@ public class StatisticsRepositoryCustomImpl implements  StatisticsRepositoryCust
     @Override
     public List<TypeLineGraphDto> findTypeLineDaily(Integer userId, LocalDateTime start, LocalDateTime end) {
         String sql =
-                "SELECT " +
-                "  FORMATDATETIME(d.created_at, 'yyyy-MM-dd') AS axisLabel, " +
+                "SELECT " + lineDailySql + " AS axisLabel, " +
                 "  c.type AS type, " +
                 "  COUNT(*) AS count " +
                 "FROM diary d " +
@@ -91,7 +118,7 @@ public class StatisticsRepositoryCustomImpl implements  StatisticsRepositoryCust
     @Override
     public List<GenreLineGraphDto> findGenreLineMonthly(Integer userId, LocalDateTime start, LocalDateTime end) {
         String sql =
-                "SELECT FORMATDATETIME(d.created_at, 'yyyy-MM') AS axisLabel, " +
+                "SELECT " + lineMonthlySql + " AS axisLabel, " +
                         "       g.name AS genre, " +
                         "       COUNT(*) AS cnt " +
                         "FROM diary d " +
@@ -119,7 +146,7 @@ public class StatisticsRepositoryCustomImpl implements  StatisticsRepositoryCust
     @Override
     public List<GenreLineGraphDto> findGenreLineDaily(Integer userId, LocalDateTime start, LocalDateTime end) {
         String sql =
-                "SELECT FORMATDATETIME(d.created_at, 'yyyy-MM-dd') AS axisLabel, " +
+                "SELECT " + lineDailySql + " AS axisLabel, " +
                         "       g.name AS genre, " +
                         "       COUNT(*) AS cnt " +
                         "FROM diary d " +
@@ -172,7 +199,7 @@ public class StatisticsRepositoryCustomImpl implements  StatisticsRepositoryCust
     @Override
     public List<EmotionLineGraphDto> findEmotionLineMonthly(Integer userId, LocalDateTime start, LocalDateTime end) {
         String sql =
-                "SELECT FORMATDATETIME(d.created_at, 'yyyy-MM') AS axisLabel, " +
+                "SELECT "+ lineMonthlySql + " AS axisLabel, " +
                         "       t.name AS emotion, " +
                         "       COUNT(*) AS cnt " +
                         "FROM diary d " +
@@ -200,7 +227,7 @@ public class StatisticsRepositoryCustomImpl implements  StatisticsRepositoryCust
     @Override
     public List<EmotionLineGraphDto> findEmotionLineDaily(Integer userId, LocalDateTime start, LocalDateTime end) {
         String sql =
-                "SELECT FORMATDATETIME(d.created_at, 'yyyy-MM-dd') AS axisLabel, " +
+                "SELECT " + lineDailySql + " AS axisLabel, " +
                         "       t.name AS emotion, " +
                         "       COUNT(*) AS cnt " +
                         "FROM diary d " +
@@ -252,7 +279,7 @@ public class StatisticsRepositoryCustomImpl implements  StatisticsRepositoryCust
     @Override
     public List<OttLineGraphDto> findOttLineMonthly(Integer userId, LocalDateTime start, LocalDateTime end) {
         String sql =
-                "SELECT FORMATDATETIME(d.created_at, 'yyyy-MM') AS axisLabel, o.name AS ottName, COUNT(*) AS cnt " +
+                "SELECT " + lineMonthlySql + " AS axisLabel, o.name AS ottName, COUNT(*) AS cnt " +
                         "FROM diary d " +
                         "JOIN diary_ott do ON d.id = do.diary_id " +
                         "JOIN ott o ON do.ott_id = o.id " +
@@ -277,7 +304,7 @@ public class StatisticsRepositoryCustomImpl implements  StatisticsRepositoryCust
     @Override
     public List<OttLineGraphDto> findOttLineDaily(Integer userId, LocalDateTime start, LocalDateTime end) {
         String sql =
-                "SELECT FORMATDATETIME(d.created_at, 'yyyy-MM-dd') AS axisLabel, o.name AS ottName, COUNT(*) AS cnt " +
+                "SELECT " + lineDailySql + " AS axisLabel, o.name AS ottName, COUNT(*) AS cnt " +
                         "FROM diary d " +
                         "JOIN diary_ott do ON d.id = do.diary_id " +
                         "JOIN ott o ON do.ott_id = o.id " +
