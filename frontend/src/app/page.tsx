@@ -47,7 +47,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div className={fadeClass("hero-text")} data-fade id="hero-text">
-              <h1 className="text-5xl lg:text-6xl font-black mb-6 leading-tight tracking-tight">
+              <h1 className="text-5xl lg:text-6xl font-bold mb-6 leading-tight tracking-tight">
                 당신의 감상을<br />기록하세요 ✍️
               </h1>
               <p className="text-xl text-gray-600 mb-10 leading-relaxed">
@@ -131,8 +131,12 @@ export default function Home() {
       {/* Features */}
       <section id="features" className="py-32 bg-white">
         <div className="max-w-6xl mx-auto px-6">
-          <div className={`${fadeClass("features-header")} text-center mb-20`} data-fade id="features-header">
-            <h2 className="text-4xl font-black mb-4">주요 기능</h2>
+          <div
+            className={`${fadeClass("features-header")} text-center mb-20`}
+            data-fade
+            id="features-header"
+          >
+            <h2 className="text-4xl font-bold mb-4">주요 기능</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               OurLog와 함께 당신만의 감상 세계를 체계적으로 관리하세요
             </p>
@@ -140,14 +144,32 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 gap-8">
             {[
-              { icon: "✍️", title: "감상일기 작성", desc: "영화, 책, 드라마, 음악에 대한 당신의 생각과 감정을 자유롭게 기록하고 별점으로 평가해보세요." },
-              { icon: "🔍", title: "콘텐츠 탐색", desc: "다양한 장르의 콘텐츠를 쉽게 검색하고 발견하세요. 개인화된 추천으로 새로운 작품을 만나보세요." },
-              { icon: "👥", title: "친구와 감상 공유", desc: "친구들과 감상을 공유하고 서로의 취향을 발견해보세요." },
-              { icon: "📈", title: "통계 보기", desc: "당신의 감상 패턴과 취향을 한눈에 확인하세요." }
+              {
+                icon: "✍️",
+                title: "감상일기 작성",
+                desc: "영화, 책, 드라마, 음악에 대한 당신의 생각과 감정을 자유롭게 기록하고 별점으로 평가해보세요.",
+              },
+              {
+                icon: "🔍",
+                title: "콘텐츠 탐색",
+                desc: "다양한 장르의 콘텐츠를 쉽게 검색하고 발견하세요. 개인화된 추천으로 새로운 작품을 만나보세요.",
+              },
+              {
+                icon: "👥",
+                title: "친구와 감상 공유",
+                desc: "친구들과 감상을 공유하고 서로의 취향을 발견해보세요.",
+              },
+              {
+                icon: "📈",
+                title: "통계 보기",
+                desc: "당신의 감상 패턴과 취향을 한눈에 확인하세요.",
+              },
             ].map((feature, i) => (
               <div
                 key={i}
-                className={`${fadeClass(`feature-${i}`)} bg-gray-50 border border-gray-200 rounded-2xl p-10 hover:bg-white hover:border-gray-300 hover:-translate-y-2 hover:shadow-lg`}
+                className={`${fadeClass(
+                  `feature-${i}`
+                )} bg-gray-50 border border-gray-200 rounded-2xl p-10 hover:bg-white hover:border-gray-300 hover:-translate-y-2 hover:shadow-lg`}
                 data-fade
                 id={`feature-${i}`}
               >
@@ -165,59 +187,56 @@ export default function Home() {
       {/* Workflow */}
       <section className="py-32 bg-gray-50">
         <div className="max-w-6xl mx-auto px-6">
-        {/* 제목 */}
           <div
             className={`${fadeClass("workflow-header")} text-center mb-20`}
             data-fade
             id="workflow-header"
           >
+            <h2 className="text-4xl font-bold text-gray-900 mb-6 tracking-tight">
+              간단한 3단계
+            </h2>
+            <p className="text-lg text-gray-600 font-light tracking-wide leading-relaxed">
+              누구나 쉽게 시작할 수 있는<br />
+              감상 기록 여정을 안내합니다
+            </p>
+          </div>
 
-          <h2 className="text-4xl font-black text-gray-900 mb-6 tracking-tight">
-            간단한 3단계
-          </h2>
-          <p className="text-lg text-gray-600 font-light tracking-wide leading-relaxed">
-            누구나 쉽게 시작할 수 있는<br />
-            감상 기록 여정을 안내합니다
-          </p>
-        </div>
-
-        {/* 단계 카드 */}
-        <div className="grid md:grid-cols-3 gap-16">
-          {[
-            {
-              num: "01",
-              title: "검색",
-              desc: "보고 싶은 영화, 읽고 싶은 책,\n들어본 음악을 검색해보세요",
-            },
-            {
-              num: "02",
-              title: "감상",
-              desc: "작품에 대한 감상과 평점을\n자유롭게 기록해보세요",
-            },
-            {
-              num: "03",
-              title: "공유",
-              desc: "친구들과 감상을 공유하고\n새로운 작품을 추천받아보세요",
-            },
-          ].map((step, i) => (
-            <div
-              key={i}
-              className={`${fadeClass(
-                `workflow-step-${i}`
-              )} text-center transition-all duration-500 hover:-translate-y-2`}
-              data-fade
-              id={`workflow-step-${i}`}
-            >
-              <div className="w-16 h-16 bg-gray-900 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-6 transition-transform duration-300 hover:scale-110">
-              {step.num}
+          <div className="grid md:grid-cols-3 gap-16">
+            {[
+              {
+                num: "01",
+                title: "검색",
+                desc: "보고 싶은 영화, 읽고 싶은 책,\n들어본 음악을 검색해보세요",
+              },
+              {
+                num: "02",
+                title: "감상",
+                desc: "작품에 대한 감상과 평점을\n자유롭게 기록해보세요",
+              },
+              {
+                num: "03",
+                title: "공유",
+                desc: "친구들과 감상을 공유하고\n새로운 작품을 추천받아보세요",
+              },
+            ].map((step, i) => (
+              <div
+                key={i}
+                className={`${fadeClass(
+                  `workflow-step-${i}`
+                )} text-center transition-all duration-500 hover:-translate-y-2`}
+                data-fade
+                id={`workflow-step-${i}`}
+              >
+                <div className="w-16 h-16 bg-gray-900 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-6 transition-transform duration-300 hover:scale-110">
+                  {step.num}
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4 tracking-tight">
+                  {step.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed text-base font-light whitespace-pre-line tracking-wide">
+                  {step.desc}
+                </p>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4 tracking-tight">
-                {step.title}
-              </h3>
-              <p className="text-gray-600 leading-relaxed text-base font-light whitespace-pre-line tracking-wide">
-                {step.desc}
-              </p>
-            </div>
             ))}
           </div>
         </div>
@@ -226,34 +245,46 @@ export default function Home() {
       {/* Showcase */}
       <section className="py-32 bg-gray-900">
         <div className="max-w-6xl mx-auto px-6">
-          <div className={`${fadeClass("showcase-header")} text-center mb-20`} data-fade id="showcase-header">
-            <h2 className="text-4xl font-black text-white mb-6">실제 사용 예시</h2>
-            <p className="text-2xl text-gray-300 font-light">다른 사용자들의 줄거리와 감상일기를 살펴보세요</p>
+          <div
+            className={`${fadeClass("showcase-header")} text-center mb-20`}
+            data-fade
+            id="showcase-header"
+          >
+            <h2 className="text-4xl font-bold text-white mb-6">실제 사용 예시</h2>
+            <p className="text-2xl text-gray-300 font-light">
+              다른 사용자들의 줄거리와 감상일기를 살펴보세요
+            </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-12">
             {[
               {
-                poster: "https://image.tmdb.org/t/p/w500/mSi0gskYpmf1FbXngM37s2HppXh.jpg",
+                poster:
+                  "https://image.tmdb.org/t/p/w500/mSi0gskYpmf1FbXngM37s2HppXh.jpg",
                 title: "기생충",
                 creator: "봉준호",
                 year: "2019",
                 genre: "코미디, 스릴러, 드라마",
-                summary: "전원 백수로 살아가던 기택 가족. 막내 기우가 명문대생의 소개로 박 사장 집에서 과외를 시작하게 되고, 덕분에 온 가족이 박 사장 집에 입성하게 되는데...",
-                review: "봉준호 감독의 연출력이 뛰어났고 메시지가 강렬했습니다.",
+                summary:
+                  "전원 백수로 살아가던 기택 가족. 막내 기우가 명문대생의 소개로 박 사장 집에서 과외를 시작하게 되고, 덕분에 온 가족이 박 사장 집에 입성하게 되는데...",
+                review:
+                  "봉준호 감독의 연출력이 뛰어났고 메시지가 강렬했습니다.",
                 rating: "★★★★★ 5.0",
                 tags: ["재미", "충격"],
                 user: "김영화",
                 role: "영화 애호가",
               },
               {
-                poster: "https://www.nl.go.kr/seoji/fu/ecip/dbfiles/CIP_FILES_TBL/2516591_3.jpg",
+                poster:
+                  "https://www.nl.go.kr/seoji/fu/ecip/dbfiles/CIP_FILES_TBL/2516591_3.jpg",
                 title: "희랍어 시간",
                 creator: "한강",
                 year: "2011",
                 genre: "한국문학, 소설",
-                summary: "언어를 잃어버린 여자와 그녀를 사랑하는 남자의 이야기. 상실과 회복, 사랑과 언어에 대한 깊이 있는 성찰...",
-                review: "한강 특유의 섬세한 문체와 감정선이 인상적이었어요.",
+                summary:
+                  "언어를 잃어버린 여자와 그녀를 사랑하는 남자의 이야기. 상실과 회복, 사랑과 언어에 대한 깊이 있는 성찰...",
+                review:
+                  "한강 특유의 섬세한 문체와 감정선이 인상적이었어요.",
                 rating: "★★★★★ 4.8",
                 tags: ["감동", "성찰"],
                 user: "박독서",
@@ -262,49 +293,78 @@ export default function Home() {
             ].map((example, index) => (
               <div
                 key={index}
-                className={`${fadeClass(`example-${index}`)} bg-white rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-2xl`}
+                className={`${fadeClass(
+                  `example-${index}`
+                )} bg-white rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-2xl`}
                 data-fade
                 id={`example-${index}`}
               >
                 <div className="p-12">
                   <div className="flex gap-8 mb-8">
                     <div className="w-24 h-36 rounded-lg overflow-hidden shadow-lg flex-shrink-0 transform transition-transform duration-300 hover:scale-105">
-                      <img src={example.poster} alt={example.title} className="w-full h-full object-cover" />
+                      <img
+                        src={example.poster}
+                        alt={example.title}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-3xl font-black text-gray-900 mb-2">{example.title}</h3>
-                      <p className="text-gray-600 mb-2 text-lg font-medium">{example.creator}</p>
-                      <p className="text-gray-500 text-sm mb-2">{example.year}</p>
+                      <h3 className="text-3xl font-bold text-gray-900 mb-2">
+                        {example.title}
+                      </h3>
+                      <p className="text-gray-600 mb-2 text-lg font-medium">
+                        {example.creator}
+                      </p>
+                      <p className="text-gray-500 text-sm mb-2">
+                        {example.year}
+                      </p>
                       <p className="text-gray-500 text-sm">{example.genre}</p>
                     </div>
                   </div>
                   <div className="mb-6">
-                    <h4 className="text-gray-900 font-bold mb-3 text-lg">줄거리</h4>
-                    <p className="text-gray-600 text-sm leading-relaxed">{example.summary}</p>
+                    <h4 className="text-gray-900 font-bold mb-3 text-lg">
+                      줄거리
+                    </h4>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      {example.summary}
+                    </p>
                   </div>
                   <div className="mb-8">
-                    <h4 className="text-gray-900 font-bold mb-3 text-lg">감상일기</h4>
-                    <p className="text-gray-600 text-sm leading-relaxed">{example.review}</p>
+                    <h4 className="text-gray-900 font-bold mb-3 text-lg">
+                      감상일기
+                    </h4>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      {example.review}
+                    </p>
                   </div>
                   <div className="flex items-center gap-4 mb-8">
-                    <span className="text-yellow-500 text-2xl">{example.rating}</span>
+                    <span className="text-yellow-500 text-2xl">
+                      {example.rating}
+                    </span>
                   </div>
                   <div className="mb-8">
-                    <h4 className="text-gray-900 font-bold mb-3 text-lg">감정 태그</h4>
+                    <h4 className="text-gray-900 font-bold mb-3 text-lg">
+                      감정 태그
+                    </h4>
                     <div className="flex gap-3 flex-wrap">
                       {example.tags.map((tag, tagIndex) => (
-                        <span key={tagIndex} className="bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                        <span
+                          key={tagIndex}
+                          className="bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-semibold"
+                        >
                           #{tag}
                         </span>
                       ))}
                     </div>
                   </div>
                   <div className="flex items-center gap-4 pt-6 border-t border-gray-200">
-                    <div className="w-12 h-12 bg-gray-400 text-white rounded-full flex items-center justify-center text-lg font-black">
+                    <div className="w-12 h-12 bg-gray-400 text-white rounded-full flex items-center justify-center text-lg font-bold">
                       {example.user[0]}
                     </div>
                     <div>
-                      <p className="text-gray-900 font-black text-lg">{example.user}</p>
+                      <p className="text-gray-900 font-bold text-lg">
+                        {example.user}
+                      </p>
                       <p className="text-gray-500 text-sm">{example.role}</p>
                     </div>
                   </div>
@@ -318,8 +378,10 @@ export default function Home() {
       {/* CTA */}
       <section className="py-32 bg-white text-center">
         <div className={`${fadeClass("cta")}`} data-fade id="cta">
-          <h2 className="text-5xl font-black mb-4">지금 바로 시작하세요 🚀</h2>
-          <p className="text-lg text-gray-500 mb-10">당신만의 감상 여행을 OurLog와 함께 시작해보세요</p>
+          <h2 className="text-5xl font-bold mb-4">지금 바로 시작하세요 🚀</h2>
+          <p className="text-lg text-gray-500 mb-10">
+            당신만의 감상 여행을 OurLog와 함께 시작해보세요
+          </p>
           <button
             onClick={handleCTAClick}
             className="bg-gray-900 text-white px-16 py-6 rounded-full text-2xl font-semibold hover:bg-gray-800 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl"
