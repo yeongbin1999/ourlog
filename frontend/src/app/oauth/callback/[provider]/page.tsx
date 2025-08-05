@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
 import { axiosInstance } from '@/lib/api-client';
 import { useDeviceStore } from '@/stores/deviceStore';
+import { getMe } from '@/generated/api/api'; // getMe 함수 임포트
 
 const OAuthCallbackPage = () => {
   const router = useRouter();
@@ -43,8 +44,35 @@ const OAuthCallbackPage = () => {
           );
 
           if (response.data.success) {
-            const { accessToken, user } = response.data.data;
-            setAuthInfo({ accessToken, user, isAuthenticated: true });
+            const { accessToken } = response.data.data;
+            setAuthInfo({ accessToken, user: null, isAuthenticated: true }); // user는 일단 null로 설정
+
+            // getMe()를 호출하여 사용자 정보 가져오기
+            try {
+              const meResponse = await getMe({
+                request: {
+                  headers: { Authorization: `Bearer ${accessToken}` },
+                },
+              });
+              const meData = meResponse.data;
+              if (meData && meData.data) {
+                const fetchedUser = {
+                  id: meData.data.userId?.toString() || '',
+                  email: meData.data.email || '',
+                  nickname: meData.data.nickname || '',
+                  profileImageUrl: meData.data.profileImageUrl,
+                  bio: meData.data.bio,
+                  followingsCount: meData.data.followingsCount,
+                  followersCount: meData.data.followersCount,
+                };
+                setAuthInfo({ accessToken, user: fetchedUser, isAuthenticated: true });
+              }
+            } catch (meError) {
+              console.error('Failed to fetch user profile after OAuth login:', meError);
+              toast.error('사용자 프로필을 불러오는 데 실패했습니다.');
+              // 프로필 로드 실패 시에도 로그인 상태는 유지
+            }
+
             toast.success(`${provider} 로그인 성공!`);
             router.push('/');
           } else {
