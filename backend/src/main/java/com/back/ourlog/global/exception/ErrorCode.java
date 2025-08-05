@@ -32,7 +32,8 @@ public enum ErrorCode {
 
     // 댓글 관련
     COMMENT_NOT_FOUND("COMMENT_001", "존재하지 않는 댓글입니다."),
-
+    COMMENT_DELETE_FORBIDDEN("COMMENT_002", "댓글을 삭제할 권한이 없습니다."),
+    COMMENT_UPDATE_FORBIDDEN("COMMENT_003", "댓글을 수정할 권한이 없습니다."),
     // 서버/시스템 관련 (HTTP 500)
     SERVER_ERROR("SERVER_500", "서버 내부 오류가 발생했습니다."),
     DATABASE_ERROR("SERVER_501", "데이터베이스 오류가 발생했습니다."),
