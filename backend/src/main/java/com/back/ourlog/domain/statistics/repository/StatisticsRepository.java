@@ -47,11 +47,11 @@ public interface StatisticsRepository extends JpaRepository<Diary, Integer>,Stat
     Optional<FavoriteEmotionAndCountDto> findFavoriteEmotionAndCountByUserId(@Param("userId") int userId);
 
 
-    @Query(value = "SELECT FORMATDATETIME(created_at, 'yyyy-MM') AS period, COUNT(*) AS views " +
+    @Query(value = "SELECT DATE_FORMAT(created_at, '%Y-%m') AS period, COUNT(*) AS views " +
             "FROM diary " +
             "WHERE user_id = :userId AND created_at >= :startDate " +
-            "GROUP BY FORMATDATETIME(created_at, 'yyyy-MM') " +
-            "ORDER BY FORMATDATETIME(created_at, 'yyyy-MM') ASC",
+            "GROUP BY DATE_FORMAT(created_at, '%Y-%m') " +
+            "ORDER BY DATE_FORMAT(created_at, '%Y-%m') ASC",
             nativeQuery = true)
     List<MonthlyDiaryCount> countMonthlyDiaryByUserId(@Param("userId") Integer userId,
                                                       @Param("startDate") LocalDateTime startDate);
