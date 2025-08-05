@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +53,7 @@ class DiaryServiceTest {
     private ObjectMapper objectMapper;
 
     @Test
+    @WithUserDetails("user1@test.com")
     @DisplayName("감상일기 등록 → DiaryTag 생성")
     void t1() throws Exception {
         DiaryWriteRequestDto requestDto = new DiaryWriteRequestDto(
@@ -80,6 +82,7 @@ class DiaryServiceTest {
     }
 
     @Test
+    @WithUserDetails("user1@test.com")
     @DisplayName("감상일기 등록 → 외부 API 기반 DiaryGenre 자동 생성")
     void t2() throws Exception {
         tagRepository.save(new Tag("더미"));
@@ -107,6 +110,7 @@ class DiaryServiceTest {
     }
 
     @Test
+    @WithUserDetails("user1@test.com")
     @DisplayName("감상일기 등록 → DiaryOtt 생성")
     void t3() throws Exception {
         tagRepository.save(new Tag("더미"));

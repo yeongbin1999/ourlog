@@ -20,6 +20,7 @@ import com.back.ourlog.external.common.ContentSearchFacade;
 import com.back.ourlog.external.library.service.LibraryService;
 import com.back.ourlog.global.exception.CustomException;
 import com.back.ourlog.global.exception.ErrorCode;
+import com.back.ourlog.global.rq.Rq;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -52,11 +53,17 @@ public class DiaryService {
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, Object> objectRedisTemplate;
     private final Environment env;
+    private final Rq rq;
 
     private static final String CACHE_KEY_PREFIX = "diaryDetail::";
 
     @Transactional
     public Diary writeWithContentSearch(DiaryWriteRequestDto req, User user) {
+        // 로그인 사용자 필수 체크
+        if (user == null) {
+            throw new CustomException(ErrorCode.AUTH_UNAUTHORIZED);
+        }
+
         // 외부 콘텐츠 검색
         ContentSearchResultDto result = contentSearchFacade.search(req.type(), req.externalId());
         if (result == null || result.externalId() == null) {
@@ -74,11 +81,16 @@ public class DiaryService {
     }
 
     @Transactional
-    public DiaryResponseDto update(int diaryId, DiaryUpdateRequestDto dto) {
+    public DiaryResponseDto update(int diaryId, DiaryUpdateRequestDto dto, User user) {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(DiaryNotFoundException::new);
 
-        // 콘텐츠 변경 시 외부 API 검색 및 재설정
+        // 작성자 검증
+        if (!diary.getUser().getId().equals(user.getId())) {
+            throw new CustomException(ErrorCode.AUTH_FORBIDDEN);
+        }
+
+        // 콘텐츠 변경 처리
         Content oldContent = diary.getContent();
         boolean contentChanged = !oldContent.getExternalId().equals(dto.externalId())
                 || !oldContent.getType().equals(dto.type());
@@ -88,23 +100,18 @@ public class DiaryService {
             if (result == null || result.externalId() == null) {
                 throw new CustomException(ErrorCode.CONTENT_NOT_FOUND);
             }
-
             Content newContent = contentService.saveOrGet(result, dto.type());
             diary.setContent(newContent);
-
             if (result.genres() != null) {
                 diary.updateGenres(result.genres(), genreService, libraryService);
             }
         }
 
-        // 필드 및 연관관계 업데이트
         diary.update(dto.title(), dto.contentText(), dto.rating(), dto.isPublic());
         diary.updateTags(dto.tagNames(), tagRepository);
         diary.updateOtts(dto.ottIds(), ottRepository);
 
-        // 영속성 반영
         diaryRepository.flush();
-
         objectRedisTemplate.delete("diaryDetail::" + diaryId);
 
         return DiaryMapper.toResponseDto(diary);
@@ -113,30 +120,47 @@ public class DiaryService {
     public DiaryDetailDto getDiaryDetail(Integer diaryId) {
         String cacheKey = CACHE_KEY_PREFIX + diaryId;
 
+        // 다이어리 조회
+        Diary diary;
         if (Arrays.asList(env.getActiveProfiles()).contains("test")) {
-            Diary diary = diaryRepository.findById(diaryId)
-                    .orElseThrow(() -> new DiaryNotFoundException());
-            return DiaryDetailDto.of(diary);
+            diary = diaryRepository.findById(diaryId)
+                    .orElseThrow(DiaryNotFoundException::new);
+        } else {
+            Object cached = objectRedisTemplate.opsForValue().get(cacheKey);
+            if (cached != null) {
+                diary = objectMapper.convertValue(cached, Diary.class);
+            } else {
+                diary = diaryRepository.findById(diaryId)
+                        .orElseThrow(DiaryNotFoundException::new);
+                objectRedisTemplate.opsForValue().set(cacheKey, DiaryDetailDto.of(diary));
+            }
         }
 
-        Object cached = objectRedisTemplate.opsForValue().get(cacheKey);
-        if (cached != null) {
-            return objectMapper.convertValue(cached, DiaryDetailDto.class);
+        // 비공개 글 접근 제한
+        User currentUser = null;
+        try {
+            currentUser = rq.getCurrentUser();
+        } catch (Exception ignored) {
         }
 
-        Diary diary = diaryRepository.findById(diaryId)
-                .orElseThrow(() -> new DiaryNotFoundException());
+        if (!diary.getIsPublic() &&
+                (currentUser == null || !diary.getUser().getId().equals(currentUser.getId()))) {
+            throw new CustomException(ErrorCode.AUTH_FORBIDDEN);
+        }
 
-        DiaryDetailDto dto = DiaryDetailDto.of(diary);
-        objectRedisTemplate.opsForValue().set(cacheKey, dto);
-        return dto;
+        return DiaryDetailDto.of(diary);
     }
 
     @Transactional
     @CacheEvict(value = "diaryDetail", key = "#diaryId")
-    public void delete(int diaryId) {
+    public void delete(int diaryId, User user) {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
+
+        // 작성자 검증
+        if (!diary.getUser().getId().equals(user.getId())) {
+            throw new CustomException(ErrorCode.AUTH_FORBIDDEN);
+        }
 
         diaryRepository.delete(diary);
     }
