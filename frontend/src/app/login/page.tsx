@@ -29,7 +29,7 @@ export default function LoginPage() {
       case 'naver':
         return `https://nid.naver.com/oauth2.0/authorize?client_id=${NAVER_CLIENT_ID}&redirect_uri=${FRONTEND_REDIRECT_URI_BASE}/naver&response_type=code&scope=name,email`;
       case 'kakao':
-        return `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${FRONTEND_REDIRECT_URI_BASE}/kakao&response_type=code&scope=profile`;
+        return `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${FRONTEND_REDIRECT_URI_BASE}/kakao&response_type=code&scope=profile_nickname,profile_image`;
       default:
         return '';
     }
