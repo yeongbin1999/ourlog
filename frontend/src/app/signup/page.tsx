@@ -20,7 +20,6 @@ export default function SignUpPage() {
   const router = useRouter();
 
   const { mutateAsync: signupMutation } = useSignup();
-  const { login: authStoreLogin } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
