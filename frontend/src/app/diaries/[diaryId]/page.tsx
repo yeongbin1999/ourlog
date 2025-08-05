@@ -19,6 +19,7 @@ export default function Page() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  // fetchData 함수 - 리팩터링 버전
   const fetchData = useCallback(async () => {
     if (!diaryId) return;
     try {
@@ -124,8 +125,10 @@ export default function Page() {
   return (
     <main className="bg-gray-50 min-h-screen py-8 lg:py-12">
       <div className="max-w-5xl mx-auto px-4 lg:px-6 space-y-8">
+        {/* 제목 */}
         <DiaryTitle title={diary.title} />
 
+        {/* 콘텐츠 정보 */}
         {content && (
           <ContentInfo
             content={content}
@@ -134,6 +137,7 @@ export default function Page() {
           />
         )}
 
+        {/* 일기 정보 */}
         <DiaryInfo
           rating={diary.rating}
           contentText={diary.contentText}
@@ -155,6 +159,7 @@ export default function Page() {
           </div>
         </div>
 
+        {/* 댓글 작성 폼 */}
         <CommentForm diaryId={Number(diaryId)} onCommentAdd={handleCommentAdd} />
       </div>
     </main>
