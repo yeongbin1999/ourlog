@@ -49,11 +49,29 @@ public class FollowService {
                 followeeId, followerId, FollowStatus.PENDING);
 
         if (reversePending.isPresent()) {
-            reversePending.get().accept();
-            reversePending.get().getFollower().increaseFollowingsCount();
-            reversePending.get().getFollowee().increaseFollowersCount();
+            Follow reverse = reversePending.get();
+            reverse.accept();
+            reverse.getFollower().increaseFollowingsCount();
+            reverse.getFollowee().increaseFollowersCount();
+            followRepository.save(reverse);
+
+            // ✅ forward 관계도 추가 (나 → 상대방)
+            User follower = userRepository.findById(followerId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+            User followee = userRepository.findById(followeeId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+            Follow forward = new Follow(follower, followee);
+            forward.accept();
+            followRepository.save(forward);
+
+            follower.increaseFollowingsCount();
+            followee.increaseFollowersCount();
+
             return;
         }
+
+
 
         // 역방향이 ACCEPTED인 경우 → 쌍방으로 만들어야 함..
         Optional<Follow> reverseAccepted = followRepository.findByFollowerIdAndFolloweeIdAndStatus(
@@ -107,9 +125,6 @@ public class FollowService {
         em.clear();
     }
 
-
-
-
     // 내가 팔로우한 유저 목록 조회..
     public List<FollowUserResponse> getFollowings(Integer userId) {
         userRepository.findById(userId)
@@ -145,7 +160,6 @@ public class FollowService {
                 })
                 .toList();
     }
-
 
 
     // 팔로우 요청을 수락 상태로 변경..
