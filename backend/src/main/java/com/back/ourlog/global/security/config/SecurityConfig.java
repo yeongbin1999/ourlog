@@ -55,11 +55,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/comments/**").authenticated()
 
                         .requestMatchers("/api/v1/auth/logout").authenticated()
-
-                        .requestMatchers(HttpMethod.POST,"/api/v1/comments").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/comments").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/comments/**").authenticated()
-
+                                .requestMatchers(HttpMethod.GET,"/api/v1/comments/*").permitAll()
+                                .requestMatchers("/api/v1/comments/**").authenticated()
+//                        .anyRequest().authenticated()
                         .anyRequest().permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2
