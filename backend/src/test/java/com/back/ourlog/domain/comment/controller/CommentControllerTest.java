@@ -2,8 +2,6 @@ package com.back.ourlog.domain.comment.controller;
 
 import com.back.ourlog.domain.comment.entity.Comment;
 import com.back.ourlog.domain.comment.repository.CommentRepository;
-import com.back.ourlog.global.security.jwt.JwtProvider;
-import com.back.ourlog.global.security.service.CustomUserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,8 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -40,16 +34,10 @@ class CommentControllerTest {
     private ObjectMapper objectMapper;
     @Autowired
     private CommentRepository commentRepository;
-    @Autowired
-    private JwtProvider jwtProvider;
     @Test
     @DisplayName("댓글 작성")
     @WithUserDetails("user1@test.com")
     void t1() throws Exception {
-        // user1의 accessToken 생성
-        CustomUserDetails userDetails = getCurrentUserDetails();
-        String accessToken = jwtProvider.createAccessToken(userDetails);
-
         Map<String, Object> data = new HashMap<>();
         data.put("diaryId", 1);
         data.put("content", "안녕하시렵니까?");
@@ -60,7 +48,6 @@ class CommentControllerTest {
                 post("/api/v1/comments")
                         .contentType(MediaType.APPLICATION_JSON)
                         // 헤더 부분에 AccessToken 추가
-                        .header("Authorization", "Bearer " + accessToken)
                         .content(json)
         ).andDo(print());
 
@@ -76,10 +63,6 @@ class CommentControllerTest {
     @DisplayName("댓글 작성 - 댓글 내용이 없음")
     @WithUserDetails("user1@test.com")
     void t2() throws Exception {
-        // user1의 accessToken 생성
-        CustomUserDetails userDetails = getCurrentUserDetails();
-        String accessToken = jwtProvider.createAccessToken(userDetails);
-
         Map<String, Object> data = new HashMap<>();
         data.put("diaryId", 1);
         data.put("content", "");
@@ -90,7 +73,6 @@ class CommentControllerTest {
                 post("/api/v1/comments")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
-                        .header("Authorization", "Bearer " + accessToken)
         ).andDo(print());
 
         resultActions
@@ -138,10 +120,6 @@ class CommentControllerTest {
     @DisplayName("댓글 수정")
     @WithUserDetails("user1@test.com")
     void t5() throws Exception {
-        // user1의 accessToken 생성
-        CustomUserDetails userDetails = getCurrentUserDetails();
-        String accessToken = jwtProvider.createAccessToken(userDetails);
-
         Map<String, Object> data = new HashMap<>();
         data.put("id", 1);
         data.put("content", "안녕하시렵니까?");
@@ -152,7 +130,6 @@ class CommentControllerTest {
                 put("/api/v1/comments")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
-                        .header("Authorization", "Bearer " + accessToken)
         ).andDo(print());
 
         resultActions
@@ -171,10 +148,6 @@ class CommentControllerTest {
     @DisplayName("댓글 수정 - 존재하지 않는 댓글 ID")
     @WithUserDetails("user1@test.com")
     void t6() throws Exception {
-        // user1의 accessToken 생성
-        CustomUserDetails userDetails = getCurrentUserDetails();
-        String accessToken = jwtProvider.createAccessToken(userDetails);
-
         Map<String, Object> data = new HashMap<>();
         data.put("id", 1000000);
         data.put("content", "안녕하시렵니까?");
@@ -185,7 +158,6 @@ class CommentControllerTest {
                 put("/api/v1/comments")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
-                        .header("Authorization", "Bearer " + accessToken)
         ).andDo(print());
 
         resultActions
@@ -201,14 +173,9 @@ class CommentControllerTest {
     @WithUserDetails("user1@test.com")
     void t7() throws Exception {
         int id = 1;
-        // user1의 accessToken 생성
-        CustomUserDetails userDetails = getCurrentUserDetails();
-        String accessToken = jwtProvider.createAccessToken(userDetails);
 
         ResultActions resultActions = mvc.perform(
                 delete("/api/v1/comments/" + id)
-                        .header("Authorization", "Bearer " + accessToken)
-
         ).andDo(print());
 
         resultActions
@@ -228,13 +195,9 @@ class CommentControllerTest {
     @WithUserDetails("user1@test.com")
     void t8() throws Exception {
         int id = 1000000;
-        // user1의 accessToken 생성
-        CustomUserDetails userDetails = getCurrentUserDetails();
-        String accessToken = jwtProvider.createAccessToken(userDetails);
 
         ResultActions resultActions = mvc.perform(
                 delete("/api/v1/comments/" + id)
-                        .header("Authorization", "Bearer " + accessToken)
         ).andDo(print());
 
         resultActions
@@ -243,14 +206,5 @@ class CommentControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.resultCode").value("COMMENT_001"))
                 .andExpect(jsonPath("$.msg").value("존재하지 않는 댓글입니다."));
-    }
-
-    // =================== 유틸 메서드 =======================
-    private CustomUserDetails getCurrentUserDetails() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        assertNotNull(authentication, "Authentication should not be null");
-        assertTrue(authentication.getPrincipal() instanceof CustomUserDetails,
-                "Principal should be instance of CustomUserDetails");
-        return (CustomUserDetails) authentication.getPrincipal();
     }
 }
