@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -35,6 +36,7 @@ class CommentControllerTest {
     private CommentRepository commentRepository;
     @Test
     @DisplayName("댓글 작성")
+    @WithUserDetails("user1@test.com")
     void t1() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("diaryId", 1);
@@ -45,6 +47,7 @@ class CommentControllerTest {
         ResultActions resultActions = mvc.perform(
                 post("/api/v1/comments")
                         .contentType(MediaType.APPLICATION_JSON)
+                        // 헤더 부분에 AccessToken 추가
                         .content(json)
         ).andDo(print());
 
@@ -52,11 +55,13 @@ class CommentControllerTest {
                 .andExpect(handler().handlerType(CommentController.class))
                 .andExpect(handler().methodName("writeComment"))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.data.content").value("안녕하시렵니까?"));
+                .andExpect(jsonPath("$.data.content").value("안녕하시렵니까?"))
+                .andExpect(jsonPath("$.data.userId").value(1));
     }
 
     @Test
     @DisplayName("댓글 작성 - 댓글 내용이 없음")
+    @WithUserDetails("user1@test.com")
     void t2() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("diaryId", 1);
@@ -113,6 +118,7 @@ class CommentControllerTest {
 
     @Test
     @DisplayName("댓글 수정")
+    @WithUserDetails("user1@test.com")
     void t5() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("id", 1);
@@ -140,6 +146,7 @@ class CommentControllerTest {
 
     @Test
     @DisplayName("댓글 수정 - 존재하지 않는 댓글 ID")
+    @WithUserDetails("user1@test.com")
     void t6() throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("id", 1000000);
@@ -163,6 +170,7 @@ class CommentControllerTest {
 
     @Test
     @DisplayName("댓글 삭제")
+    @WithUserDetails("user1@test.com")
     void t7() throws Exception {
         int id = 1;
 
@@ -184,6 +192,7 @@ class CommentControllerTest {
 
     @Test
     @DisplayName("댓글 삭제 - 존재하지 않는 댓글 ID")
+    @WithUserDetails("user1@test.com")
     void t8() throws Exception {
         int id = 1000000;
 
