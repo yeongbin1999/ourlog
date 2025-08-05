@@ -1,74 +1,28 @@
-import axios, { AxiosRequestConfig } from 'axios';
-import { getDeviceId } from './deviceId';
+import axios from 'axios';
 
-// 인증 전용 API 기본 설정
-const authBaseURL = 'http://localhost:8080';
+/**
+ * @file auth-client.ts
+ * @description 인증 관련 API(로그인, 로그아웃 등)를 호출하기 위한 Axios 인스턴스입니다.
+ * @module lib/auth-client
+ */
 
-// 인증 전용 axios 인스턴스 생성
-const authAxiosInstance = axios.create({
-  baseURL: authBaseURL,
-  timeout: 10000,
+// API의 기본 URL을 환경 변수에서 가져오거나, 없을 경우 기본값을 사용합니다.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/';
+
+/**
+ * 인증용 Axios 인스턴스
+ *
+ * 로그인, 로그아웃, 토큰 재발급 등 인증 관련 API를 호출할 때 사용됩니다.
+ * `withCredentials: true` 옵션을 통해 요청 시 쿠키를 포함하도록 설정합니다.
+ * 이 인스턴스는 요청/응답 인터셉터를 설정하지 않아, 순수한 API 호출을 보장합니다.
+ * (예: 토큰 재발급 요청이 무한 루프에 빠지는 것을 방지)
+ */
+const authClient = axios.create({
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
-// 인증 요청 인터셉터 - 디바이스 정보 자동 추가
-authAxiosInstance.interceptors.request.use(
-  (config) => {
-    // 디바이스 ID 추가
-    const deviceId = getDeviceId();
-    config.headers['X-Device-ID'] = deviceId;
-    
-    // User-Agent 정보도 추가
-    if (typeof window !== 'undefined') {
-      config.headers['X-User-Agent'] = navigator.userAgent;
-    }
-    
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// 인증 전용 API 호출 함수들
-export const authApi = {
-  // 로그인
-  login: async (credentials: { email: string; password: string }) => {
-    return authAxiosInstance.post('/api/v1/auth/login', credentials, {
-      withCredentials: true,
-    });
-  },
-
-  // 회원가입
-  register: async (userData: { email: string; password: string; nickname: string }) => {
-    return authAxiosInstance.post('/api/v1/auth/register', userData, {
-      withCredentials: true,
-    });
-  },
-
-  // 토큰 리이슈
-  refreshToken: async () => {
-    return authAxiosInstance.post('/api/v1/auth/refresh', {}, {
-      withCredentials: true,
-    });
-  },
-
-  // 로그아웃
-  logout: async () => {
-    return authAxiosInstance.post('/api/v1/auth/logout', {}, {
-      withCredentials: true,
-    });
-  },
-
-  // 토큰 검증
-  verify: async (token: string) => {
-    return authAxiosInstance.get('/api/v1/auth/verify', {
-      headers: { 'Authorization': `Bearer ${token}` },
-      withCredentials: true,
-    });
-  },
-};
-
-export default authAxiosInstance; 
+export default authClient;

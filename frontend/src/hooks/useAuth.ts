@@ -139,7 +139,7 @@ export function useAuth(): UseAuthReturn {
     };
 
     initializeAuth();
-  }, [accessToken, refreshAccessToken, logout]);
+  }, [accessToken, refreshAccessToken, logout, verifyApi]);
 
   // 탭 간 동기화를 위한 이벤트 리스너
   useEffect(() => {

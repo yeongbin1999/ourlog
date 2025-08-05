@@ -46,7 +46,7 @@ export default function MyProfilePage() {
         };
 
         const res = await Promise.all(
-          Object.entries(endpoints).map(([_, url]) => fetch(url).then((r) => r.json()))
+          Object.values(endpoints).map((url) => fetch(url).then((r) => r.json()))
         );
 
         setCounts({

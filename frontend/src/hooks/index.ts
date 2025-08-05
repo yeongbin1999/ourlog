@@ -11,7 +11,6 @@ export { useAuth as useAuthZustand } from './useAuthZustand';
 // Zustand 스토어들 직접 export
 export { 
   useAuthStore, 
-  useUIStore, 
   useUserApiStore, 
   useDiaryApiStore, 
   useCommentApiStore, 

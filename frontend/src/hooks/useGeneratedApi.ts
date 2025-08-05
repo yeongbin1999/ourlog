@@ -12,10 +12,6 @@ import {
   LoginMutationResult,
 } from '../generated/api/api';
 import type {
-  DiaryWriteRequestDto,
-  DiaryUpdateRequestDto,
-  LoginRequest,
-  SignupRequest,
   SearchContentsParams,
 } from '../generated/model';
 

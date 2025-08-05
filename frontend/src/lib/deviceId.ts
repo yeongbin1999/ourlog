@@ -28,7 +28,6 @@ const generateDeviceId = (): string => {
 // 디바이스 ID 가져오기 (없으면 생성)
 export const getDeviceId = (): string => {
   if (typeof window === 'undefined') {
-    // 서버 사이드에서는 임시 ID 반환
     return 'server_temp_id';
   }
   
@@ -51,28 +50,4 @@ export const regenerateDeviceId = (): string => {
   const newDeviceId = generateDeviceId();
   localStorage.setItem(DEVICE_ID_KEY, newDeviceId);
   return newDeviceId;
-};
-
-// 디바이스 정보 가져오기
-export const getDeviceInfo = () => {
-  if (typeof window === 'undefined') {
-    return {
-      deviceId: 'server_temp_id',
-      userAgent: 'server',
-      screenResolution: 'unknown',
-      timeZone: 'UTC',
-      language: 'en',
-    };
-  }
-  
-  return {
-    deviceId: getDeviceId(),
-    userAgent: navigator.userAgent,
-    screenResolution: `${screen.width}x${screen.height}`,
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    language: navigator.language,
-    platform: navigator.platform,
-    cookieEnabled: navigator.cookieEnabled,
-    onLine: navigator.onLine,
-  };
 }; 

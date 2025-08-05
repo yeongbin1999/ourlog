@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useSignup } from '@/generated/api/api';
 import { useAuthStore } from '@/stores/authStore';
 import { Eye, EyeOff } from 'lucide-react';
+import { AxiosError } from 'axios';
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('');
@@ -16,7 +17,6 @@ export default function SignUpPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [nickname, setNickname] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
 
   const { mutateAsync: signupMutation } = useSignup();
@@ -30,14 +30,14 @@ export default function SignUpPage() {
     }
 
     try {
-      const response = await signupMutation({
+      await signupMutation({
         data: { email, password, nickname },
       });
       toast.success('회원가입이 완료되었습니다!', { duration: 5000 });
-      authStoreLogin(response.accessToken, response.user);
       router.push('/login');
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || '회원가입 중 오류가 발생했습니다.', { duration: 5000 });
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message?: string }>;
+      toast.error(axiosError.response?.data?.message || '회원가입 중 오류가 발생했습니다.', { duration: 5000 });
     }
   };
 

@@ -1,14 +1,17 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 import { getMe } from '@/generated/api/api';
-import axiosInstance from '@/lib/api-client';
+import { axiosInstance } from '@/lib/api-client';
 
 export interface User {
   id: string;
   email: string;
   nickname: string;
   profileImageUrl?: string;
+  bio?: string;
+  followingsCount?: number;
+  followersCount?: number;
 }
 
 interface AuthState {
@@ -17,7 +20,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  isRefreshing: boolean; // 토큰 갱신 중 상태
+  isRefreshing: boolean;
 }
 
 interface AuthActions {
@@ -34,13 +37,11 @@ interface AuthActions {
 
 type AuthStore = AuthState & AuthActions;
 
-// 전역 변수로 동시 갱신 방지용 Promise 저장
 let refreshPromise: Promise<boolean> | null = null;
 
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
-      // 초기 상태
       user: null,
       accessToken: null,
       isAuthenticated: false,
@@ -56,7 +57,7 @@ export const useAuthStore = create<AuthStore>()(
             credentials,
             {
               headers: { 'Content-Type': 'application/json' },
-              // withCredentials: true, // 임시 제거
+              withCredentials: true,
             },
           );
           const { accessToken, user } = response.data;
@@ -65,12 +66,15 @@ export const useAuthStore = create<AuthStore>()(
           if (!currentUser && accessToken) {
             try {
               const meResponse = await getMe();
-              currentUser = {
-                id: meResponse.userId?.toString() || '',
-                email: meResponse.email || '',
-                nickname: meResponse.nickname || '',
-                profileImageUrl: meResponse.profileImageUrl,
-              };
+              const meData = meResponse.data;
+              if (meData) {
+                currentUser = {
+                  id: meData.userId?.toString() || '',
+                  email: meData.email || '',
+                  nickname: meData.nickname || '',
+                  profileImageUrl: meData.profileImageUrl,
+                };
+              }
             } catch (meError) {
               console.error('Failed to fetch user profile after login:', meError);
             }
@@ -110,10 +114,11 @@ export const useAuthStore = create<AuthStore>()(
       logout: async () => {
         set({ isLoading: true });
         try {
-          await axiosInstance.post('/api/v1/auth/logout', {},
-            {
-              withCredentials: true,
-            });
+          await axiosInstance.post(
+            '/api/v1/auth/logout',
+            {},
+            { withCredentials: true },
+          );
         } catch (error) {
           console.error('Logout API error:', error);
         }
@@ -145,9 +150,7 @@ export const useAuthStore = create<AuthStore>()(
             const response = await axiosInstance.post(
               '/api/v1/auth/reissue',
               {},
-              {
-                withCredentials: true,
-              },
+              { withCredentials: true },
             );
             const { accessToken } = response.data;
             set({
@@ -202,22 +205,27 @@ export const useAuthStore = create<AuthStore>()(
             }
           }
         }
-        // 인증 상태가 복원되면 사용자 정보를 가져옵니다.
+
         if (get().isAuthenticated && !get().user) {
           try {
             const meResponse = await getMe();
-            set({ user: {
-              id: meResponse.userId?.toString() || '',
-              email: meResponse.email || '',
-              nickname: meResponse.nickname || '',
-              profileImageUrl: meResponse.profileImageUrl,
-            } });
+            const meData = meResponse.data;
+            if (meData) {
+              set({
+                user: {
+                  id: meData.userId?.toString() || '',
+                  email: meData.email || '',
+                  nickname: meData.nickname || '',
+                  profileImageUrl: meData.profileImageUrl,
+                },
+              });
+            }
           } catch (meError) {
             console.error('Failed to fetch user profile during initialization:', meError);
-            // 사용자 정보를 가져오지 못하면 로그아웃 처리 (선택 사항)
             get().logout();
           }
         }
+
         set({ isLoading: false });
       },
     }),
@@ -232,7 +240,7 @@ export const useAuthStore = create<AuthStore>()(
   ),
 );
 
-// 탭 간 동기화 이벤트 처리
+// 탭 간 동기화
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', (e) => {
     if (e.key === 'authEvent' && e.newValue) {

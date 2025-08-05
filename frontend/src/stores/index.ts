@@ -11,8 +11,7 @@ export {
   apiClient 
 } from './apiStore';
 
-// UI Store
-export { useUIStore } from './uiStore';
+
 
 // Device Store
 export { useDeviceStore } from './deviceStore';

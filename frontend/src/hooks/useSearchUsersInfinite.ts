@@ -2,15 +2,6 @@ import { useInfiniteQuery, QueryKey } from '@tanstack/react-query';
 import { searchUsers } from '../generated/api/api';
 import { SearchUsersParams, UserProfileResponse } from '../generated/model';
 
-interface SearchUsersResponseData {
-  content: UserProfileResponse[];
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  hasNext: boolean;
-}
-
 export const useSearchUsersInfinite = (params: Omit<SearchUsersParams, 'pageable'>) => {
   return useInfiniteQuery({
     queryKey: ['searchUsers', params.keyword],

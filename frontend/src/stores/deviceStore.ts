@@ -1,16 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { getDeviceId, regenerateDeviceId, getDeviceInfo } from '../lib/deviceId';
+import { regenerateDeviceId, getDeviceId } from '../lib/deviceId';
 
 interface DeviceInfo {
   deviceId: string;
-  userAgent: string;
-  screenResolution: string;
-  timeZone: string;
-  language: string;
-  platform: string;
-  cookieEnabled: boolean;
-  onLine: boolean;
 }
 
 interface DeviceState {
@@ -32,21 +25,15 @@ export const useDeviceStore = create<DeviceStore>()(
       // 초기 상태
       deviceInfo: {
         deviceId: 'temp_id',
-        userAgent: 'unknown',
-        screenResolution: 'unknown',
-        timeZone: 'UTC',
-        language: 'en',
-        platform: 'unknown',
-        cookieEnabled: false,
-        onLine: false,
       },
       isInitialized: false,
 
       // 디바이스 초기화
+      // 디바이스 초기화
       initializeDevice: () => {
-        const deviceInfo = getDeviceInfo();
+        const deviceId = getDeviceId();
         set({
-          deviceInfo,
+          deviceInfo: { deviceId },
           isInitialized: true,
         });
       },
@@ -54,27 +41,23 @@ export const useDeviceStore = create<DeviceStore>()(
       // 디바이스 ID 재생성
       regenerateDeviceId: () => {
         const newDeviceId = regenerateDeviceId();
-        const currentInfo = get().deviceInfo;
         set({
-          deviceInfo: {
-            ...currentInfo,
-            deviceId: newDeviceId,
-          },
+          deviceInfo: { deviceId: newDeviceId },
         });
       },
 
       // 디바이스 정보 업데이트
       updateDeviceInfo: () => {
-        const deviceInfo = getDeviceInfo();
+        const deviceId = getDeviceId();
         set({
-          deviceInfo,
+          deviceInfo: { deviceId },
         });
       },
     }),
     {
       name: 'device-store',
       partialize: (state) => ({
-        deviceInfo: state.deviceInfo,
+        deviceInfo: { deviceId: state.deviceInfo.deviceId },
         isInitialized: state.isInitialized,
       }),
     }
