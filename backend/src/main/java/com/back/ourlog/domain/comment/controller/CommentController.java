@@ -23,11 +23,13 @@ import java.util.List;
 public class CommentController {
     private final CommentService commentService;
     private final JwtProvider jwtProvider;
+
     @PostMapping
     @Operation(summary = "댓글 등록")
     public ResponseEntity<RsData<CommentResponseDto>> writeComment
             (@RequestHeader String authorization,
              @RequestBody @Valid CommentRequestDto req) {
+
         String accessToken = authorization.replace("Bearer ", "");
 
         int userId = Integer.parseInt(jwtProvider.getUserIdFromToken(accessToken));
@@ -49,8 +51,8 @@ public class CommentController {
 
     @PutMapping()
     @Operation(summary = "댓글 수정")
-    public ResponseEntity<RsData<Void>> updateComment
-            (@RequestBody CommentUpdateRequestDto req) {
+    public ResponseEntity<RsData<Void>> updateComment(
+            @RequestBody CommentUpdateRequestDto req) {
         commentService.update(req.getId(), req.getContent());
 
         return ResponseEntity.status(HttpStatus.OK)
