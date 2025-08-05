@@ -5,12 +5,12 @@
  * 팀12 2차 프로젝트 API 서버 문서입니다.
  * OpenAPI spec version: beta
  */
-import type { TagResponse } from './tagResponse';
+import type { TagResponse } from "./tagResponse";
 
 export interface RsDataListTagResponse {
   resultCode?: string;
   msg?: string;
   data?: TagResponse[];
-  fail?: boolean;
   success?: boolean;
+  fail?: boolean;
 }

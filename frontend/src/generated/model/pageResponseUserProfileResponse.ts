@@ -5,7 +5,7 @@
  * 팀12 2차 프로젝트 API 서버 문서입니다.
  * OpenAPI spec version: beta
  */
-import type { UserProfileResponse } from './userProfileResponse';
+import type { UserProfileResponse } from "./userProfileResponse";
 
 export interface PageResponseUserProfileResponse {
   content?: UserProfileResponse[];

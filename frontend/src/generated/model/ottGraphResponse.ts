@@ -5,8 +5,8 @@
  * 팀12 2차 프로젝트 API 서버 문서입니다.
  * OpenAPI spec version: beta
  */
-import type { OttLineGraphDto } from './ottLineGraphDto';
-import type { OttRankDto } from './ottRankDto';
+import type { OttLineGraphDto } from "./ottLineGraphDto";
+import type { OttRankDto } from "./ottRankDto";
 
 export interface OttGraphResponse {
   ottLineGraph?: OttLineGraphDto[];

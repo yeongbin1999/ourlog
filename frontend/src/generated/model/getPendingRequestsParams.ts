@@ -7,5 +7,5 @@
  */
 
 export type GetPendingRequestsParams = {
-userId: number;
+  userId: number;
 };

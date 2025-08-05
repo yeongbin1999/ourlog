@@ -7,5 +7,5 @@
  */
 
 export type GetFollowingsParams = {
-userId: number;
+  userId: number;
 };

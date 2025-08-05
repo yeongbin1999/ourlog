@@ -7,5 +7,5 @@
  */
 
 export type GetSentRequestsParams = {
-userId: number;
+  userId: number;
 };

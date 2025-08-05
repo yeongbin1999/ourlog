@@ -7,5 +7,5 @@
  */
 
 export type UnfollowUserParams = {
-myUserId: number;
+  myUserId: number;
 };

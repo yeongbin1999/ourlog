@@ -25,7 +25,7 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      toast.error('비밀번호가 일치하지 않습니다.');
+      toast.error('비밀번호가 일치하지 않습니다.', { duration: 5000 });
       return;
     }
 
@@ -33,11 +33,11 @@ export default function SignUpPage() {
       const response = await signupMutation({
         data: { email, password, nickname },
       });
+      toast.success('회원가입이 완료되었습니다!', { duration: 5000 });
       authStoreLogin(response.accessToken, response.user);
-      toast.success('회원가입이 완료되었습니다!');
       router.push('/login');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || '회원가입 중 오류가 발생했습니다.');
+      toast.error(error.response?.data?.message || '회원가입 중 오류가 발생했습니다.', { duration: 5000 });
     }
   };
 

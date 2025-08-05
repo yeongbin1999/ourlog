@@ -5,12 +5,12 @@
  * 팀12 2차 프로젝트 API 서버 문서입니다.
  * OpenAPI spec version: beta
  */
-import type { ContentSearchResultDto } from './contentSearchResultDto';
+import type { ContentSearchResultDto } from "./contentSearchResultDto";
 
 export interface RsDataListContentSearchResultDto {
   resultCode?: string;
   msg?: string;
   data?: ContentSearchResultDto[];
-  fail?: boolean;
   success?: boolean;
+  fail?: boolean;
 }

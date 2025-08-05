@@ -6,12 +6,12 @@
  * OpenAPI spec version: beta
  */
 
-export type ContentSearchResultDtoType = typeof ContentSearchResultDtoType[keyof typeof ContentSearchResultDtoType];
-
+export type ContentSearchResultDtoType =
+  (typeof ContentSearchResultDtoType)[keyof typeof ContentSearchResultDtoType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ContentSearchResultDtoType = {
-  MOVIE: 'MOVIE',
-  BOOK: 'BOOK',
-  MUSIC: 'MUSIC',
+  MOVIE: "MOVIE",
+  BOOK: "BOOK",
+  MUSIC: "MUSIC",
 } as const;

@@ -5,7 +5,7 @@
  * 팀12 2차 프로젝트 API 서버 문서입니다.
  * OpenAPI spec version: beta
  */
-import type { ContentSearchResultDtoType } from './contentSearchResultDtoType';
+import type { ContentSearchResultDtoType } from "./contentSearchResultDtoType";
 
 export interface ContentSearchResultDto {
   externalId?: string;
@@ -16,5 +16,5 @@ export interface ContentSearchResultDto {
   releasedAt?: string;
   type?: ContentSearchResultDtoType;
   genres?: string[];
-  '@class': string;
+  "@class": string;
 }

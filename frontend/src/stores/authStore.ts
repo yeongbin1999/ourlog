@@ -56,7 +56,7 @@ export const useAuthStore = create<AuthStore>()(
             credentials,
             {
               headers: { 'Content-Type': 'application/json' },
-              withCredentials: true,
+              // withCredentials: true, // 임시 제거
             },
           );
           const { accessToken, user } = response.data;
@@ -143,7 +143,7 @@ export const useAuthStore = create<AuthStore>()(
         refreshPromise = (async () => {
           try {
             const response = await axiosInstance.post(
-              '/api/v1/auth/refresh',
+              '/api/v1/auth/reissue',
               {},
               {
                 withCredentials: true,
@@ -200,6 +200,22 @@ export const useAuthStore = create<AuthStore>()(
             if (!refreshed) {
               await get().logout();
             }
+          }
+        }
+        // 인증 상태가 복원되면 사용자 정보를 가져옵니다.
+        if (get().isAuthenticated && !get().user) {
+          try {
+            const meResponse = await getMe();
+            set({ user: {
+              id: meResponse.userId?.toString() || '',
+              email: meResponse.email || '',
+              nickname: meResponse.nickname || '',
+              profileImageUrl: meResponse.profileImageUrl,
+            } });
+          } catch (meError) {
+            console.error('Failed to fetch user profile during initialization:', meError);
+            // 사용자 정보를 가져오지 못하면 로그아웃 처리 (선택 사항)
+            get().logout();
           }
         }
         set({ isLoading: false });

@@ -5,8 +5,8 @@
  * 팀12 2차 프로젝트 API 서버 문서입니다.
  * OpenAPI spec version: beta
  */
-import type { GetOttGraphPeriod } from './getOttGraphPeriod';
+import type { GetOttGraphPeriod } from "./getOttGraphPeriod";
 
 export type GetOttGraphParams = {
-period: GetOttGraphPeriod;
+  period: GetOttGraphPeriod;
 };

@@ -5,9 +5,9 @@
  * 팀12 2차 프로젝트 API 서버 문서입니다.
  * OpenAPI spec version: beta
  */
-import type { SearchContentsType } from './searchContentsType';
+import type { SearchContentsType } from "./searchContentsType";
 
 export type SearchContentsParams = {
-type: SearchContentsType;
-title: string;
+  type: SearchContentsType;
+  title: string;
 };

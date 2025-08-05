@@ -5,8 +5,8 @@
  * 팀12 2차 프로젝트 API 서버 문서입니다.
  * OpenAPI spec version: beta
  */
-import type { GetEmotionGraphPeriod } from './getEmotionGraphPeriod';
+import type { GetEmotionGraphPeriod } from "./getEmotionGraphPeriod";
 
 export type GetEmotionGraphParams = {
-period: GetEmotionGraphPeriod;
+  period: GetEmotionGraphPeriod;
 };

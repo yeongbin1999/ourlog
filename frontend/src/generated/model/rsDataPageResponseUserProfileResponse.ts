@@ -5,12 +5,12 @@
  * 팀12 2차 프로젝트 API 서버 문서입니다.
  * OpenAPI spec version: beta
  */
-import type { PageResponseUserProfileResponse } from './pageResponseUserProfileResponse';
+import type { PageResponseUserProfileResponse } from "./pageResponseUserProfileResponse";
 
 export interface RsDataPageResponseUserProfileResponse {
   resultCode?: string;
   msg?: string;
   data?: PageResponseUserProfileResponse;
-  fail?: boolean;
   success?: boolean;
+  fail?: boolean;
 }

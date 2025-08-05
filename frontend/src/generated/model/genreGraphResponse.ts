@@ -5,8 +5,8 @@
  * 팀12 2차 프로젝트 API 서버 문서입니다.
  * OpenAPI spec version: beta
  */
-import type { GenreLineGraphDto } from './genreLineGraphDto';
-import type { GenreRankDto } from './genreRankDto';
+import type { GenreLineGraphDto } from "./genreLineGraphDto";
+import type { GenreRankDto } from "./genreRankDto";
 
 export interface GenreGraphResponse {
   genreLineGraph?: GenreLineGraphDto[];

@@ -5,12 +5,12 @@
  * 팀12 2차 프로젝트 API 서버 문서입니다.
  * OpenAPI spec version: beta
  */
-import type { LoginResponse } from './loginResponse';
+import type { LoginResponse } from "./loginResponse";
 
 export interface RsDataLoginResponse {
   resultCode?: string;
   msg?: string;
   data?: LoginResponse;
-  fail?: boolean;
   success?: boolean;
+  fail?: boolean;
 }

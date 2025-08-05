@@ -6,12 +6,12 @@
  * OpenAPI spec version: beta
  */
 
-export type ContentResponseDtoType = typeof ContentResponseDtoType[keyof typeof ContentResponseDtoType];
-
+export type ContentResponseDtoType =
+  (typeof ContentResponseDtoType)[keyof typeof ContentResponseDtoType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ContentResponseDtoType = {
-  MOVIE: 'MOVIE',
-  BOOK: 'BOOK',
-  MUSIC: 'MUSIC',
+  MOVIE: "MOVIE",
+  BOOK: "BOOK",
+  MUSIC: "MUSIC",
 } as const;

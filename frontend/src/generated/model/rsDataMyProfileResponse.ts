@@ -5,12 +5,12 @@
  * 팀12 2차 프로젝트 API 서버 문서입니다.
  * OpenAPI spec version: beta
  */
-import type { MyProfileResponse } from './myProfileResponse';
+import type { MyProfileResponse } from "./myProfileResponse";
 
 export interface RsDataMyProfileResponse {
   resultCode?: string;
   msg?: string;
   data?: MyProfileResponse;
-  fail?: boolean;
   success?: boolean;
+  fail?: boolean;
 }

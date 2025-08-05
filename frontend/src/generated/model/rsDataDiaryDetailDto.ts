@@ -5,12 +5,12 @@
  * 팀12 2차 프로젝트 API 서버 문서입니다.
  * OpenAPI spec version: beta
  */
-import type { DiaryDetailDto } from './diaryDetailDto';
+import type { DiaryDetailDto } from "./diaryDetailDto";
 
 export interface RsDataDiaryDetailDto {
   resultCode?: string;
   msg?: string;
   data?: DiaryDetailDto;
-  fail?: boolean;
   success?: boolean;
+  fail?: boolean;
 }

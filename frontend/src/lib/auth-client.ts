@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { getDeviceId } from './deviceId';
 
 // 인증 전용 API 기본 설정
-const authBaseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const authBaseURL = 'http://localhost:8080';
 
 // 인증 전용 axios 인스턴스 생성
 const authAxiosInstance = axios.create({

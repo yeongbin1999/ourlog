@@ -6,12 +6,12 @@
  * OpenAPI spec version: beta
  */
 
-export type DiaryWriteRequestDtoType = typeof DiaryWriteRequestDtoType[keyof typeof DiaryWriteRequestDtoType];
-
+export type DiaryWriteRequestDtoType =
+  (typeof DiaryWriteRequestDtoType)[keyof typeof DiaryWriteRequestDtoType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DiaryWriteRequestDtoType = {
-  MOVIE: 'MOVIE',
-  BOOK: 'BOOK',
-  MUSIC: 'MUSIC',
+  MOVIE: "MOVIE",
+  BOOK: "BOOK",
+  MUSIC: "MUSIC",
 } as const;

@@ -5,6 +5,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import QueryProvider from "@/components/QueryProvider";
+import { Toaster } from 'sonner';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,6 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('http://localhost:8080'),
   title: "OURLOG",
   description: "OURLOG is a platform for writing and sharing your thoughts on movies, dramas, books, and music. Create meaningful diary entries about your cultural experiences and connect with others who share your interests.",
   icons: {
@@ -49,6 +51,7 @@ export default function RootLayout({
           <Header />
           <main className="min-h-screen pt-24 px-4 pb-8">{children}</main>
           <Footer />
+          <Toaster position="top-center" />
         </QueryProvider>
       </body>
     </html>

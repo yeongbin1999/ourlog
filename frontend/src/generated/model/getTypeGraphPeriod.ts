@@ -6,14 +6,14 @@
  * OpenAPI spec version: beta
  */
 
-export type GetTypeGraphPeriod = typeof GetTypeGraphPeriod[keyof typeof GetTypeGraphPeriod];
-
+export type GetTypeGraphPeriod =
+  (typeof GetTypeGraphPeriod)[keyof typeof GetTypeGraphPeriod];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const GetTypeGraphPeriod = {
-  ALL: 'ALL',
-  THIS_YEAR: 'THIS_YEAR',
-  LAST_6_MONTHS: 'LAST_6_MONTHS',
-  LAST_MONTH: 'LAST_MONTH',
-  LAST_WEEK: 'LAST_WEEK',
+  ALL: "ALL",
+  THIS_YEAR: "THIS_YEAR",
+  LAST_6_MONTHS: "LAST_6_MONTHS",
+  LAST_MONTH: "LAST_MONTH",
+  LAST_WEEK: "LAST_WEEK",
 } as const;

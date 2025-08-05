@@ -6,14 +6,14 @@
  * OpenAPI spec version: beta
  */
 
-export type ReportRequestType = typeof ReportRequestType[keyof typeof ReportRequestType];
-
+export type ReportRequestType =
+  (typeof ReportRequestType)[keyof typeof ReportRequestType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ReportRequestType = {
-  SPAM: 'SPAM',
-  INAPPROPRIATE: 'INAPPROPRIATE',
-  HARASSMENT: 'HARASSMENT',
-  HATE_SPEECH: 'HATE_SPEECH',
-  ETC: 'ETC',
+  SPAM: "SPAM",
+  INAPPROPRIATE: "INAPPROPRIATE",
+  HARASSMENT: "HARASSMENT",
+  HATE_SPEECH: "HATE_SPEECH",
+  ETC: "ETC",
 } as const;

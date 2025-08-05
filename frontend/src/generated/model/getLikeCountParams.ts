@@ -7,5 +7,5 @@
  */
 
 export type GetLikeCountParams = {
-diaryId: number;
+  diaryId: number;
 };

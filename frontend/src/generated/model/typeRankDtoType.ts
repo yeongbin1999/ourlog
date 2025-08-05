@@ -6,12 +6,12 @@
  * OpenAPI spec version: beta
  */
 
-export type TypeRankDtoType = typeof TypeRankDtoType[keyof typeof TypeRankDtoType];
-
+export type TypeRankDtoType =
+  (typeof TypeRankDtoType)[keyof typeof TypeRankDtoType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const TypeRankDtoType = {
-  MOVIE: 'MOVIE',
-  BOOK: 'BOOK',
-  MUSIC: 'MUSIC',
+  MOVIE: "MOVIE",
+  BOOK: "BOOK",
+  MUSIC: "MUSIC",
 } as const;

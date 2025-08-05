@@ -6,14 +6,14 @@
  * OpenAPI spec version: beta
  */
 
-export type GetEmotionGraphPeriod = typeof GetEmotionGraphPeriod[keyof typeof GetEmotionGraphPeriod];
-
+export type GetEmotionGraphPeriod =
+  (typeof GetEmotionGraphPeriod)[keyof typeof GetEmotionGraphPeriod];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const GetEmotionGraphPeriod = {
-  ALL: 'ALL',
-  THIS_YEAR: 'THIS_YEAR',
-  LAST_6_MONTHS: 'LAST_6_MONTHS',
-  LAST_MONTH: 'LAST_MONTH',
-  LAST_WEEK: 'LAST_WEEK',
+  ALL: "ALL",
+  THIS_YEAR: "THIS_YEAR",
+  LAST_6_MONTHS: "LAST_6_MONTHS",
+  LAST_MONTH: "LAST_MONTH",
+  LAST_WEEK: "LAST_WEEK",
 } as const;

@@ -5,9 +5,9 @@
  * 팀12 2차 프로젝트 API 서버 문서입니다.
  * OpenAPI spec version: beta
  */
-import type { Pageable } from './pageable';
+import type { Pageable } from "./pageable";
 
 export type SearchUsersParams = {
-keyword: string;
-pageable: Pageable;
+  keyword: string;
+  pageable: Pageable;
 };

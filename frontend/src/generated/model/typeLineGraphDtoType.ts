@@ -6,12 +6,12 @@
  * OpenAPI spec version: beta
  */
 
-export type TypeLineGraphDtoType = typeof TypeLineGraphDtoType[keyof typeof TypeLineGraphDtoType];
-
+export type TypeLineGraphDtoType =
+  (typeof TypeLineGraphDtoType)[keyof typeof TypeLineGraphDtoType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const TypeLineGraphDtoType = {
-  MOVIE: 'MOVIE',
-  BOOK: 'BOOK',
-  MUSIC: 'MUSIC',
+  MOVIE: "MOVIE",
+  BOOK: "BOOK",
+  MUSIC: "MUSIC",
 } as const;

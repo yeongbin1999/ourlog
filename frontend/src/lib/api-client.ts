@@ -3,7 +3,7 @@ import { useAuthStore } from '../stores';
 import { getDeviceId } from './deviceId';
 
 // API 기본 설정
-const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const baseURL = 'http://localhost:8080';
 
 // axios 인스턴스 생성
 const axiosInstance = axios.create({
@@ -12,6 +12,7 @@ const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 // 요청 인터셉터
@@ -24,9 +25,9 @@ axiosInstance.interceptors.request.use(
     const deviceId = getDeviceId();
     config.headers['X-Device-ID'] = deviceId;
     
-    if (typeof window !== 'undefined') {
-      config.headers['X-User-Agent'] = navigator.userAgent;
-    }
+    // if (typeof window !== 'undefined') {
+    //   config.headers['X-User-Agent'] = navigator.userAgent;
+    // }
     
     return config;
   },
@@ -39,9 +40,28 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
+    const originalRequest = error.config;
+
+    // 401 에러이고, 토큰 재발급 요청이 아니며, 이미 재시도한 요청이 아닌 경우
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true; // 재시도 플래그 설정
+      try {
+        const refreshed = await useAuthStore.getState().refreshAccessToken();
+        if (refreshed) {
+          // 새로운 액세스 토큰으로 원래 요청의 Authorization 헤더 업데이트
+          originalRequest.headers.Authorization = `Bearer ${useAuthStore.getState().accessToken}`;
+          return axiosInstance(originalRequest); // 원래 요청 재시도
+        }
+      } catch (refreshError) {
+        // 토큰 재발급 실패 시 로그아웃
+        useAuthStore.getState().logout();
+        return Promise.reject(refreshError);
+      }
+    }
+
+    // 그 외의 401 에러 또는 다른 에러는 그대로 반환
     if (error.response?.status === 401) {
-      // 토큰 만료 시 자동 로그아웃
-      useAuthStore.getState().logout();
+      useAuthStore.getState().logout(); // 재시도 불가능한 401은 로그아웃
     }
     return Promise.reject(error);
   }

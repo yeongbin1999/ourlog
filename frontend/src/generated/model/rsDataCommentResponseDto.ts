@@ -5,12 +5,12 @@
  * 팀12 2차 프로젝트 API 서버 문서입니다.
  * OpenAPI spec version: beta
  */
-import type { CommentResponseDto } from './commentResponseDto';
+import type { CommentResponseDto } from "./commentResponseDto";
 
 export interface RsDataCommentResponseDto {
   resultCode?: string;
   msg?: string;
   data?: CommentResponseDto;
-  fail?: boolean;
   success?: boolean;
+  fail?: boolean;
 }

@@ -25,10 +25,10 @@ export default function LoginPage() {
         data: { email, password },
       });
       authStoreLogin(response.accessToken, response.user);
-      toast.success('로그인 성공!');
+      toast.success('로그인 성공!', { duration: 5000 });
       router.push('/');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || '로그인 중 오류가 발생했습니다.');
+      toast.error(error.response?.data?.message || '로그인 중 오류가 발생했습니다.', { duration: 5000 });
     }
   };
 

@@ -7,5 +7,5 @@
  */
 
 export type FollowUserParams = {
-followerId: number;
+  followerId: number;
 };
