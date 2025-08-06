@@ -10,6 +10,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class DiaryDetailDto implements Serializable {
+    private Integer userId;
+    private boolean isPublic;
     private String title;
     private float rating;
     private String contentText;
@@ -18,6 +20,8 @@ public class DiaryDetailDto implements Serializable {
     private List<String> ottNames;
 
     public DiaryDetailDto(Diary diary, List<String> tagNames, List<String> genreNames, List<String> ottNames) {
+        this.userId = diary.getUser().getId();
+        this.isPublic = diary.getIsPublic();
         this.title = diary.getTitle();
         this.rating = diary.getRating();
         this.contentText = diary.getContentText();
