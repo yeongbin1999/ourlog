@@ -8,6 +8,7 @@ import DiaryInfo from "./components/DiaryInfo";
 import CommentForm from "./components/CommentForm";
 import CommentInfo from "./components/CommentInfo";
 import ContentInfo from "./components/ContentInfo";
+import { axiosInstance } from "@/lib/api-client";
 
 export default function Page() {
   const [diary, setDiary] = useState<Diary | null>(null);
@@ -19,27 +20,20 @@ export default function Page() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // fetchData 함수 - 리팩터링 버전
   const fetchData = useCallback(async () => {
     if (!diaryId) return;
     try {
-      const [diaryRes, commentsRes, contentRes] = await Promise.all([
-        fetch(`http://localhost:8080/api/v1/diaries/${diaryId}`),
-        fetch(`http://localhost:8080/api/v1/comments/${diaryId}`),
-        fetch(`http://localhost:8080/api/v1/contents/${diaryId}`),
+      const diaryRes = await axiosInstance.get(`/api/v1/diaries/${diaryId}`);
+      const diaryData = diaryRes.data.data;
+      setDiary(diaryData);
+
+      const [commentsRes, contentRes] = await Promise.all([
+        axiosInstance.get(`/api/v1/comments/${diaryId}`),
+        axiosInstance.get(`/api/v1/contents/${diaryId}`),
       ]);
 
-      if (!diaryRes.ok || !commentsRes.ok || !contentRes.ok) {
-        throw new Error("데이터 로딩 실패");
-      }
-
-      const diaryData = await diaryRes.json();
-      const commentsData = await commentsRes.json();
-      const contentData = await contentRes.json();
-
-      setDiary(diaryData.data);
-      setComments(commentsData.data);
-      setContent(contentData.data);
+      setComments(commentsRes.data.data);
+      setContent(contentRes.data.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -47,14 +41,12 @@ export default function Page() {
     }
   }, [diaryId]);
 
-  // 최초 & diaryId 변경 시 로딩
   useEffect(() => {
     if (!diaryId) return;
     setLoading(true);
     fetchData();
   }, [diaryId, fetchData]);
 
-  // refresh 파라미터 처리
   useEffect(() => {
     const shouldRefresh = searchParams.get("refresh") === "1";
     if (shouldRefresh) {
@@ -72,17 +64,13 @@ export default function Page() {
   };
 
   const handleDelete = async () => {
+    console.log("삭제 버튼 클릭됨, diaryId =", diaryId);
     const confirmed = confirm("정말 삭제하시겠습니까?");
     if (!confirmed) return;
-
+    console.log("삭제 요청 보냄");
+    
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/diaries/${diaryId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error("삭제 실패");
-
+      await axiosInstance.delete(`/api/v1/diaries/${diaryId}`);
       alert("삭제 완료!");
       router.push("/");
     } catch (err) {
@@ -90,6 +78,7 @@ export default function Page() {
       alert("삭제 중 오류 발생");
     }
   };
+  
 
   if (loading) {
     return (
@@ -125,10 +114,7 @@ export default function Page() {
   return (
     <main className="bg-gray-50 min-h-screen py-8 lg:py-12">
       <div className="max-w-5xl mx-auto px-4 lg:px-6 space-y-8">
-        {/* 제목 */}
         <DiaryTitle title={diary.title} />
-
-        {/* 콘텐츠 정보 */}
         {content && (
           <ContentInfo
             content={content}
@@ -136,8 +122,6 @@ export default function Page() {
             ottNames={diary.ottNames}
           />
         )}
-
-        {/* 일기 정보 */}
         <DiaryInfo
           rating={diary.rating}
           contentText={diary.contentText}
@@ -145,8 +129,6 @@ export default function Page() {
           onEdit={() => router.push(`/diaries/${diaryId}/edit`)}
           onDelete={handleDelete}
         />
-
-        {/* 댓글 섹션 */}
         <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden">
           <div className="p-8">
             <div className="flex items-center gap-3 mb-8">
@@ -158,8 +140,6 @@ export default function Page() {
             <CommentInfo comments={comments} setComments={setComments} />
           </div>
         </div>
-
-        {/* 댓글 작성 폼 */}
         <CommentForm diaryId={Number(diaryId)} onCommentAdd={handleCommentAdd} />
       </div>
     </main>

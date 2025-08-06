@@ -6,6 +6,7 @@ import com.back.ourlog.global.security.service.CustomUserDetails;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -42,6 +43,18 @@ public class Rq {
         return Optional.ofNullable(req.getHeader(name))
                 .filter(header -> !header.isBlank())
                 .orElse(defaultValue);
+    }
+
+    public void setMockUser(User user) {
+        CustomUserDetails userDetails = new CustomUserDetails(user);
+
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities()
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
 //    public void setHeader(String name, String value) {

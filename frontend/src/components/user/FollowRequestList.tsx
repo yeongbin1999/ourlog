@@ -25,7 +25,7 @@ export default function FollowRequestList({ myUserId }: Props) {
 
   const fetchRequests = async () => {
     try {
-      const res = await axios.get(`/api/v1/follows/requests?userId=${myUserId}`);
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/requests?userId=${myUserId}`);
       setRequests(res.data);
     } catch (err) {
       console.error('받은 요청 불러오기 실패', err);

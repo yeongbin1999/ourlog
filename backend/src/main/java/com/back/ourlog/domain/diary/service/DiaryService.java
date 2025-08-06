@@ -120,19 +120,24 @@ public class DiaryService {
     public DiaryDetailDto getDiaryDetail(Integer diaryId) {
         String cacheKey = CACHE_KEY_PREFIX + diaryId;
 
-        // 다이어리 조회
-        Diary diary;
+        DiaryDetailDto diaryDetailDto;
+
         if (Arrays.asList(env.getActiveProfiles()).contains("test")) {
-            diary = diaryRepository.findById(diaryId)
+            // 테스트 환경은 캐시 안 씀
+            Diary diary = diaryRepository.findById(diaryId)
                     .orElseThrow(DiaryNotFoundException::new);
+            diaryDetailDto = DiaryDetailDto.of(diary);
         } else {
             Object cached = objectRedisTemplate.opsForValue().get(cacheKey);
             if (cached != null) {
-                diary = objectMapper.convertValue(cached, Diary.class);
+                // 캐시에서 DTO로 바로 변환
+                diaryDetailDto = objectMapper.convertValue(cached, DiaryDetailDto.class);
             } else {
-                diary = diaryRepository.findById(diaryId)
+                // DB 조회 후 DTO 생성
+                Diary diary = diaryRepository.findById(diaryId)
                         .orElseThrow(DiaryNotFoundException::new);
-                objectRedisTemplate.opsForValue().set(cacheKey, DiaryDetailDto.of(diary));
+                diaryDetailDto = DiaryDetailDto.of(diary);
+                objectRedisTemplate.opsForValue().set(cacheKey, diaryDetailDto);
             }
         }
 
@@ -143,25 +148,32 @@ public class DiaryService {
         } catch (Exception ignored) {
         }
 
-        if (!diary.getIsPublic() &&
-                (currentUser == null || !diary.getUser().getId().equals(currentUser.getId()))) {
+        if (!diaryDetailDto.isPublic() &&
+                (currentUser == null || !diaryDetailDto.getUserId().equals(currentUser.getId()))) {
             throw new CustomException(ErrorCode.AUTH_FORBIDDEN);
         }
 
-        return DiaryDetailDto.of(diary);
+        return diaryDetailDto;
     }
 
     @Transactional
-    @CacheEvict(value = "diaryDetail", key = "#diaryId")
     public void delete(int diaryId, User user) {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
 
-        // 작성자 검증
         if (!diary.getUser().getId().equals(user.getId())) {
             throw new CustomException(ErrorCode.AUTH_FORBIDDEN);
         }
 
+        diary.getDiaryTags().size();
+        diary.getDiaryGenres().size();
+        diary.getDiaryOtts().size();
+        diary.getComments().size();
+        diary.getLikes().size();
+
         diaryRepository.delete(diary);
+
+        objectRedisTemplate.delete(CACHE_KEY_PREFIX + diaryId);
     }
+
 }

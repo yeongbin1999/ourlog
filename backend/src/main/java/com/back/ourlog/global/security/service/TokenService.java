@@ -27,6 +27,17 @@ public class TokenService {
         return new TokenDto(accessToken, refreshToken, jwtProvider.getRefreshTokenExpiration());
     }
 
+    public TokenDto issueTokens(Long userId, String deviceId) {
+        // Assuming you can load CustomUserDetails from userId or create a minimal one for token generation
+        CustomUserDetails userDetails = customUserDetailsService.loadUserById(userId.toString());
+        String accessToken = jwtProvider.createAccessToken(userDetails);
+        String refreshToken = jwtProvider.createRefreshToken(userDetails);
+
+        refreshTokenRepository.save(userId.toString(), deviceId, refreshToken, jwtProvider.getRefreshTokenExpiration());
+
+        return new TokenDto(accessToken, refreshToken, jwtProvider.getRefreshTokenExpiration());
+    }
+
     public TokenDto reIssueTokens(String presentedRefreshToken, String deviceId) {
         if (!jwtProvider.validateToken(presentedRefreshToken)) {
             throw new CustomException(ErrorCode.AUTH_EXPIRED_TOKEN);

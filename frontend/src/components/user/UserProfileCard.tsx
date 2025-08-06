@@ -49,7 +49,7 @@ export default function UserProfileCard({
   // 프로필 데이터 로드..
   useEffect(() => {
     axios
-      .get(`/api/v1/users/${userId}`)
+      .get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/${userId}`)
       .then((res) => setProfile(res.data))
       .catch(() => setError('존재하지 않는 사용자입니다.'));
   }, [userId]);
@@ -58,7 +58,7 @@ export default function UserProfileCard({
   const fetchFollowingStatus = async () => {
     if (!myUserId) return;
     try {
-      const res = await axios.get(`/api/v1/follows/followings?userId=${myUserId}`);
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/followings?userId=${myUserId}`);
       const followingList = res.data;
       const isMeFollowing = followingList.some(
         (user: FollowUser) => user.userId === Number(userId)
@@ -87,7 +87,7 @@ export default function UserProfileCard({
     try {
       // 조건에 따라 param 이름만 다르게 처리
       const paramKey = isFollowing ? 'myUserId' : 'followerId';
-      const url = `/api/v1/follows/${userId}?${paramKey}=${myUserId}`;
+      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/${userId}?${paramKey}=${myUserId}`;
       const method = isFollowing ? 'DELETE' : 'POST';
 
       await fetch(url, { method });
@@ -112,7 +112,7 @@ export default function UserProfileCard({
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/v1/follows/${followId}/accept`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/${followId}/accept`, {
         method: 'POST',
       });
 
@@ -135,7 +135,7 @@ export default function UserProfileCard({
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/v1/follows/${followId}/reject`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/${followId}/reject`, {
         method: 'DELETE',
       });
 
