@@ -3,11 +3,8 @@ export { useAuthStore } from './authStore';
 
 // API Store
 export { 
-  useUserApiStore, 
-  useDiaryApiStore, 
-  useCommentApiStore, 
-  useStatisticsApiStore,
   apiClient 
+  createApiStore
 } from './apiStore';
 
 

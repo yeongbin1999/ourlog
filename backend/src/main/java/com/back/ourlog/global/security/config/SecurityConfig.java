@@ -59,19 +59,18 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers("/api/v1/auth/logout").authenticated()
 
-                        // 다이어리 조회는 전체 공개
-                        .requestMatchers(HttpMethod.GET, "/api/v1/diaries/**").permitAll()
+                        // 컨텐츠
+                        .requestMatchers("api/v1/contents/**").permitAll()
 
-                        // 다이어리 작성/수정/삭제는 USER만
+                        // 다이어리
+                        .requestMatchers(HttpMethod.GET, "/api/v1/diaries/**").permitAll()
                         .requestMatchers("/api/v1/diaries/**").hasRole("USER")
 
-                        // 댓글 조회는 전체 공개
+                        // 댓글
                         .requestMatchers(HttpMethod.GET, "/api/v1/comments/*").permitAll()
-
-                        // 댓글 작성/삭제는 로그인한 사용자만
                         .requestMatchers("/api/v1/comments/**").authenticated()
 
-                        // 그 외 모든 요청은 인증 필요
+                        // 그 외 모든 요청
                         .anyRequest().authenticated()
                 )
 

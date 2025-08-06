@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { useAuthStore } from './authStore';
 
-// 제네릭 타입을 명확하게 하고, 기본값을 unknown으로 설정
 interface ApiState<T = unknown> {
   data: T | null;
   loading: boolean;
@@ -34,7 +33,7 @@ export const createApiStore = <T = unknown>() => {
           throw new Error('API config is required');
         }
 
-        const response: AxiosResponse<T> = await apiClient(config); // 수정: 전역 apiClient 사용
+        const response: AxiosResponse<T> = await apiClient(config);
 
         set({
           data: response.data,
@@ -71,13 +70,6 @@ export const createApiStore = <T = unknown>() => {
     setError: (error) => set({ error }),
   }));
 };
-
-// 자주 사용하는 API 스토어들 미리 생성 (타입을 unknown으로 유지)
-export const useUserApiStore = createApiStore<unknown>();
-export const useDiaryApiStore = createApiStore<unknown>();
-export const useCommentApiStore = createApiStore<unknown>();
-export const useStatisticsApiStore = createApiStore<unknown>();
-
 
 // 전역 API 설정
 export const apiClient = axios.create({
