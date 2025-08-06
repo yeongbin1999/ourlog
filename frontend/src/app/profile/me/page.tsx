@@ -84,70 +84,137 @@ export default function MyProfilePage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold text-center mb-8">내 프로필</h1>
+    <div className="flex">
+      <div className="flex-1 px-4 py-10">
+        <h1 className="text-3xl font-bold text-center mb-8">내 프로필</h1>
 
-      {myUserId && (
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-10">
-          {!user ? (
-            <div className="text-center">⏳ 프로필 로딩 중...</div>
-          ) : (
-            <div className="w-full bg-white p-6 rounded-3xl shadow-md border border-black mx-auto flex flex-row items-center gap-6">
-              {/* 왼쪽: 프로필 이미지 */}
-              <div
-                className="w-24 h-24 rounded-full bg-center bg-cover border border-gray-300"
-                style={{
-                  backgroundImage: `url(${user.profileImageUrl || '/images/no-image.png'})`,
-                }}
-              />
+        {myUserId && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-10">
+            {!user ? (
+              <div className="text-center">⏳ 프로필 로딩 중...</div>
+            ) : (
+              <div className="w-full bg-white p-6 rounded-3xl shadow-md border border-black mx-auto flex flex-row items-center gap-6">
+                {/* 왼쪽: 프로필 이미지 */}
+                <div
+                  className="w-24 h-24 rounded-full bg-center bg-cover border border-gray-300"
+                  style={{
+                    backgroundImage: `url(${user.profileImageUrl || '/images/no-image.png'})`,
+                  }}
+                />
 
-              {/* 오른쪽: 프로필 정보 */}
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold mb-1">{user.nickname}</h2>
-                <p className="text-sm text-gray-600 mb-3">
-                  {user.bio || '소개글이 없습니다.'}
-                </p>
+                {/* 오른쪽: 프로필 정보 */}
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold mb-1">{user.nickname}</h2>
+                  <p className="text-sm text-gray-600 mb-3">
+                    {user.bio || '소개글이 없습니다.'}
+                  </p>
 
-                <div className="flex gap-4 text-sm text-gray-800">
-                  <div>
-                    <span className="font-semibold">{user.followingsCount ?? 0}</span> 팔로잉
+                  <div className="flex gap-4 text-sm text-gray-800">
+                    <div>
+                      <span className="font-semibold">{user.followingsCount ?? 0}</span> 팔로잉
+                    </div>
+                    <div>
+                      <span className="font-semibold">{user.followersCount ?? 0}</span> 팔로워
+                    </div>
                   </div>
-                  <div>
-                    <span className="font-semibold">{user.followersCount ?? 0}</span> 팔로워
-                  </div>
+
+                  <div className="mt-2 text-xs text-gray-500">📧 {user.email}</div>
                 </div>
-
-                <div className="mt-2 text-xs text-gray-500">📧 {user.email}</div>
               </div>
+            )}
+
+            {/* 탭 버튼 */}
+            <div className="mt-6 flex flex-wrap justify-around gap-3">
+              {TAB_ITEMS.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() =>
+                    setSelectedTab((prev) => (prev === tab.key ? null : tab.key))
+                  }
+                  className={`relative px-4 py-2 rounded-md text-sm font-medium transition border ${
+                    selectedTab === tab.key
+                      ? 'bg-black text-white'
+                      : 'bg-white text-black border-gray-300 hover:bg-gray-100'
+                  }`}
+                >
+                  {tab.label}
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    {counts[tab.key]}
+                  </span>
+                </button>
+              ))}
             </div>
-          )}
-
-          {/* 탭 버튼 */}
-          <div className="mt-6 flex flex-wrap justify-around gap-3">
-            {TAB_ITEMS.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() =>
-                  setSelectedTab((prev) => (prev === tab.key ? null : tab.key))
-                }
-                className={`relative px-4 py-2 rounded-md text-sm font-medium transition border ${
-                  selectedTab === tab.key
-                    ? 'bg-black text-white'
-                    : 'bg-white text-black border-gray-300 hover:bg-gray-100'
-                }`}
-              >
-                {tab.label}
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                  {counts[tab.key]}
-                </span>
-              </button>
-            ))}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* 탭 콘텐츠 */}
-      {renderTabContent()}
+        {/* 탭 콘텐츠 */}
+        {renderTabContent()}
+      </div>
+      <div className="flex-1 px-4 py-10">
+        <h1 className="text-3xl font-bold text-center mb-8">내 프로필</h1>
+
+        {myUserId && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-10">
+            {!user ? (
+              <div className="text-center">⏳ 프로필 로딩 중...</div>
+            ) : (
+              <div className="w-full bg-white p-6 rounded-3xl shadow-md border border-black mx-auto flex flex-row items-center gap-6">
+                {/* 왼쪽: 프로필 이미지 */}
+                <div
+                  className="w-24 h-24 rounded-full bg-center bg-cover border border-gray-300"
+                  style={{
+                    backgroundImage: `url(${user.profileImageUrl || '/images/no-image.png'})`,
+                  }}
+                />
+
+                {/* 오른쪽: 프로필 정보 */}
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold mb-1">{user.nickname}</h2>
+                  <p className="text-sm text-gray-600 mb-3">
+                    {user.bio || '소개글이 없습니다.'}
+                  </p>
+
+                  <div className="flex gap-4 text-sm text-gray-800">
+                    <div>
+                      <span className="font-semibold">{user.followingsCount ?? 0}</span> 팔로잉
+                    </div>
+                    <div>
+                      <span className="font-semibold">{user.followersCount ?? 0}</span> 팔로워
+                    </div>
+                  </div>
+
+                  <div className="mt-2 text-xs text-gray-500">📧 {user.email}</div>
+                </div>
+              </div>
+            )}
+
+            {/* 탭 버튼 */}
+            <div className="mt-6 flex flex-wrap justify-around gap-3">
+              {TAB_ITEMS.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() =>
+                    setSelectedTab((prev) => (prev === tab.key ? null : tab.key))
+                  }
+                  className={`relative px-4 py-2 rounded-md text-sm font-medium transition border ${
+                    selectedTab === tab.key
+                      ? 'bg-black text-white'
+                      : 'bg-white text-black border-gray-300 hover:bg-gray-100'
+                  }`}
+                >
+                  {tab.label}
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    {counts[tab.key]}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 탭 콘텐츠 */}
+        {renderTabContent()}
+      </div>
     </div>
   );
 }
