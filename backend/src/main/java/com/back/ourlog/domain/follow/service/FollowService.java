@@ -178,27 +178,6 @@ public class FollowService {
 
         follow.accept();
 
-        // 쌍방 팔로우 관계 만들기..
-        Integer receiverId = follow.getFollowee().getId();  // 나..
-        Integer requesterId = follow.getFollower().getId(); // 상대방..
-
-        boolean alreadyReverse = followRepository
-                .findByFollowerIdAndFolloweeIdAndStatus(receiverId, requesterId, FollowStatus.ACCEPTED)
-                .isPresent();
-
-        if (!alreadyReverse) {
-            // 내가 상대방을 아직 팔로우 안 했으면 자동 생성 + ACCEPTED 처리..
-            User me = follow.getFollowee();     // 나..
-            User target = follow.getFollower(); // 상대방..
-
-            Follow reverse = new Follow(me, target); // 내가 상대방 팔로우..
-            reverse.accept();
-            followRepository.save(reverse);
-
-            me.increaseFollowingsCount();
-            target.increaseFollowersCount();
-        }
-
         followRepository.save(follow);
         followRepository.flush();
 
