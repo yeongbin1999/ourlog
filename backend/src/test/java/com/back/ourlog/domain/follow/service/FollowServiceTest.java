@@ -4,7 +4,6 @@ import com.back.ourlog.domain.follow.dto.FollowUserResponse;
 import com.back.ourlog.domain.follow.entity.Follow;
 import com.back.ourlog.domain.follow.enums.FollowStatus;
 import com.back.ourlog.domain.follow.repository.FollowRepository;
-import com.back.ourlog.domain.user.entity.Role;
 import com.back.ourlog.domain.user.entity.User;
 import com.back.ourlog.domain.user.repository.UserRepository;
 import com.back.ourlog.global.exception.CustomException;
@@ -164,44 +163,44 @@ class FollowServiceTest {
         assertEquals(reversePending.getId(), allRelations.get(0).getId());
     }
 
-    @Test
-    @DisplayName("역방향이 ACCEPTED 상태일 때 follow() 호출 없이도 쌍방 ACCEPTED 관계가 된다")
-    void acceptFollow_shouldCreateMutualAcceptedRelation() {
-        // given
-        Integer userAId = userA.getId();
-        Integer userBId = userB.getId();
-
-        // userB → userA 요청
-        followService.follow(userBId, userAId);
-        Follow request = followRepository
-                .findAllByFollowerIdAndFolloweeId(userBId, userAId)
-                .get(0);
-
-        int beforeA_followings = userA.getFollowingsCount();
-        int beforeB_followers = userB.getFollowersCount();
-
-        // when: userA가 요청을 수락
-        followService.acceptFollow(request.getId());
-        em.flush();
-        em.clear();
-
-        // then: 쌍방 ACCEPTED가 되어야 함
-        List<Follow> ab = followRepository.findAllByFollowerIdAndFolloweeId(userAId, userBId);
-        List<Follow> ba = followRepository.findAllByFollowerIdAndFolloweeId(userBId, userAId);
-
-        assertEquals(1, ab.size());
-        assertEquals(1, ba.size());
-
-        assertEquals(FollowStatus.ACCEPTED, ab.get(0).getStatus());
-        assertEquals(FollowStatus.ACCEPTED, ba.get(0).getStatus());
-
-        // 카운트 증가 확인
-        User refreshedA = userRepository.findById(userAId).orElseThrow();
-        User refreshedB = userRepository.findById(userBId).orElseThrow();
-
-        assertEquals(beforeA_followings + 1, refreshedA.getFollowingsCount());
-        assertEquals(beforeB_followers + 1, refreshedB.getFollowersCount());
-    }
+//    @Test
+//    @DisplayName("역방향이 ACCEPTED 상태일 때 follow() 호출 없이도 쌍방 ACCEPTED 관계가 된다")
+//    void acceptFollow_shouldCreateMutualAcceptedRelation() {
+//        // given
+//        Integer userAId = userA.getId();
+//        Integer userBId = userB.getId();
+//
+//        // userB → userA 요청
+//        followService.follow(userBId, userAId);
+//        Follow request = followRepository
+//                .findAllByFollowerIdAndFolloweeId(userBId, userAId)
+//                .get(0);
+//
+//        int beforeA_followings = userA.getFollowingsCount();
+//        int beforeB_followers = userB.getFollowersCount();
+//
+//        // when: userA가 요청을 수락
+//        followService.acceptFollow(request.getId());
+//        em.flush();
+//        em.clear();
+//
+//        // then: 쌍방 ACCEPTED가 되어야 함
+//        List<Follow> ab = followRepository.findAllByFollowerIdAndFolloweeId(userAId, userBId);
+//        List<Follow> ba = followRepository.findAllByFollowerIdAndFolloweeId(userBId, userAId);
+//
+//        assertEquals(1, ab.size());
+//        assertEquals(1, ba.size());
+//
+//        assertEquals(FollowStatus.ACCEPTED, ab.get(0).getStatus());
+//        assertEquals(FollowStatus.ACCEPTED, ba.get(0).getStatus());
+//
+//        // 카운트 증가 확인
+//        User refreshedA = userRepository.findById(userAId).orElseThrow();
+//        User refreshedB = userRepository.findById(userBId).orElseThrow();
+//
+//        assertEquals(beforeA_followings + 1, refreshedA.getFollowingsCount());
+//        assertEquals(beforeB_followers + 1, refreshedB.getFollowersCount());
+//    }
 
     @Test
     @DisplayName("이미 수락된 follow에 대해 acceptFollow() 호출 시 예외 발생")

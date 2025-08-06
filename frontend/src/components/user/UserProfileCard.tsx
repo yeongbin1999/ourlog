@@ -3,10 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { axiosInstance } from '@/lib/api-client';
 
-type FollowUser = {
-  userId: number;
-};
-
 type Props = {
   userId: string;
   userType?: 'sent' | 'received' | 'profile' | 'followers' | 'following';
@@ -31,18 +27,8 @@ export default function UserProfileCard({
 }: Props) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isFollowing, setIsFollowing] = useState<boolean>(
-    typeof isFollowingProp === 'boolean' ? isFollowingProp : false
-  );
+  const [isFollowing, setIsFollowing] = useState<boolean>(!!isFollowingProp);
   const [loading, setLoading] = useState(false);
-  const [myUserId, setMyUserId] = useState<number | null>(null);
-
-  useEffect(() => {
-    const storedId = localStorage.getItem('userId');
-    if (storedId) {
-      setMyUserId(Number(storedId));
-    }
-  }, []);
 
   useEffect(() => {
     axiosInstance
@@ -51,50 +37,67 @@ export default function UserProfileCard({
       .catch(() => setError('존재하지 않는 사용자입니다.'));
   }, [userId]);
 
-  const fetchFollowingStatus = async () => {
-    if (!myUserId) return;
-    try {
-      const res = await axiosInstance.get(`/api/v1/follows/followings?userId=${myUserId}`);
-      // API 응답 구조에 맞게 data 위치 조정
-      const followingList: FollowUser[] = Array.isArray(res.data) ? res.data : res.data.data ?? [];
-      const isMeFollowing = followingList.some(user => user.userId === Number(userId));
-      setIsFollowing(isMeFollowing);
-    } catch (err) {
-      console.error('팔로잉 상태 불러오기 실패', err);
-    }
-  };
-
   useEffect(() => {
     if (typeof isFollowingProp === 'boolean') {
       setIsFollowing(isFollowingProp);
-    } else if (['profile', 'followers', 'following'].includes(userType)) {
-      fetchFollowingStatus();
     }
-  }, [isFollowingProp, userType, myUserId, userId]);
+  }, [isFollowingProp]);
 
-  const toggleFollow = async () => {
+  // 팔로우 요청 보내기 (팔로워 목록에서만 사용)
+  const sendFollowRequest = async () => {
+    if (loading) return;
     setLoading(true);
 
     try {
-      const url = `/api/v1/follows/${userId}`;
-
-      if (isFollowing) {
-        await axiosInstance.delete(url);
-      } else {
-        await axiosInstance.post(url);
+      const targetId = Number(userId);
+      if (isNaN(targetId)) {
+        alert('잘못된 사용자 ID입니다.');
+        setLoading(false);
+        return;
       }
 
-      alert(isFollowing ? '언팔로우 완료!' : '팔로우 요청 완료!');
-      await fetchFollowingStatus();
+      await axiosInstance.post(`/api/v1/follows/${targetId}`);
+      alert('팔로우 요청을 보냈습니다.');
+      onActionCompleted?.();
+      // 팔로워 목록에서는 버튼 상태 변하지 않음
+    } catch (err: any) {
+      if (err.response?.data?.resultCode === 'FOLLOW_001') {
+        alert('이미 팔로우한 사용자입니다.');
+      } else {
+        console.error('팔로우 요청 실패', err);
+        alert('요청 처리 중 오류가 발생했습니다.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 언팔로우 (팔로잉 목록 및 프로필에서 사용)
+  const handleUnfollow = async () => {
+    if (loading) return;
+    setLoading(true);
+
+    try {
+      const targetId = Number(userId);
+      if (isNaN(targetId)) {
+        alert('잘못된 사용자 ID입니다.');
+        setLoading(false);
+        return;
+      }
+
+      await axiosInstance.delete(`/api/v1/follows/${targetId}`);
+      alert('언팔로우 완료!');
+      setIsFollowing(false);
       onActionCompleted?.();
     } catch (err) {
-      console.error('팔로우 요청 실패', err);
+      console.error('언팔로우 요청 실패', err);
       alert('요청 처리 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
+  // 기존 수락/거절 함수들
   const acceptFollow = async () => {
     if (!followId) return;
 
@@ -104,7 +107,6 @@ export default function UserProfileCard({
       if (res.status < 200 || res.status >= 300) throw new Error('서버 오류');
 
       alert('수락 완료!');
-      await fetchFollowingStatus();
       onActionCompleted?.();
     } catch (err) {
       console.error('수락 실패', err);
@@ -145,33 +147,54 @@ export default function UserProfileCard({
       case 'received':
         return (
           <div className="flex gap-2 mt-6">
-            <button
-              onClick={acceptFollow}
-              className="px-4 py-2 bg-green-500 text-white rounded"
-            >
+            <button onClick={acceptFollow} className="px-4 py-2 bg-green-500 text-white rounded">
               수락
             </button>
-            <button
-              onClick={rejectFollow}
-              className="px-4 py-2 bg-red-500 text-white rounded"
-            >
+            <button onClick={rejectFollow} className="px-4 py-2 bg-red-500 text-white rounded">
               거절
             </button>
           </div>
         );
       case 'sent':
         return <span className="mt-6 text-sm text-gray-500">요청 보냄</span>;
-      default:
+
+      case 'followers':
+        // 팔로워 목록에서는 무조건 팔로우 요청 보내기 버튼, 상태 변하지 않음
         return (
           <button
-            onClick={toggleFollow}
-            className={`mt-6 px-4 py-2 border rounded-md transition ${
-              isFollowing
-                ? 'bg-gray-200 text-black hover:bg-gray-300'
-                : 'border-black hover:bg-black hover:text-white'
-            }`}
+            onClick={sendFollowRequest}
+            className="mt-6 px-4 py-2 border rounded-md border-black hover:bg-black hover:text-white transition"
           >
-            {isFollowing ? '언팔로우' : '팔로우'}
+            팔로우 요청 보내기
+          </button>
+        );
+
+      case 'following':
+        // 팔로잉 목록에서는 무조건 언팔로우 버튼
+        return (
+          <button
+            onClick={handleUnfollow}
+            className="mt-6 px-4 py-2 border rounded-md bg-gray-200 text-black hover:bg-gray-300 transition"
+          >
+            언팔로우
+          </button>
+        );
+
+      default:
+        // 기본 (프로필 등) - 팔로잉 상태면 언팔로우, 아니면 팔로우
+        return isFollowing ? (
+          <button
+            onClick={handleUnfollow}
+            className="mt-6 px-4 py-2 border rounded-md bg-gray-200 text-black hover:bg-gray-300 transition"
+          >
+            언팔로우
+          </button>
+        ) : (
+          <button
+            onClick={sendFollowRequest}
+            className="mt-6 px-4 py-2 border rounded-md border-black hover:bg-black hover:text-white transition"
+          >
+            팔로우
           </button>
         );
     }
