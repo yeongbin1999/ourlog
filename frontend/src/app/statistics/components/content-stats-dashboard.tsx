@@ -431,7 +431,7 @@ export default function Component() {
       return { chartData, ranking, colors: dynamicOttColors };
     }, [ottGraph]);
 
-const CustomTooltip = ({ active, payload, label, highlightedLine }: TooltipProps<number, string> & { highlightedLine: string | null }) => {
+const CustomTooltip = ({ active, payload, label, highlightedLine }: TooltipProps<any, any> & { highlightedLine: string | null }) => {
   if (active && payload && payload.length && highlightedLine) {
     const data = payload.find((p) => p.dataKey === highlightedLine);
     if (!data) return null;
