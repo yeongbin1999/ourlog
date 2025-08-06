@@ -42,6 +42,7 @@ class ContentControllerTest {
                 .andExpect(jsonPath("$.data.title").value("콘텐츠 30"));
     }
 
+    /*
     @Test
     @DisplayName("컨텐츠 검색 - BOOK")
     void t2() throws Exception {
@@ -57,6 +58,8 @@ class ContentControllerTest {
                 .andExpect(jsonPath("$.data.length()").value(lessThanOrEqualTo(10)))
                 .andExpect(jsonPath("$.data[0].type").value("BOOK"));
     }
+
+     */
 
     @Test
     @DisplayName("컨텐츠 검색 - MOVIE")

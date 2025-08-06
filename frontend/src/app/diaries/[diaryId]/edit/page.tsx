@@ -15,8 +15,8 @@ const EditDiaryPage = () => {
     const fetchDiaryAndContent = async () => {
       try {
         const [diaryRes, contentRes] = await Promise.all([
-          fetch(`/api/v1/diaries/${diaryId}`).then(res => res.json()),
-          fetch(`/api/v1/contents/${diaryId}`).then(res => res.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/diaries/${diaryId}`).then(res => res.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/contents/${diaryId}`).then(res => res.json()),
         ]);
         
         setDiary(diaryRes.data);
