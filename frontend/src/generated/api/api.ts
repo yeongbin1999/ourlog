@@ -31,17 +31,12 @@ import type {
   DiaryUpdateRequestDto,
   DiaryWriteRequestDto,
   EmotionGraphResponse,
-  FollowUserParams,
   FollowUserResponse,
   GenreGraphResponse,
   GetEmotionGraphParams,
-  GetFollowersParams,
-  GetFollowingsParams,
   GetGenreGraphParams,
   GetLikeCountParams,
   GetOttGraphParams,
-  GetPendingRequestsParams,
-  GetSentRequestsParams,
   GetTypeGraphParams,
   LikeCountResponse,
   LikeResponse,
@@ -70,7 +65,6 @@ import type {
   TimelineResponse,
   TypeCountDto,
   TypeGraphResponse,
-  UnfollowUserParams,
 } from "../model";
 
 import { customInstance } from "../../lib/api-client";
@@ -973,12 +967,11 @@ export const useUnlike = <TError = unknown, TContext = unknown>(
  */
 export const followUser = (
   followeeId: number,
-  params: FollowUserParams,
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal,
 ) => {
   return customInstance<string>(
-    { url: `/api/v1/follows/${followeeId}`, method: "POST", params, signal },
+    { url: `/api/v1/follows/${followeeId}`, method: "POST", signal },
     options,
   );
 };
@@ -990,14 +983,14 @@ export const getFollowUserMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof followUser>>,
     TError,
-    { followeeId: number; params: FollowUserParams },
+    { followeeId: number },
     TContext
   >;
   request?: SecondParameter<typeof customInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof followUser>>,
   TError,
-  { followeeId: number; params: FollowUserParams },
+  { followeeId: number },
   TContext
 > => {
   const mutationKey = ["followUser"];
@@ -1011,11 +1004,11 @@ export const getFollowUserMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof followUser>>,
-    { followeeId: number; params: FollowUserParams }
+    { followeeId: number }
   > = (props) => {
-    const { followeeId, params } = props ?? {};
+    const { followeeId } = props ?? {};
 
-    return followUser(followeeId, params, requestOptions);
+    return followUser(followeeId, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1035,7 +1028,7 @@ export const useFollowUser = <TError = unknown, TContext = unknown>(
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof followUser>>,
       TError,
-      { followeeId: number; params: FollowUserParams },
+      { followeeId: number },
       TContext
     >;
     request?: SecondParameter<typeof customInstance>;
@@ -1044,7 +1037,7 @@ export const useFollowUser = <TError = unknown, TContext = unknown>(
 ): UseMutationResult<
   Awaited<ReturnType<typeof followUser>>,
   TError,
-  { followeeId: number; params: FollowUserParams },
+  { followeeId: number },
   TContext
 > => {
   const mutationOptions = getFollowUserMutationOptions(options);
@@ -5364,46 +5357,39 @@ export function useGetLikeCount<
  * @summary 내가 보낸 팔로우 요청 목록 조회
  */
 export const getSentRequests = (
-  params: GetSentRequestsParams,
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal,
 ) => {
   return customInstance<FollowUserResponse[]>(
-    { url: `/api/v1/follows/sent-requests`, method: "GET", params, signal },
+    { url: `/api/v1/follows/sent-requests`, method: "GET", signal },
     options,
   );
 };
 
-export const getGetSentRequestsQueryKey = (params?: GetSentRequestsParams) => {
-  return [
-    `/api/v1/follows/sent-requests`,
-    ...(params ? [params] : []),
-  ] as const;
+export const getGetSentRequestsQueryKey = () => {
+  return [`/api/v1/follows/sent-requests`] as const;
 };
 
 export const getGetSentRequestsInfiniteQueryOptions = <
   TData = InfiniteData<Awaited<ReturnType<typeof getSentRequests>>>,
   TError = unknown,
->(
-  params: GetSentRequestsParams,
-  options?: {
-    query?: Partial<
-      UseInfiniteQueryOptions<
-        Awaited<ReturnType<typeof getSentRequests>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-) => {
+>(options?: {
+  query?: Partial<
+    UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof getSentRequests>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetSentRequestsQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetSentRequestsQueryKey();
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getSentRequests>>> = ({
     signal,
-  }) => getSentRequests(params, requestOptions, signal);
+  }) => getSentRequests(requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
     Awaited<ReturnType<typeof getSentRequests>>,
@@ -5421,7 +5407,6 @@ export function useGetSentRequestsInfinite<
   TData = InfiniteData<Awaited<ReturnType<typeof getSentRequests>>>,
   TError = unknown,
 >(
-  params: GetSentRequestsParams,
   options: {
     query: Partial<
       UseInfiniteQueryOptions<
@@ -5448,7 +5433,6 @@ export function useGetSentRequestsInfinite<
   TData = InfiniteData<Awaited<ReturnType<typeof getSentRequests>>>,
   TError = unknown,
 >(
-  params: GetSentRequestsParams,
   options?: {
     query?: Partial<
       UseInfiniteQueryOptions<
@@ -5475,7 +5459,6 @@ export function useGetSentRequestsInfinite<
   TData = InfiniteData<Awaited<ReturnType<typeof getSentRequests>>>,
   TError = unknown,
 >(
-  params: GetSentRequestsParams,
   options?: {
     query?: Partial<
       UseInfiniteQueryOptions<
@@ -5498,7 +5481,6 @@ export function useGetSentRequestsInfinite<
   TData = InfiniteData<Awaited<ReturnType<typeof getSentRequests>>>,
   TError = unknown,
 >(
-  params: GetSentRequestsParams,
   options?: {
     query?: Partial<
       UseInfiniteQueryOptions<
@@ -5513,7 +5495,7 @@ export function useGetSentRequestsInfinite<
 ): UseInfiniteQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getGetSentRequestsInfiniteQueryOptions(params, options);
+  const queryOptions = getGetSentRequestsInfiniteQueryOptions(options);
 
   const query = useInfiniteQuery(
     queryOptions,
@@ -5530,26 +5512,19 @@ export function useGetSentRequestsInfinite<
 export const getGetSentRequestsQueryOptions = <
   TData = Awaited<ReturnType<typeof getSentRequests>>,
   TError = unknown,
->(
-  params: GetSentRequestsParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getSentRequests>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-) => {
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getSentRequests>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetSentRequestsQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetSentRequestsQueryKey();
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getSentRequests>>> = ({
     signal,
-  }) => getSentRequests(params, requestOptions, signal);
+  }) => getSentRequests(requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getSentRequests>>,
@@ -5567,7 +5542,6 @@ export function useGetSentRequests<
   TData = Awaited<ReturnType<typeof getSentRequests>>,
   TError = unknown,
 >(
-  params: GetSentRequestsParams,
   options: {
     query: Partial<
       UseQueryOptions<
@@ -5594,7 +5568,6 @@ export function useGetSentRequests<
   TData = Awaited<ReturnType<typeof getSentRequests>>,
   TError = unknown,
 >(
-  params: GetSentRequestsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -5621,7 +5594,6 @@ export function useGetSentRequests<
   TData = Awaited<ReturnType<typeof getSentRequests>>,
   TError = unknown,
 >(
-  params: GetSentRequestsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -5644,7 +5616,6 @@ export function useGetSentRequests<
   TData = Awaited<ReturnType<typeof getSentRequests>>,
   TError = unknown,
 >(
-  params: GetSentRequestsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -5659,7 +5630,7 @@ export function useGetSentRequests<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getGetSentRequestsQueryOptions(params, options);
+  const queryOptions = getGetSentRequestsQueryOptions(options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,
@@ -5676,46 +5647,39 @@ export function useGetSentRequests<
  * @summary 내가 받은 팔로우 요청 목록 조회
  */
 export const getPendingRequests = (
-  params: GetPendingRequestsParams,
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal,
 ) => {
   return customInstance<FollowUserResponse[]>(
-    { url: `/api/v1/follows/requests`, method: "GET", params, signal },
+    { url: `/api/v1/follows/requests`, method: "GET", signal },
     options,
   );
 };
 
-export const getGetPendingRequestsQueryKey = (
-  params?: GetPendingRequestsParams,
-) => {
-  return [`/api/v1/follows/requests`, ...(params ? [params] : [])] as const;
+export const getGetPendingRequestsQueryKey = () => {
+  return [`/api/v1/follows/requests`] as const;
 };
 
 export const getGetPendingRequestsInfiniteQueryOptions = <
   TData = InfiniteData<Awaited<ReturnType<typeof getPendingRequests>>>,
   TError = unknown,
->(
-  params: GetPendingRequestsParams,
-  options?: {
-    query?: Partial<
-      UseInfiniteQueryOptions<
-        Awaited<ReturnType<typeof getPendingRequests>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-) => {
+>(options?: {
+  query?: Partial<
+    UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof getPendingRequests>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ?? getGetPendingRequestsQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetPendingRequestsQueryKey();
 
   const queryFn: QueryFunction<
     Awaited<ReturnType<typeof getPendingRequests>>
-  > = ({ signal }) => getPendingRequests(params, requestOptions, signal);
+  > = ({ signal }) => getPendingRequests(requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
     Awaited<ReturnType<typeof getPendingRequests>>,
@@ -5733,7 +5697,6 @@ export function useGetPendingRequestsInfinite<
   TData = InfiniteData<Awaited<ReturnType<typeof getPendingRequests>>>,
   TError = unknown,
 >(
-  params: GetPendingRequestsParams,
   options: {
     query: Partial<
       UseInfiniteQueryOptions<
@@ -5760,7 +5723,6 @@ export function useGetPendingRequestsInfinite<
   TData = InfiniteData<Awaited<ReturnType<typeof getPendingRequests>>>,
   TError = unknown,
 >(
-  params: GetPendingRequestsParams,
   options?: {
     query?: Partial<
       UseInfiniteQueryOptions<
@@ -5787,7 +5749,6 @@ export function useGetPendingRequestsInfinite<
   TData = InfiniteData<Awaited<ReturnType<typeof getPendingRequests>>>,
   TError = unknown,
 >(
-  params: GetPendingRequestsParams,
   options?: {
     query?: Partial<
       UseInfiniteQueryOptions<
@@ -5810,7 +5771,6 @@ export function useGetPendingRequestsInfinite<
   TData = InfiniteData<Awaited<ReturnType<typeof getPendingRequests>>>,
   TError = unknown,
 >(
-  params: GetPendingRequestsParams,
   options?: {
     query?: Partial<
       UseInfiniteQueryOptions<
@@ -5825,10 +5785,7 @@ export function useGetPendingRequestsInfinite<
 ): UseInfiniteQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getGetPendingRequestsInfiniteQueryOptions(
-    params,
-    options,
-  );
+  const queryOptions = getGetPendingRequestsInfiniteQueryOptions(options);
 
   const query = useInfiniteQuery(
     queryOptions,
@@ -5845,27 +5802,23 @@ export function useGetPendingRequestsInfinite<
 export const getGetPendingRequestsQueryOptions = <
   TData = Awaited<ReturnType<typeof getPendingRequests>>,
   TError = unknown,
->(
-  params: GetPendingRequestsParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getPendingRequests>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-) => {
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof getPendingRequests>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ?? getGetPendingRequestsQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetPendingRequestsQueryKey();
 
   const queryFn: QueryFunction<
     Awaited<ReturnType<typeof getPendingRequests>>
-  > = ({ signal }) => getPendingRequests(params, requestOptions, signal);
+  > = ({ signal }) => getPendingRequests(requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getPendingRequests>>,
@@ -5883,7 +5836,6 @@ export function useGetPendingRequests<
   TData = Awaited<ReturnType<typeof getPendingRequests>>,
   TError = unknown,
 >(
-  params: GetPendingRequestsParams,
   options: {
     query: Partial<
       UseQueryOptions<
@@ -5910,7 +5862,6 @@ export function useGetPendingRequests<
   TData = Awaited<ReturnType<typeof getPendingRequests>>,
   TError = unknown,
 >(
-  params: GetPendingRequestsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -5937,7 +5888,6 @@ export function useGetPendingRequests<
   TData = Awaited<ReturnType<typeof getPendingRequests>>,
   TError = unknown,
 >(
-  params: GetPendingRequestsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -5960,7 +5910,6 @@ export function useGetPendingRequests<
   TData = Awaited<ReturnType<typeof getPendingRequests>>,
   TError = unknown,
 >(
-  params: GetPendingRequestsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -5975,7 +5924,7 @@ export function useGetPendingRequests<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getGetPendingRequestsQueryOptions(params, options);
+  const queryOptions = getGetPendingRequestsQueryOptions(options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,
@@ -5992,43 +5941,39 @@ export function useGetPendingRequests<
  * @summary 내가 팔로우한 유저 목록 조회
  */
 export const getFollowings = (
-  params: GetFollowingsParams,
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal,
 ) => {
   return customInstance<FollowUserResponse[]>(
-    { url: `/api/v1/follows/followings`, method: "GET", params, signal },
+    { url: `/api/v1/follows/followings`, method: "GET", signal },
     options,
   );
 };
 
-export const getGetFollowingsQueryKey = (params?: GetFollowingsParams) => {
-  return [`/api/v1/follows/followings`, ...(params ? [params] : [])] as const;
+export const getGetFollowingsQueryKey = () => {
+  return [`/api/v1/follows/followings`] as const;
 };
 
 export const getGetFollowingsInfiniteQueryOptions = <
   TData = InfiniteData<Awaited<ReturnType<typeof getFollowings>>>,
   TError = unknown,
->(
-  params: GetFollowingsParams,
-  options?: {
-    query?: Partial<
-      UseInfiniteQueryOptions<
-        Awaited<ReturnType<typeof getFollowings>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-) => {
+>(options?: {
+  query?: Partial<
+    UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof getFollowings>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetFollowingsQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetFollowingsQueryKey();
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getFollowings>>> = ({
     signal,
-  }) => getFollowings(params, requestOptions, signal);
+  }) => getFollowings(requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
     Awaited<ReturnType<typeof getFollowings>>,
@@ -6046,7 +5991,6 @@ export function useGetFollowingsInfinite<
   TData = InfiniteData<Awaited<ReturnType<typeof getFollowings>>>,
   TError = unknown,
 >(
-  params: GetFollowingsParams,
   options: {
     query: Partial<
       UseInfiniteQueryOptions<
@@ -6073,7 +6017,6 @@ export function useGetFollowingsInfinite<
   TData = InfiniteData<Awaited<ReturnType<typeof getFollowings>>>,
   TError = unknown,
 >(
-  params: GetFollowingsParams,
   options?: {
     query?: Partial<
       UseInfiniteQueryOptions<
@@ -6100,7 +6043,6 @@ export function useGetFollowingsInfinite<
   TData = InfiniteData<Awaited<ReturnType<typeof getFollowings>>>,
   TError = unknown,
 >(
-  params: GetFollowingsParams,
   options?: {
     query?: Partial<
       UseInfiniteQueryOptions<
@@ -6123,7 +6065,6 @@ export function useGetFollowingsInfinite<
   TData = InfiniteData<Awaited<ReturnType<typeof getFollowings>>>,
   TError = unknown,
 >(
-  params: GetFollowingsParams,
   options?: {
     query?: Partial<
       UseInfiniteQueryOptions<
@@ -6138,7 +6079,7 @@ export function useGetFollowingsInfinite<
 ): UseInfiniteQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getGetFollowingsInfiniteQueryOptions(params, options);
+  const queryOptions = getGetFollowingsInfiniteQueryOptions(options);
 
   const query = useInfiniteQuery(
     queryOptions,
@@ -6155,22 +6096,19 @@ export function useGetFollowingsInfinite<
 export const getGetFollowingsQueryOptions = <
   TData = Awaited<ReturnType<typeof getFollowings>>,
   TError = unknown,
->(
-  params: GetFollowingsParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getFollowings>>, TError, TData>
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-) => {
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getFollowings>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetFollowingsQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetFollowingsQueryKey();
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getFollowings>>> = ({
     signal,
-  }) => getFollowings(params, requestOptions, signal);
+  }) => getFollowings(requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getFollowings>>,
@@ -6188,7 +6126,6 @@ export function useGetFollowings<
   TData = Awaited<ReturnType<typeof getFollowings>>,
   TError = unknown,
 >(
-  params: GetFollowingsParams,
   options: {
     query: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getFollowings>>, TError, TData>
@@ -6211,7 +6148,6 @@ export function useGetFollowings<
   TData = Awaited<ReturnType<typeof getFollowings>>,
   TError = unknown,
 >(
-  params: GetFollowingsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getFollowings>>, TError, TData>
@@ -6234,7 +6170,6 @@ export function useGetFollowings<
   TData = Awaited<ReturnType<typeof getFollowings>>,
   TError = unknown,
 >(
-  params: GetFollowingsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getFollowings>>, TError, TData>
@@ -6253,7 +6188,6 @@ export function useGetFollowings<
   TData = Awaited<ReturnType<typeof getFollowings>>,
   TError = unknown,
 >(
-  params: GetFollowingsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getFollowings>>, TError, TData>
@@ -6264,7 +6198,7 @@ export function useGetFollowings<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getGetFollowingsQueryOptions(params, options);
+  const queryOptions = getGetFollowingsQueryOptions(options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,
@@ -6281,43 +6215,39 @@ export function useGetFollowings<
  * @summary 나를 팔로우한 유저 목록 조회
  */
 export const getFollowers = (
-  params: GetFollowersParams,
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal,
 ) => {
   return customInstance<FollowUserResponse[]>(
-    { url: `/api/v1/follows/followers`, method: "GET", params, signal },
+    { url: `/api/v1/follows/followers`, method: "GET", signal },
     options,
   );
 };
 
-export const getGetFollowersQueryKey = (params?: GetFollowersParams) => {
-  return [`/api/v1/follows/followers`, ...(params ? [params] : [])] as const;
+export const getGetFollowersQueryKey = () => {
+  return [`/api/v1/follows/followers`] as const;
 };
 
 export const getGetFollowersInfiniteQueryOptions = <
   TData = InfiniteData<Awaited<ReturnType<typeof getFollowers>>>,
   TError = unknown,
->(
-  params: GetFollowersParams,
-  options?: {
-    query?: Partial<
-      UseInfiniteQueryOptions<
-        Awaited<ReturnType<typeof getFollowers>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-) => {
+>(options?: {
+  query?: Partial<
+    UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof getFollowers>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetFollowersQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetFollowersQueryKey();
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getFollowers>>> = ({
     signal,
-  }) => getFollowers(params, requestOptions, signal);
+  }) => getFollowers(requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
     Awaited<ReturnType<typeof getFollowers>>,
@@ -6335,7 +6265,6 @@ export function useGetFollowersInfinite<
   TData = InfiniteData<Awaited<ReturnType<typeof getFollowers>>>,
   TError = unknown,
 >(
-  params: GetFollowersParams,
   options: {
     query: Partial<
       UseInfiniteQueryOptions<
@@ -6362,7 +6291,6 @@ export function useGetFollowersInfinite<
   TData = InfiniteData<Awaited<ReturnType<typeof getFollowers>>>,
   TError = unknown,
 >(
-  params: GetFollowersParams,
   options?: {
     query?: Partial<
       UseInfiniteQueryOptions<
@@ -6389,7 +6317,6 @@ export function useGetFollowersInfinite<
   TData = InfiniteData<Awaited<ReturnType<typeof getFollowers>>>,
   TError = unknown,
 >(
-  params: GetFollowersParams,
   options?: {
     query?: Partial<
       UseInfiniteQueryOptions<
@@ -6412,7 +6339,6 @@ export function useGetFollowersInfinite<
   TData = InfiniteData<Awaited<ReturnType<typeof getFollowers>>>,
   TError = unknown,
 >(
-  params: GetFollowersParams,
   options?: {
     query?: Partial<
       UseInfiniteQueryOptions<
@@ -6427,7 +6353,7 @@ export function useGetFollowersInfinite<
 ): UseInfiniteQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getGetFollowersInfiniteQueryOptions(params, options);
+  const queryOptions = getGetFollowersInfiniteQueryOptions(options);
 
   const query = useInfiniteQuery(
     queryOptions,
@@ -6444,22 +6370,19 @@ export function useGetFollowersInfinite<
 export const getGetFollowersQueryOptions = <
   TData = Awaited<ReturnType<typeof getFollowers>>,
   TError = unknown,
->(
-  params: GetFollowersParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getFollowers>>, TError, TData>
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-) => {
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getFollowers>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetFollowersQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetFollowersQueryKey();
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getFollowers>>> = ({
     signal,
-  }) => getFollowers(params, requestOptions, signal);
+  }) => getFollowers(requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getFollowers>>,
@@ -6477,7 +6400,6 @@ export function useGetFollowers<
   TData = Awaited<ReturnType<typeof getFollowers>>,
   TError = unknown,
 >(
-  params: GetFollowersParams,
   options: {
     query: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getFollowers>>, TError, TData>
@@ -6500,7 +6422,6 @@ export function useGetFollowers<
   TData = Awaited<ReturnType<typeof getFollowers>>,
   TError = unknown,
 >(
-  params: GetFollowersParams,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getFollowers>>, TError, TData>
@@ -6523,7 +6444,6 @@ export function useGetFollowers<
   TData = Awaited<ReturnType<typeof getFollowers>>,
   TError = unknown,
 >(
-  params: GetFollowersParams,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getFollowers>>, TError, TData>
@@ -6542,7 +6462,6 @@ export function useGetFollowers<
   TData = Awaited<ReturnType<typeof getFollowers>>,
   TError = unknown,
 >(
-  params: GetFollowersParams,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getFollowers>>, TError, TData>
@@ -6553,7 +6472,7 @@ export function useGetFollowers<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getGetFollowersQueryOptions(params, options);
+  const queryOptions = getGetFollowersQueryOptions(options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,
@@ -7455,11 +7374,10 @@ export function useGetComments<
  */
 export const unfollowUser = (
   otherUserId: number,
-  params: UnfollowUserParams,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<string>(
-    { url: `/api/v1/follows/${otherUserId}`, method: "DELETE", params },
+    { url: `/api/v1/follows/${otherUserId}`, method: "DELETE" },
     options,
   );
 };
@@ -7471,14 +7389,14 @@ export const getUnfollowUserMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof unfollowUser>>,
     TError,
-    { otherUserId: number; params: UnfollowUserParams },
+    { otherUserId: number },
     TContext
   >;
   request?: SecondParameter<typeof customInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof unfollowUser>>,
   TError,
-  { otherUserId: number; params: UnfollowUserParams },
+  { otherUserId: number },
   TContext
 > => {
   const mutationKey = ["unfollowUser"];
@@ -7492,11 +7410,11 @@ export const getUnfollowUserMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof unfollowUser>>,
-    { otherUserId: number; params: UnfollowUserParams }
+    { otherUserId: number }
   > = (props) => {
-    const { otherUserId, params } = props ?? {};
+    const { otherUserId } = props ?? {};
 
-    return unfollowUser(otherUserId, params, requestOptions);
+    return unfollowUser(otherUserId, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -7516,7 +7434,7 @@ export const useUnfollowUser = <TError = unknown, TContext = unknown>(
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof unfollowUser>>,
       TError,
-      { otherUserId: number; params: UnfollowUserParams },
+      { otherUserId: number },
       TContext
     >;
     request?: SecondParameter<typeof customInstance>;
@@ -7525,7 +7443,7 @@ export const useUnfollowUser = <TError = unknown, TContext = unknown>(
 ): UseMutationResult<
   Awaited<ReturnType<typeof unfollowUser>>,
   TError,
-  { otherUserId: number; params: UnfollowUserParams },
+  { otherUserId: number },
   TContext
 > => {
   const mutationOptions = getUnfollowUserMutationOptions(options);
