@@ -83,7 +83,7 @@ export const useAuthStore = create<AuthStore>()(
             } catch (meError) {
               console.error('Failed to fetch user profile after login:', meError);
             }
-          } // Missing closing brace for if (accessToken) block
+          }
 
           set({
             user: currentUser,
