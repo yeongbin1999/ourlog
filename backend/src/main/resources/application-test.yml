@@ -13,8 +13,3 @@ spring:
 
   cache:
     type: none
-
-app:
-  sql:
-    lineMonthly: "FORMATDATETIME(d.created_at, 'yyyy-MM')"
-    lineDaily: "FORMATDATETIME(d.created_at, 'yyyy-MM-dd')"

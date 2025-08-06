@@ -75,8 +75,8 @@ cookie:
 app:
   base-url: ${BASE_URL:http://localhost:8080}
   sql:
-    lineMonthly: "DATE_FORMAT(d.created_at, '%Y-%m')"
-    lineDaily: "DATE_FORMAT(d.created_at, '%Y-%m-%d')"
+    lineMonthly: "FORMATDATETIME(d.created_at, 'yyyy-MM')"
+    lineDaily: "FORMATDATETIME(d.created_at, 'yyyy-MM-dd')"
 
 server:
   port: 8080
