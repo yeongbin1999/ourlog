@@ -17,7 +17,7 @@ export default function TimelineCard({ item }: Props) {
     try {
       const method = isLiked ? "DELETE" : "POST";
 
-      const response = await fetch(`/api/v1/likes/${item.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/likes/${item.id}`, {
           method,
       });
 

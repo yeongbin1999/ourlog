@@ -24,9 +24,9 @@ export default function Page() {
     if (!diaryId) return;
     try {
       const [diaryRes, commentsRes, contentRes] = await Promise.all([
-        fetch(`http://localhost:8080/api/v1/diaries/${diaryId}`),
-        fetch(`http://localhost:8080/api/v1/comments/${diaryId}`),
-        fetch(`http://localhost:8080/api/v1/contents/${diaryId}`),
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/diaries/${diaryId}`),
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/comments/${diaryId}`),
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/contents/${diaryId}`),
       ]);
 
       if (!diaryRes.ok || !commentsRes.ok || !contentRes.ok) {
@@ -76,7 +76,7 @@ export default function Page() {
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/diaries/${diaryId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/diaries/${diaryId}`, {
         method: "DELETE",
         credentials: "include",
       });

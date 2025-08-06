@@ -5,7 +5,7 @@ import FollowRequestList from '@/components/user/FollowRequestList';
 import SentRequestList from '@/components/user/SentRequestList';
 import FollowingList from '@/components/user/FollowingList';
 import FollowerList from '@/components/user/FollowerList';
-import UserProfileCard from '@/components/user/UserProfileCard';
+import { useAuthStore } from '@/stores/authStore';
 
 const TAB_ITEMS = [
   { key: 'received', label: '받은 요청' },
@@ -18,6 +18,8 @@ type TabKey = typeof TAB_ITEMS[number]['key'];
 
 export default function MyProfilePage() {
   const [selectedTab, setSelectedTab] = useState<TabKey | null>('received');
+  const { user } = useAuthStore();
+  console.log('MyProfilePage: user from authStore:', user);
   const [myUserId, setMyUserId] = useState<number | null>(null);
   const [counts, setCounts] = useState<Record<TabKey, number>>({
     received: 0,
@@ -27,11 +29,10 @@ export default function MyProfilePage() {
   });
 
   useEffect(() => {
-    const storedId = localStorage.getItem('userId');
-    if (storedId) {
-      setMyUserId(Number(storedId));
+    if (user?.id) {
+      setMyUserId(Number(user.id));
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (!myUserId) return;
@@ -39,14 +40,14 @@ export default function MyProfilePage() {
     const fetchCounts = async () => {
       try {
         const endpoints = {
-          received: `/api/v1/follows/requests?userId=${myUserId}`,
-          sent: `/api/v1/follows/sent-requests?userId=${myUserId}`,
-          following: `/api/v1/follows/followings?userId=${myUserId}`,
-          followers: `/api/v1/follows/followers?userId=${myUserId}`,
+          received: `${process.env.NEXT_PUBLIC_API_BASE_URL}follows/requests?userId=${myUserId}`,
+          sent: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/sent-requests?userId=${myUserId}`,
+          following: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/followings?userId=${myUserId}`,
+          followers: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/followers?userId=${myUserId}`,
         };
 
         const res = await Promise.all(
-          Object.entries(endpoints).map(([_, url]) => fetch(url).then((r) => r.json()))
+          Object.values(endpoints).map((url) => fetch(url).then((r) => r.json()))
         );
 
         setCounts({
@@ -65,8 +66,8 @@ export default function MyProfilePage() {
 
   const renderTabContent = () => {
     if (!myUserId || selectedTab === null) {
-        return <div className="text-center text-gray-500">탭을 클릭하세요!..</div>;
-      }
+      return <div className="text-center text-gray-500">탭을 클릭하세요!..</div>;
+    }
 
     switch (selectedTab) {
       case 'received':
@@ -84,13 +85,45 @@ export default function MyProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold text-center mb-8">내 소셜 정보</h1>
+      <h1 className="text-3xl font-bold text-center mb-8">내 프로필</h1>
 
       {myUserId && (
         <div className="bg-white rounded-xl shadow-lg p-6 mb-10">
-          <UserProfileCard userId={String(myUserId)} userType="profile" />
+          {!user ? (
+            <div className="text-center">⏳ 프로필 로딩 중...</div>
+          ) : (
+            <div className="w-full bg-white p-6 rounded-3xl shadow-md border border-black mx-auto flex flex-row items-center gap-6">
+              {/* 왼쪽: 프로필 이미지 */}
+              <div
+                className="w-24 h-24 rounded-full bg-center bg-cover border border-gray-300"
+                style={{
+                  backgroundImage: `url(${user.profileImageUrl || '/images/no-image.png'})`,
+                }}
+              />
 
-          <div className="mt-6 flex justify-around">
+              {/* 오른쪽: 프로필 정보 */}
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold mb-1">{user.nickname}</h2>
+                <p className="text-sm text-gray-600 mb-3">
+                  {user.bio || '소개글이 없습니다.'}
+                </p>
+
+                <div className="flex gap-4 text-sm text-gray-800">
+                  <div>
+                    <span className="font-semibold">{user.followingsCount ?? 0}</span> 팔로잉
+                  </div>
+                  <div>
+                    <span className="font-semibold">{user.followersCount ?? 0}</span> 팔로워
+                  </div>
+                </div>
+
+                <div className="mt-2 text-xs text-gray-500">📧 {user.email}</div>
+              </div>
+            </div>
+          )}
+
+          {/* 탭 버튼 */}
+          <div className="mt-6 flex flex-wrap justify-around gap-3">
             {TAB_ITEMS.map((tab) => (
               <button
                 key={tab.key}
@@ -113,7 +146,7 @@ export default function MyProfilePage() {
         </div>
       )}
 
-      {/* 아래에 탭별 콘텐츠 렌더링 */}
+      {/* 탭 콘텐츠 */}
       {renderTabContent()}
     </div>
   );

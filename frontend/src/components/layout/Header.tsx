@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogIn, UserPlus } from "lucide-react";
+import { UserMenu } from "./UserMenu";
 
 const Header = () => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
@@ -13,7 +13,7 @@ const Header = () => {
     { key: "feed", label: "Feed", href: "/social" },
     { key: "diary", label: "Diary", href: "/diaries/select-type" },
     { key: "statistics", label: "Statistics", href: "/statistics" },
-    { key: "mypage", label: "MyPage", href: "/profile/me" }, // 나중에 useAuth 적용
+    { key: "mypage", label: "MyPage", href: "/profile/me" },
   ];
 
   return (
@@ -61,24 +61,9 @@ const Header = () => {
               className="px-3 py-1.5 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-black text-sm"
             />
           </div>
-          {/* 아이콘 툴팁 */}
+          {/* 드롭다운 */}
           <div className="flex items-center space-x-8 mr-6">
-            <Link href="/signup" passHref>
-              <div className="relative group cursor-pointer">
-                <UserPlus className="w-6 h-6 text-black" />
-                <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                  SignUp
-                </div>
-              </div>
-            </Link>
-            <Link href="/login" passHref>
-              <div className="relative group cursor-pointer">
-                <LogIn className="w-6 h-6 text-black" />
-                <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                  Login
-                </div>
-              </div>
-            </Link>
+            <UserMenu />
           </div>
 
           {/* Write 버튼 */}
