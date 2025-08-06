@@ -1,5 +1,6 @@
 package com.back.ourlog.domain.user.service;
 
+import com.back.ourlog.domain.user.dto.MyProfileResponse;
 import com.back.ourlog.domain.user.dto.UserProfileResponse;
 import com.back.ourlog.domain.user.entity.User;
 import com.back.ourlog.domain.user.repository.UserRepository;
@@ -7,10 +8,9 @@ import com.back.ourlog.global.exception.CustomException;
 import com.back.ourlog.global.exception.ErrorCode;
 import com.back.ourlog.global.security.oauth.OAuthAttributes;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,33 +45,23 @@ public class UserService {
 
         return userRepository.save(user);
     }
+
+    public MyProfileResponse getMyProfile(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        return MyProfileResponse.from(user);
+    }
     
     public UserProfileResponse getUserProfile(Integer userId){
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        return new UserProfileResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getNickname(),
-                user.getProfileImageUrl(),
-                user.getBio(),
-                user.getId()
-        );
+        return UserProfileResponse.from(user);
     }
 
-    // 검색된 유저 리스트를 프로필 응답 DTO로 변환하여 반환..
-    public List<UserProfileResponse> searchUsersByNickname(String keyword) {
-        List<User> users = userRepository.findByNicknameContainingIgnoreCase(keyword);
-        return users.stream()
-                .map(user -> new UserProfileResponse(
-                        user.getId(),
-                        user.getEmail(),
-                        user.getNickname(),
-                        user.getProfileImageUrl(),
-                        user.getBio(),
-                        user.getId()
-                ))
-                .collect(Collectors.toList());
+    public Page<UserProfileResponse> searchUsersByNickname(String keyword, Pageable pageable) {
+        Page<User> users = userRepository.findByNicknameContainingIgnoreCase(keyword, pageable);
+        return users.map(UserProfileResponse::from);
     }
 }

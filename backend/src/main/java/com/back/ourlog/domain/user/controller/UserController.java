@@ -1,12 +1,18 @@
 package com.back.ourlog.domain.user.controller;
 
+import com.back.ourlog.domain.user.dto.MyProfileResponse;
 import com.back.ourlog.domain.user.dto.UserProfileResponse;
 import com.back.ourlog.domain.user.service.UserService;
+import com.back.ourlog.global.common.dto.PageResponse;
+import com.back.ourlog.global.common.dto.RsData;
+import com.back.ourlog.global.security.service.CustomUserDetails;
+import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -15,23 +21,24 @@ public class UserController {
 
     private final UserService userService;
 
-//    @GetMapping("/users/me")
-//    public ResponseEntity<MyProfileResponse> getMe(@AuthenticationPrincipal UserDetails userDetails) {
-//        MyProfileResponse response = userService.getUserInfo(userDetails.getId());
-//        return ResponseEntity.ok(response);
-//    }
-
-    // 유저 프로필 조회용..
-    @GetMapping("/users/{userId}")
-    public ResponseEntity<UserProfileResponse> getUserProfile(@PathVariable Integer userId) {
-        UserProfileResponse profile = userService.getUserProfile(userId);
-        return ResponseEntity.ok(profile);
+    @GetMapping("/users/me")
+    @PreAuthorize("isAuthenticated()")
+    public RsData<MyProfileResponse> getMe(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        MyProfileResponse profile = userService.getMyProfile(userDetails.getId());
+        return RsData.success("내 프로필 조회 성공", profile);
     }
 
-    // 닉네임에 키워드가 포함된 유저 목록을 조회하는 검색 API..
+    @GetMapping("/users/{userId}")
+    @PermitAll
+    public RsData<UserProfileResponse> getUserProfile(@PathVariable Integer userId) {
+        UserProfileResponse profile = userService.getUserProfile(userId);
+        return RsData.success("유저 프로필 조회 성공", profile);
+    }
+
     @GetMapping("/users/search")
-    public ResponseEntity<List<UserProfileResponse>> searchUsers(@RequestParam String keyword) {
-        List<UserProfileResponse> results = userService.searchUsersByNickname(keyword);
-        return ResponseEntity.ok(results);
+    @PermitAll
+    public RsData<PageResponse<UserProfileResponse>> searchUsers(@RequestParam String keyword, Pageable pageable) {
+        Page<UserProfileResponse> results = userService.searchUsersByNickname(keyword, pageable);
+        return RsData.success("유저 검색 성공", PageResponse.from(results));
     }
 }

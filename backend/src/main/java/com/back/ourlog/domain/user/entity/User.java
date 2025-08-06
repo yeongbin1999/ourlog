@@ -88,11 +88,11 @@ public class User {
 
     @Column(nullable = false)
     @Builder.Default
-    private Integer followersCount = 0;
+    private Integer followingsCount = 0;
 
     @Column(nullable = false)
     @Builder.Default
-    private Integer followingsCount = 0;
+    private Integer followersCount = 0;
 
     public void increaseFollowersCount() {
         this.followersCount++;

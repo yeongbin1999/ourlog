@@ -7,21 +7,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
 import { Line, LineChart, Pie, PieChart, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, TooltipProps } from "recharts"
+import { axiosInstance } from "@/lib/api-client"
 
-
-const BASE_URL = "http://localhost:8080/api/v1/statistics";
 
 async function fetchCard(): Promise<StatisticsCardDto> {
-    const res = await fetch(`${BASE_URL}/card`);
-    return res.json();
+    const res = await axiosInstance.get('/api/v1/statistics/card');
+    return res.data;
 }
 async function fetchMonthlyDiaryGraph(): Promise<MonthlyDiaryCount[]> {
-    const res = await fetch(`${BASE_URL}/monthly-diary-graph`);
-    return res.json();
+    const res = await axiosInstance.get('/api/v1/statistics/monthly-diary-graph');
+    const data = res.data;
+    return Array.isArray(data) ? data : [];
 }
 async function fetchTypeDistribution(): Promise<TypeCountDto[]> {
-    const res = await fetch(`${BASE_URL}/type-distribution`);
-    return res.json();
+    const res = await axiosInstance.get('/api/v1/statistics/type-distribution');
+    const data = res.data;
+    return Array.isArray(data) ? data : [];
 }
 async function fetchTypeGraph(period: string): Promise<TypeGraphResponse> {
   // period를 PeriodOption enum 값으로 변환
@@ -35,8 +36,8 @@ async function fetchTypeGraph(period: string): Promise<TypeGraphResponse> {
   
   const periodOption = periodMap[period] || "ALL";
   
-  const res = await fetch(`${BASE_URL}/type-graph?period=${periodOption}`);
-  return res.json();
+  const res = await axiosInstance.get(`/api/v1/statistics/type-graph?period=${periodOption}`);
+  return res.data;
 }
 async function fetchGenreGraph(period: string): Promise<GenreGraphResponse> {
   const periodMap: Record<string, string> = {
@@ -47,8 +48,8 @@ async function fetchGenreGraph(period: string): Promise<GenreGraphResponse> {
     "최근일주일": "LAST_WEEK"
   };
   const periodOption = periodMap[period] || "ALL";
-  const res = await fetch(`${BASE_URL}/genre-graph?period=${periodOption}`);
-  return res.json();
+  const res = await axiosInstance.get(`/api/v1/statistics/genre-graph?period=${periodOption}`);
+  return res.data;
 }
 
 async function fetchEmotionGraph(period: string): Promise<EmotionGraphResponse> {
@@ -60,8 +61,8 @@ async function fetchEmotionGraph(period: string): Promise<EmotionGraphResponse> 
     "최근일주일": "LAST_WEEK"
   };
   const periodOption = periodMap[period] || "ALL";
-  const res = await fetch(`${BASE_URL}/emotion-graph?period=${periodOption}`);
-  return res.json();
+  const res = await axiosInstance.get(`/api/v1/statistics/emotion-graph?period=${periodOption}`);
+  return res.data;
 }
 
 async function fetchOttGraph(period: string): Promise<OttGraphResponse> {
@@ -73,8 +74,8 @@ async function fetchOttGraph(period: string): Promise<OttGraphResponse> {
     "최근일주일": "LAST_WEEK"
   };
   const periodOption = periodMap[period] || "ALL";
-  const res = await fetch(`${BASE_URL}/ott-graph?period=${periodOption}`);
-  return res.json();
+  const res = await axiosInstance.get(`/api/v1/statistics/ott-graph?period=${periodOption}`);
+  return res.data;
 }
 
 // 새로운 타입 정의
@@ -327,13 +328,13 @@ export default function Component() {
     const [highlightedLine, setHighlightedLine] = useState<string | null>(null);
 
     useEffect(() => {
-        fetchCard().then(setCard);
-        fetchMonthlyDiaryGraph().then(setMonthlyDiary);
-        fetchTypeDistribution().then(setTypeDist);
-        fetchTypeGraph(selectedPeriod).then(setTypeGraph);
-        fetchGenreGraph(selectedPeriod).then(setGenreGraph);
-        fetchEmotionGraph(selectedPeriod).then(setEmotionGraph);
-        fetchOttGraph(selectedPeriod).then(setOttGraph);
+        fetchCard().then(data => setCard(data || null));
+        fetchMonthlyDiaryGraph().then(data => setMonthlyDiary(data || []));
+        fetchTypeDistribution().then(data => setTypeDist(data || []));
+        fetchTypeGraph(selectedPeriod).then(data => setTypeGraph(data || { typeLineGraph: [], typeRanking: [] }));
+        fetchGenreGraph(selectedPeriod).then(data => setGenreGraph(data || { genreLineGraph: [], genreRanking: [] }));
+        fetchEmotionGraph(selectedPeriod).then(data => setEmotionGraph(data || { emotionLineGraph: [], emotionRanking: [] }));
+        fetchOttGraph(selectedPeriod).then(data => setOttGraph(data || { ottLineGraph: [], ottRanking: [] }));
     }, [selectedPeriod]);
 
     const getTimeData = useMemo(() => {
@@ -363,8 +364,8 @@ export default function Component() {
     }, [typeGraph, selectedPeriod]);
 
     const getGenreData = useMemo(() => {
-        const chartData = convertGenreLineGraphToChartData(genreGraph.genreLineGraph ?? []);
-        const ranking = genreGraph.genreRanking ?? [];
+        const chartData = convertGenreLineGraphToChartData(genreGraph?.genreLineGraph ?? []);
+        const ranking = genreGraph?.genreRanking ?? [];
         
         const normalizeGenre = (g: string) => g.trim().toLowerCase();
 
