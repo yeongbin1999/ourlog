@@ -3,6 +3,7 @@
 import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import { axiosInstance } from "@/lib/api-client"
 
 interface SearchResult {
   externalId: string;
@@ -30,14 +31,16 @@ function SelectContentClient() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSearch = async () => {
-    console.log("API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL); // 브라우저 콘솔에서 확인 가능
-
     if (!type || !keyword.trim()) return;
     setIsLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/contents/search?type=${type}&title=${encodeURIComponent(keyword)}`);
-      const json = await res.json();
-      setResults(json.data || []);
+      const res = await axiosInstance.get(
+        `/api/v1/contents/search`,
+        {
+          params: { type, title: keyword }
+        }
+      );
+      setResults(res.data.data || []);
     } catch (err) {
       console.error("검색 실패:", err);
     } finally {
