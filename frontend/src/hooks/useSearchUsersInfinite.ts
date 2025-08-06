@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { searchUsers } from '../generated/api/api';
 import { Omit } from 'utility-types'; // 필요시

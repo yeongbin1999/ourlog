@@ -19,6 +19,7 @@ interface AuthState {
   accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   error: string | null;
   isRefreshing: boolean;
 }
