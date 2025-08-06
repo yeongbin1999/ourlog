@@ -9,6 +9,7 @@ import type { UserProfileResponse } from "./userProfileResponse";
 
 export interface PageResponseUserProfileResponse {
   fail: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
   content?: UserProfileResponse[];
   page?: number;

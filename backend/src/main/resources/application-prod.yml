@@ -12,3 +12,8 @@ spring:
 
 cookie:
   secure: true
+
+app:
+  sql:
+    lineMonthly: "DATE_FORMAT(d.created_at, '%Y-%m')"
+    lineDaily: "DATE_FORMAT(d.created_at, '%Y-%m-%d')"
