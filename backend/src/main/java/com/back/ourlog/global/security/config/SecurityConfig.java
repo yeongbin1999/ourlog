@@ -104,6 +104,7 @@ public class SecurityConfig {
                 "http://localhost:3000",
                 "http://127.0.0.1:3000",
                 "https://ourlog.vercel.app",
+                "https://www.ourlog.shop",
                 "https://ourlog.shop"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
