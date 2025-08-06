@@ -22,21 +22,16 @@ import com.back.ourlog.global.exception.CustomException;
 import com.back.ourlog.global.exception.ErrorCode;
 import com.back.ourlog.global.rq.Rq;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -120,24 +115,19 @@ public class DiaryService {
     public DiaryDetailDto getDiaryDetail(Integer diaryId) {
         String cacheKey = CACHE_KEY_PREFIX + diaryId;
 
-        DiaryDetailDto diaryDetailDto;
-
+        // 다이어리 조회
+        Diary diary;
         if (Arrays.asList(env.getActiveProfiles()).contains("test")) {
-            // 테스트 환경은 캐시 안 씀
-            Diary diary = diaryRepository.findById(diaryId)
+            diary = diaryRepository.findById(diaryId)
                     .orElseThrow(DiaryNotFoundException::new);
-            diaryDetailDto = DiaryDetailDto.of(diary);
         } else {
             Object cached = objectRedisTemplate.opsForValue().get(cacheKey);
             if (cached != null) {
-                // 캐시에서 DTO로 바로 변환
-                diaryDetailDto = objectMapper.convertValue(cached, DiaryDetailDto.class);
+                diary = objectMapper.convertValue(cached, Diary.class);
             } else {
-                // DB 조회 후 DTO 생성
-                Diary diary = diaryRepository.findById(diaryId)
+                diary = diaryRepository.findById(diaryId)
                         .orElseThrow(DiaryNotFoundException::new);
-                diaryDetailDto = DiaryDetailDto.of(diary);
-                objectRedisTemplate.opsForValue().set(cacheKey, diaryDetailDto);
+                objectRedisTemplate.opsForValue().set(cacheKey, DiaryDetailDto.of(diary));
             }
         }
 
@@ -148,32 +138,30 @@ public class DiaryService {
         } catch (Exception ignored) {
         }
 
-        if (!diaryDetailDto.isPublic() &&
-                (currentUser == null || !diaryDetailDto.getUserId().equals(currentUser.getId()))) {
+        if (!diary.getIsPublic() &&
+                (currentUser == null || !diary.getUser().getId().equals(currentUser.getId()))) {
             throw new CustomException(ErrorCode.AUTH_FORBIDDEN);
         }
 
-        return diaryDetailDto;
+        return DiaryDetailDto.of(diary);
     }
 
     @Transactional
+    @CacheEvict(value = "diaryDetail", key = "#diaryId")
     public void delete(int diaryId, User user) {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.DIARY_NOT_FOUND));
 
+        // 작성자 검증
         if (!diary.getUser().getId().equals(user.getId())) {
             throw new CustomException(ErrorCode.AUTH_FORBIDDEN);
         }
 
-        diary.getDiaryTags().size();
-        diary.getDiaryGenres().size();
-        diary.getDiaryOtts().size();
-        diary.getComments().size();
-        diary.getLikes().size();
-
         diaryRepository.delete(diary);
-
-        objectRedisTemplate.delete(CACHE_KEY_PREFIX + diaryId);
     }
 
+    public Page<DiaryResponseDto> getDiariesByUser(Integer userId, Pageable pageable) {
+        Page<Diary> diaries = diaryRepository.findByUserId(userId, pageable);
+        return diaries.map(DiaryMapper::toResponseDto);
+    }
 }

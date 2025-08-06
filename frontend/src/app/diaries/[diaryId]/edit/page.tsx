@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import DiaryForm from "@/components/diary/DiaryForm";
 import { Content, Diary } from "@/app/diaries/types/detail";
-import { axiosInstance } from "@/lib/api-client";
 
 const EditDiaryPage = () => {
   const { diaryId } = useParams();
@@ -15,14 +14,13 @@ const EditDiaryPage = () => {
   useEffect(() => {
     const fetchDiaryAndContent = async () => {
       try {
-        // diary 먼저 조회
-        const diaryRes = await axiosInstance.get(`/api/v1/diaries/${diaryId}`);
-        const diaryData = diaryRes.data.data;
-        setDiary(diaryData);
-
-        // diaryId 기반으로 content 조회
-        const contentRes = await axiosInstance.get(`/api/v1/contents/${diaryId}`);
-        setContent(contentRes.data.data);
+        const [diaryRes, contentRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/diaries/${diaryId}`).then(res => res.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/contents/${diaryId}`).then(res => res.json()),
+        ]);
+        
+        setDiary(diaryRes.data);
+        setContent(contentRes.data);
       } catch (error) {
         console.error("Fetch error:", error);
         alert("감상일기를 불러올 수 없습니다");
@@ -52,7 +50,7 @@ const EditDiaryPage = () => {
       mode="edit"
       diaryId={Number(diaryId)}
       externalId={content.externalId}
-      type={content.type as "MOVIE" | "BOOK" | "MUSIC"}
+      type={content.type as "MOVIE" | "BOOK" | "MUSIC"} 
       title={content.title}
       creatorName={content.creatorName}
       description={content.description}
@@ -66,7 +64,7 @@ const EditDiaryPage = () => {
         rating: diary.rating,
         tagNames: diary.tagNames,
         genreNames: diary.genreNames,
-        ottNames: diary.ottNames,
+        ottNames: diary.ottNames, 
       }}
     />
   );

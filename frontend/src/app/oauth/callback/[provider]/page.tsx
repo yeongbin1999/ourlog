@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
 import { axiosInstance } from '@/lib/api-client';
 import { useDeviceStore } from '@/stores/deviceStore';
-import { getMe } from '@/generated/api/api';
+import { getMe } from '@/generated/api/api'; // getMe 함수 임포트
 
 const OAuthCallbackPage = () => {
   const router = useRouter();
@@ -29,12 +29,13 @@ const OAuthCallbackPage = () => {
     if (code) {
       const handleOAuthLogin = async () => {
         try {
-          // 환경변수 사용, NEXT_PUBLIC_ 접두어가 있어야 클라이언트에서 접근 가능
-          const FRONTEND_REDIRECT_URI = `${process.env.NEXT_PUBLIC_FRONTEND_REDIRECT_URI}/${provider}`;
+          // 백엔드 OAuth 로그인 API 호출
+          // 백엔드 API 엔드포인트는 /api/v1/auth/oauth/{provider} 로 가정합니다.
+          const FRONTEND_REDIRECT_URI = `http://localhost:3000/oauth/callback/${provider}`;
 
           const response = await axiosInstance.post(
             `/api/v1/auth/oauth/callback/${provider}`,
-            { code, redirectUri: FRONTEND_REDIRECT_URI },
+            { code, redirectUri: FRONTEND_REDIRECT_URI }, // 인증 코드와 redirectUri를 백엔드로 전송
             {
               headers: {
                 'X-Device-Id': deviceInfo.deviceId,
@@ -44,8 +45,9 @@ const OAuthCallbackPage = () => {
 
           if (response.data.success) {
             const { accessToken } = response.data.data;
-            setAuthInfo({ accessToken, user: null, isAuthenticated: true });
+            setAuthInfo({ accessToken, user: null, isAuthenticated: true }); // user는 일단 null로 설정
 
+            // getMe()를 호출하여 사용자 정보 가져오기
             try {
               const meResponse = await getMe({
                 request: {
@@ -68,6 +70,7 @@ const OAuthCallbackPage = () => {
             } catch (meError) {
               console.error('Failed to fetch user profile after OAuth login:', meError);
               toast.error('사용자 프로필을 불러오는 데 실패했습니다.');
+              // 프로필 로드 실패 시에도 로그인 상태는 유지
             }
 
             toast.success(`${provider} 로그인 성공!`);

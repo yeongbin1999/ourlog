@@ -4,6 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import UserProfileCard from './UserProfileCard';
+import { axiosInstance } from '@/lib/api-client';
 
 type Props = {
   myUserId: number;
@@ -24,7 +25,7 @@ export default function SentRequestList({ myUserId }: Props) {
 
   const fetchSentRequests = async () => {
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}follows/sent-requests?userId=${myUserId}`);
+      const res = await axiosInstance.get(`/api/v1/follows/sent-requests?userId=${myUserId}`);
       setSentRequests(res.data);
     } catch (err) {
       console.error('보낸 요청 불러오기 실패', err);

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { axiosInstance } from '@/lib/api-client';
 
 type FollowUser = {
   userId: number;
@@ -34,11 +34,9 @@ export default function UserProfileCard({
   const [isFollowing, setIsFollowing] = useState<boolean>(
     typeof isFollowingProp === 'boolean' ? isFollowingProp : false
   );
-
   const [loading, setLoading] = useState(false);
   const [myUserId, setMyUserId] = useState<number | null>(null);
 
-  // 로그인한 사용자 ID 불러오기..
   useEffect(() => {
     const storedId = localStorage.getItem('userId');
     if (storedId) {
@@ -46,56 +44,49 @@ export default function UserProfileCard({
     }
   }, []);
 
-  // 프로필 데이터 로드..
   useEffect(() => {
-    axios
-      .get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/${userId}`)
-      .then((res) => setProfile(res.data))
+    axiosInstance
+      .get(`/api/v1/users/${userId}`)
+      .then((res) => setProfile(res.data.data))
       .catch(() => setError('존재하지 않는 사용자입니다.'));
   }, [userId]);
 
-  // ..팔로잉 상태 확인
   const fetchFollowingStatus = async () => {
     if (!myUserId) return;
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/followings?userId=${myUserId}`);
-      const followingList = res.data;
-      const isMeFollowing = followingList.some(
-        (user: FollowUser) => user.userId === Number(userId)
-      );
+      const res = await axiosInstance.get(`/api/v1/follows/followings?userId=${myUserId}`);
+      // API 응답 구조에 맞게 data 위치 조정
+      const followingList: FollowUser[] = Array.isArray(res.data) ? res.data : res.data.data ?? [];
+      const isMeFollowing = followingList.some(user => user.userId === Number(userId));
       setIsFollowing(isMeFollowing);
     } catch (err) {
       console.error('팔로잉 상태 불러오기 실패', err);
     }
   };
 
-   useEffect(() => {
-     if (typeof isFollowingProp === 'boolean') {
-       setIsFollowing(isFollowingProp); // props 우선
-     } else if (['profile', 'followers', 'following'].includes(userType)) {
-       fetchFollowingStatus(); // API로 확인
-     }
-   }, [isFollowingProp, userType, myUserId, userId]);
+  useEffect(() => {
+    if (typeof isFollowingProp === 'boolean') {
+      setIsFollowing(isFollowingProp);
+    } else if (['profile', 'followers', 'following'].includes(userType)) {
+      fetchFollowingStatus();
+    }
+  }, [isFollowingProp, userType, myUserId, userId]);
 
-
-
-  // 팔로우 / 언팔로우
   const toggleFollow = async () => {
-    if (!myUserId) return;
     setLoading(true);
 
     try {
-      // 조건에 따라 param 이름만 다르게 처리
-      const paramKey = isFollowing ? 'myUserId' : 'followerId';
-      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/${userId}?${paramKey}=${myUserId}`;
-      const method = isFollowing ? 'DELETE' : 'POST';
+      const url = `/api/v1/follows/${userId}`;
 
-      await fetch(url, { method });
+      if (isFollowing) {
+        await axiosInstance.delete(url);
+      } else {
+        await axiosInstance.post(url);
+      }
 
-      const msg = isFollowing ? '언팔로우 완료!' : '팔로우 요청 완료!';
-      alert(msg);
+      alert(isFollowing ? '언팔로우 완료!' : '팔로우 요청 완료!');
       await fetchFollowingStatus();
-      window.location.reload();
+      onActionCompleted?.();
     } catch (err) {
       console.error('팔로우 요청 실패', err);
       alert('요청 처리 중 오류가 발생했습니다.');
@@ -104,27 +95,20 @@ export default function UserProfileCard({
     }
   };
 
-
-  // 수락 / 거절..
   const acceptFollow = async () => {
-    console.log('[디버깅] followId: ', followId);
     if (!followId) return;
 
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/${followId}/accept`, {
-        method: 'POST',
-      });
-
-      if (!res.ok) throw new Error('서버 오류');
+      const res = await axiosInstance.post(`/api/v1/follows/${followId}/accept`);
+      if (res.status < 200 || res.status >= 300) throw new Error('서버 오류');
 
       alert('수락 완료!');
       await fetchFollowingStatus();
-
       onActionCompleted?.();
-      window.location.reload();
     } catch (err) {
       console.error('수락 실패', err);
+      alert('수락 처리 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -135,27 +119,20 @@ export default function UserProfileCard({
 
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/${followId}/reject`, {
-        method: 'DELETE',
-      });
-
-      if (!res.ok) throw new Error('서버 오류');
+      const res = await axiosInstance.delete(`/api/v1/follows/${followId}/reject`);
+      if (res.status < 200 || res.status >= 300) throw new Error('서버 오류');
 
       alert('거절 완료!');
       onActionCompleted?.();
-      window.location.reload();
     } catch (err) {
       console.error('거절 실패', err);
+      alert('거절 처리 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-
-
-  // 버튼 렌더링..
   const renderActionButton = () => {
-    if (!myUserId || String(myUserId) === userId) return null;
     if (loading) {
       return (
         <button disabled className="mt-6 px-4 py-2 bg-gray-200 rounded">
@@ -168,10 +145,16 @@ export default function UserProfileCard({
       case 'received':
         return (
           <div className="flex gap-2 mt-6">
-                <button onClick={acceptFollow} className="px-4 py-2 bg-green-500 text-white rounded">
-                  수락
-                </button>
-            <button onClick={rejectFollow} className="px-4 py-2 bg-red-500 text-white rounded">
+            <button
+              onClick={acceptFollow}
+              className="px-4 py-2 bg-green-500 text-white rounded"
+            >
+              수락
+            </button>
+            <button
+              onClick={rejectFollow}
+              className="px-4 py-2 bg-red-500 text-white rounded"
+            >
               거절
             </button>
           </div>

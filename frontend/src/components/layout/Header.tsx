@@ -4,10 +4,11 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UserMenu } from "./UserMenu";
+import UserSearchDropdown from "../UserSearchDropdown";
+import router from "next/router";
 
 const Header = () => {
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const router = useRouter();
+  const [hoveredItem, setHoveredItem] = React.useState<string | null>(null);
 
   const leftNavItems = [
     { key: "feed", label: "Feed", href: "/social" },
@@ -48,19 +49,11 @@ const Header = () => {
 
         {/* 오른쪽: 아이콘 + Write */}
         <div className="flex items-center h-full ml-auto pr-0">
-        {/* 검색창 */}
+          {/* 검색창 드롭다운 */}
           <div className="mr-4">
-            <input
-              type="text"
-              placeholder="Search user..."
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  router.push(`/search?keyword=${e.currentTarget.value}`);
-                }
-              }}
-              className="px-3 py-1.5 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-black text-sm"
-            />
+            <UserSearchDropdown />
           </div>
+
           {/* 드롭다운 */}
           <div className="flex items-center space-x-8 mr-6">
             <UserMenu />

@@ -1,9 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { axiosInstance } from "@/lib/api-client"
 
 interface Tag {
   id: number;
@@ -87,6 +86,7 @@ export default function DiaryForm({
   initialValues,
   mode = "create",
   diaryId,
+  onSubmit,
 }: DiaryFormProps) {
   const router = useRouter();
 
@@ -101,22 +101,25 @@ export default function DiaryForm({
   const [isOttDropdownOpen, setIsOttDropdownOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchTags = useCallback(async () => {
-    try {
-      const res = await axiosInstance.get("/api/v1/tags");
-      const tagsWithColor = res.data.data.map((tag: Tag) => ({
-        ...tag,
-        color: getRandomColor(),
-      }));
-      setAllTags(tagsWithColor);
-    } catch (err) {
-      console.error("태그 불러오기 실패:", err);
-    }
-  }, []);
-
   useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const res = await fetch("${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/tags");
+        const json = await res.json();
+
+        const tagsWithColor = json.data.map((tag: Tag) => ({
+          ...tag,
+          color: getRandomColor(),
+        }));
+
+        setAllTags(tagsWithColor);
+      } catch (err) {
+        console.error("태그 불러오기 실패:", err);
+      }
+    };
+
     fetchTags();
-  }, [fetchTags]);
+  }, []);
 
   useEffect(() => {
     if (initialValues && allTags.length > 0) {
@@ -135,12 +138,13 @@ export default function DiaryForm({
         setSelectedOttId(null);
       }
     }
+
   }, [initialValues, allTags, type]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-  
+
     const payload = {
       title,
       contentText,
@@ -151,24 +155,35 @@ export default function DiaryForm({
       externalId,
       type,
     };
-  
+
     try {
-      let res;
-      if (mode === "edit") {
-        res = await axiosInstance.put(`/api/v1/diaries/${diaryId}`, payload);
-      } else {
-        res = await axiosInstance.post("/api/v1/diaries", payload);
+      const res = await fetch(
+        mode === "edit"
+          ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/diaries/${diaryId}`
+          : "${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/diaries",
+        {
+          method: mode === "edit" ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.msg || "감상일기 저장에 실패했습니다.");
+        return;
       }
-    
+
+      console.log("🔍 최종 전송될 payload:", payload);
+
       alert("감상일기가 저장되었습니다.");
-      const redirectId = res.data.data?.id ?? diaryId;
+      const redirectId = data.data?.id ?? diaryId;
       const redirectUrl = mode === "edit" ? `/diaries/${redirectId}?refresh=1` : `/diaries/${redirectId}`;
       router.push(redirectUrl);
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error && 'response' in err 
-        ? (err as { response?: { data?: { msg?: string } } }).response?.data?.msg 
-        : "오류가 발생했습니다.";
-      alert(errorMessage || "오류가 발생했습니다.");
+    } catch (err) {
+      console.error("저장 중 에러 발생:", err);
+      alert("오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -416,4 +431,4 @@ export default function DiaryForm({
       </div>
     </div>
   );
-}
+}  
