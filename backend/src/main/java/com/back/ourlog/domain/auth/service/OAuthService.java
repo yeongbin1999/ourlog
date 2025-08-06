@@ -5,7 +5,6 @@ import com.back.ourlog.global.security.jwt.TokenDto;
 import com.back.ourlog.global.security.service.CustomUserDetails;
 import com.back.ourlog.global.security.service.TokenService;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -27,7 +26,6 @@ public class OAuthService {
     private final RestTemplate restTemplate;
     private final TokenService tokenService;
     private final AuthService authService;
-    private final ObjectMapper objectMapper;
 
     @Value("${oauth2.google.client-id}")
     private String googleClientId;

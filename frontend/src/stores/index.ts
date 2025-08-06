@@ -3,8 +3,8 @@ export { useAuthStore } from './authStore';
 
 // API Store
 export { 
-  apiClient, 
-  createApiStore,
+  apiClient,
+  createApiStore
 } from './apiStore';
 
 // Device Store
