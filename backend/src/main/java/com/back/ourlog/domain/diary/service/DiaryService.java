@@ -123,11 +123,13 @@ public class DiaryService {
         } else {
             Object cached = objectRedisTemplate.opsForValue().get(cacheKey);
             if (cached != null) {
-                diary = objectMapper.convertValue(cached, Diary.class);
+                return objectMapper.convertValue(cached, DiaryDetailDto.class);
             } else {
                 diary = diaryRepository.findById(diaryId)
                         .orElseThrow(DiaryNotFoundException::new);
-                objectRedisTemplate.opsForValue().set(cacheKey, DiaryDetailDto.of(diary));
+                DiaryDetailDto detailDto = DiaryDetailDto.of(diary);
+                objectRedisTemplate.opsForValue().set(cacheKey, detailDto);
+                return detailDto;
             }
         }
 
