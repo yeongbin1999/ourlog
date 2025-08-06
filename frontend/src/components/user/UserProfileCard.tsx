@@ -1,6 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 'use client';
+
+import { useRouter } from "next/navigation";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useEffect, useState } from 'react';
 import { axiosInstance } from '@/lib/api-client';
@@ -32,15 +34,17 @@ export default function UserProfileCard({
   onActionCompleted,
   isFollowing: isFollowingProp,
 }: Props) {
+  const router = useRouter(); // 이 위치로 이동
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState<boolean>(
     typeof isFollowingProp === 'boolean' ? isFollowingProp : false
   );
+  const [hasSentPendingRequest, setHasSentPendingRequest] = useState(false); // New state
 
   const [loading, setLoading] = useState(false);
-  const { user: myUser } = useAuthStore(); // useAuthStore에서 user 정보 가져오기
-  const myUserId = myUser?.id ? Number(myUser.id) : null; // myUserId 설정
+  const { user: myUser } = useAuthStore();
+  const myUserId = myUser?.id ? Number(myUser.id) : null;
 
   // 프로필 데이터 로드..
   useEffect(() => {
@@ -50,31 +54,43 @@ export default function UserProfileCard({
       .catch(() => setError('존재하지 않는 사용자입니다.'));
   }, [userId]);
 
-  // ..팔로잉 상태 확인
-  const fetchFollowingStatus = async () => {
+  // ..팔로우 상태 확인
+  const fetchFollowStatus = async () => { // Renamed from fetchFollowingStatus
     if (!myUserId) return;
-    console.log(`[fetchFollowingStatus] Checking follow status for userId: ${userId} by myUserId: ${myUserId}`);
+    setLoading(true); // Set loading true when fetching status
+
     try {
-      const res = await axiosInstance.get(`/api/v1/follows/followings?userId=${myUserId}`);
-      const followingList = Array.isArray(res.data) ? res.data : [];
-      console.log(`[fetchFollowingStatus] API response for followings:`, followingList);
+      // Fetch followings
+      const followingsRes = await axiosInstance.get(`/api/v1/follows/followings?userId=${myUserId}`);
+      const followingList = Array.isArray(followingsRes.data) ? followingsRes.data : [];
       const isMeFollowing = followingList.some(
         (user: FollowUser) => user.userId === Number(userId)
       );
-      console.log(`[fetchFollowingStatus] isMeFollowing: ${isMeFollowing}`);
       setIsFollowing(isMeFollowing);
+
+      // Fetch sent requests if userType is 'profile'
+      if (userType === 'profile') {
+        const sentRequestsRes = await axiosInstance.get(`/api/v1/follows/sent-requests`);
+        const sentRequestsList = Array.isArray(sentRequestsRes.data) ? sentRequestsRes.data : [];
+        const hasPending = sentRequestsList.some(
+          (user: FollowUser) => user.userId === Number(userId)
+        );
+        setHasSentPendingRequest(hasPending);
+      }
     } catch (err) {
-      console.error('팔로잉 상태 불러오기 실패', err);
+      console.error('팔로우 상태 불러오기 실패', err);
+    } finally {
+      setLoading(false); // Set loading false after fetching status
     }
   };
 
-   useEffect(() => {
-     if (typeof isFollowingProp === 'boolean') {
-       setIsFollowing(isFollowingProp); // props 우선
-     } else if (['profile', 'followers', 'following'].includes(userType)) {
-       fetchFollowingStatus(); // API로 확인
-     }
-   }, [isFollowingProp, userType, myUserId, userId]);
+  useEffect(() => {
+    if (typeof isFollowingProp === 'boolean') {
+      setIsFollowing(isFollowingProp); // props 우선
+    } else if (['profile', 'followers', 'following'].includes(userType)) {
+      fetchFollowStatus(); // API로 확인
+    }
+  }, [isFollowingProp, userType, myUserId, userId]);
 
 
 
@@ -84,19 +100,22 @@ export default function UserProfileCard({
     setLoading(true);
 
     try {
-      // 조건에 따라 param 이름만 다르게 처리
-      const url = `/api/v1/follows/${userId}`;
-      const method = isFollowing ? 'delete' : 'post';
-
-      await axiosInstance({ method, url });
-
-      const msg = isFollowing ? '언팔로우 완료!' : '팔로우 요청 완료!';
-      alert(msg);
-      setIsFollowing(!isFollowing); // 상태 직접 업데이트
-      onActionCompleted?.(); // 액션 완료 후 콜백 호출
-      // No need to log action completed here
+      if (hasSentPendingRequest) { // 보낸 요청이 있다면, 요청 취소
+        await axiosInstance.delete(`/api/v1/follows/${userId}`);
+        alert('팔로우 요청 취소 완료!');
+        setHasSentPendingRequest(false);
+      } else if (isFollowing) { // 팔로우 중이라면, 언팔로우
+        await axiosInstance.delete(`/api/v1/follows/${userId}`);
+        alert('언팔로우 완료!');
+        setIsFollowing(false);
+      } else { // 팔로우 중이 아니고 보낸 요청도 없다면, 팔로우 요청
+        await axiosInstance.post(`/api/v1/follows/${userId}`);
+        alert('팔로우 요청 완료!');
+        setHasSentPendingRequest(true);
+      }
+      onActionCompleted?.();
     } catch (err) {
-      console.error('팔로우 요청 실패', err);
+      console.error('요청 처리 실패', err);
       alert('요청 처리 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -181,6 +200,16 @@ export default function UserProfileCard({
       case 'followers': // 팔로워 리스트에서는 버튼 없음
         return null;
       default: // 'profile'과 'following'은 이리로 들어옴
+        if (hasSentPendingRequest) {
+          return (
+            <button
+              onClick={toggleFollow} // 보낸 요청 취소
+              className="mt-6 px-4 py-2 bg-gray-200 text-black rounded"
+            >
+              요청 취소
+            </button>
+          );
+        }
         return (
           <button
             onClick={toggleFollow}
@@ -200,7 +229,10 @@ export default function UserProfileCard({
   if (!profile) return <div className="text-center">⏳ 로딩 중...</div>;
 
   return (
-    <div className="w-full max-w-sm bg-white p-6 rounded-3xl shadow-md border border-black mx-auto flex flex-col items-center text-center">
+    <div
+      className="w-full max-w-sm bg-white p-6 rounded-3xl shadow-md border border-black mx-auto flex flex-col items-center text-center cursor-pointer" // cursor-pointer 추가
+      onClick={() => router.push(`/profile/${userId}`)} // onClick 이벤트 추가
+    >
       <div
         className="w-20 h-20 mb-4 rounded-full bg-center bg-cover"
         style={{ backgroundImage: `url(${profile.profileImageUrl})` }}

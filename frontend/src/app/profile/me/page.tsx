@@ -1,5 +1,7 @@
 'use client';
 
+import { useRouter } from "next/navigation";
+
 import React, { useEffect, useState, useCallback } from 'react';
 import FollowRequestList from '@/components/user/FollowRequestList';
 import SentRequestList from '@/components/user/SentRequestList';
@@ -21,6 +23,14 @@ type TabKey = typeof TAB_ITEMS[number]['key'];
 export default function MyProfilePage() {
     const [selectedTab, setSelectedTab] = useState<TabKey | null>('received');
     const { user } = useAuthStore();
+    const router = useRouter(); // useRouter 훅 사용
+
+    useEffect(() => {
+        if (!user) {
+            router.push('/login'); // 로그인 페이지로 리다이렉트
+        }
+    }, [user, router]);
+
     const [myUserId, setMyUserId] = useState<number | null>(null);
     const [counts, setCounts] = useState<Record<TabKey, number>>({
         received: 0,
