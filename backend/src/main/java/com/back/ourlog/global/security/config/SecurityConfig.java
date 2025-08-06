@@ -85,10 +85,10 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-                // 6. JWT 필터 등록
+                // 5. JWT 필터 등록
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
-                // 7. CSP 보안 헤더 설정 (옵션)
+                // 6. CSP 보안 헤더 설정 (옵션)
                 .headers(headers -> headers
                         .contentSecurityPolicy(csp -> csp.policyDirectives("frame-ancestors 'self'"))
                 );
