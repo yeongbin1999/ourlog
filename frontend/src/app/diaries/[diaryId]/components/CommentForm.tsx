@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Comment } from "../../types/detail";
-import { axiosInstance } from "@/lib/api-client";
 
 export default function CommentForm({
   diaryId,
@@ -20,15 +19,19 @@ export default function CommentForm({
     }
 
     setIsSubmitting(true);
-    const payload = {
-      diaryId,
-      content,
-    };
 
     try {
-      const result = await axiosInstance.post("/api/v1/comments", payload);
+      const response = await fetch("${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ diaryId, content }),
+      });
+
+      if (!response.ok) throw new Error("댓글 등록 실패");
+
+      const result = await response.json();
       setContent("");
-      onCommentAdd(result.data.data);
+      onCommentAdd(result.data);
     } catch (error) {
       console.error(error);
       alert("댓글 등록 중 오류가 발생했습니다.");

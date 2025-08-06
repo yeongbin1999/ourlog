@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { axiosInstance } from '@/lib/api-client';
+import { useRouter } from 'next/navigation';
 
 type Diary = {
   id: number;
@@ -23,6 +24,7 @@ export default function DiaryList({ userId }: { userId: number }) {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const loadDiaries = async (pageToLoad: number) => {
     setLoading(true);
@@ -71,6 +73,10 @@ export default function DiaryList({ userId }: { userId: number }) {
     }
   };
 
+  const handleDiaryClick = (diaryId: number) => {
+    router.push(`/diaries/${diaryId}`);
+  };
+
   if (error) return <div className="text-center text-red-600">{error}</div>;
 
   return (
@@ -80,7 +86,11 @@ export default function DiaryList({ userId }: { userId: number }) {
       )}
 
       {diaries.map((diary) => (
-        <div key={diary.id} className="p-6 border rounded-xl shadow-sm bg-white">
+        <div
+          key={diary.id}
+          className="p-6 border rounded-xl shadow-sm bg-white cursor-pointer"
+          onClick={() => handleDiaryClick(diary.id)}
+        >
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-xl font-semibold">{diary.title}</h3>
             <span className="text-sm text-gray-500">{diary.releasedAt || '개봉일 미정'}</span>

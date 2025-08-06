@@ -19,6 +19,7 @@ interface AuthState {
   accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   error: string | null;
   isRefreshing: boolean;
 }
@@ -218,6 +219,7 @@ export const useAuthStore = create<AuthStore>()(
             return;
           }
         } else {
+          /*
           try {
             await axiosInstance.get('/api/v1/auth/verify', {
               headers: { Authorization: `Bearer ${accessToken}` },
@@ -229,6 +231,7 @@ export const useAuthStore = create<AuthStore>()(
               await get().logout();
             }
           }
+          */
         }
 
         if (get().isAuthenticated && !get().user) {

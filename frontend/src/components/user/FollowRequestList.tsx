@@ -7,6 +7,7 @@ import { axiosInstance } from '@/lib/api-client';
 
 type Props = {
   myUserId: number;
+  onActionCompleted?: () => void;
 };
 
 type FollowUserResponse = {
@@ -19,13 +20,15 @@ type FollowUserResponse = {
 };
 
 // 나에게 팔로우 요청한 사람들..
-export default function FollowRequestList({ myUserId }: Props) {
+export default function FollowRequestList({ myUserId, onActionCompleted }: Props) {
   const [requests, setRequests] = useState<FollowUserResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchRequests = async () => {
+    console.log("Fetching follow requests...");
     try {
       const res = await axiosInstance.get(`/api/v1/follows/requests?userId=${myUserId}`);
+      console.log("Follow Requests API Response:", res.data);
       setRequests(res.data);
     } catch (err) {
       console.error('받은 요청 불러오기 실패', err);
@@ -34,7 +37,10 @@ export default function FollowRequestList({ myUserId }: Props) {
     }
   };
 
-  const handleRefresh = () => fetchRequests();
+  const handleRefresh = () => {
+    fetchRequests();
+    onActionCompleted?.(); // 액션 완료 후 콜백 호출
+  };
 
   useEffect(() => {
     fetchRequests();

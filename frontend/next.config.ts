@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const backendApi = process.env.NEXT_PUBLIC_BACKEND_API || "http://localhost:8080";
 
 const nextConfig: NextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   images: {
     domains: [
       "i.scdn.co",

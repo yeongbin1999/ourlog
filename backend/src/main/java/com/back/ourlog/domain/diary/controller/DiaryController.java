@@ -81,7 +81,6 @@ public class DiaryController {
 
     @GetMapping("/users/{userId}")
     @Operation(summary = "내 다이어리 목록 조회", description = "사용자의 감상일기 목록을 페이징 조회합니다.")
-    @PreAuthorize("#userId == authentication.principal.id")
     public ResponseEntity<RsData<Page<DiaryResponseDto>>> getMyDiaries(
             @PathVariable Integer userId,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable

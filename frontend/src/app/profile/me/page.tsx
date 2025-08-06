@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useRouter } from "next/navigation";
+
+import React, { useEffect, useState, useCallback } from 'react';
 import FollowRequestList from '@/components/user/FollowRequestList';
 import SentRequestList from '@/components/user/SentRequestList';
 import FollowingList from '@/components/user/FollowingList';
@@ -21,6 +23,14 @@ type TabKey = typeof TAB_ITEMS[number]['key'];
 export default function MyProfilePage() {
     const [selectedTab, setSelectedTab] = useState<TabKey | null>('received');
     const { user } = useAuthStore();
+    const router = useRouter(); // useRouter 훅 사용
+
+    useEffect(() => {
+        if (!user) {
+            router.push('/login'); // 로그인 페이지로 리다이렉트
+        }
+    }, [user, router]);
+
     const [myUserId, setMyUserId] = useState<number | null>(null);
     const [counts, setCounts] = useState<Record<TabKey, number>>({
         received: 0,
@@ -35,7 +45,7 @@ export default function MyProfilePage() {
         }
     }, [user]);
 
-    const fetchCounts = async (userId: number) => {
+    const fetchCounts = useCallback(async (userId: number) => {
         try {
             const endpoints = {
                 received: `/api/v1/follows/requests?userId=${userId}`,
@@ -57,7 +67,7 @@ export default function MyProfilePage() {
         } catch (err) {
             console.error('수량 불러오기 실패', err);
         }
-    };
+    }, [myUserId]); // myUserId를 의존성 배열에 추가
 
     useEffect(() => {
         if (myUserId) {
@@ -83,13 +93,13 @@ export default function MyProfilePage() {
 
         switch (selectedTab) {
             case 'received':
-                return <FollowRequestList myUserId={myUserId} />;
+                return <FollowRequestList myUserId={myUserId} onActionCompleted={() => fetchCounts(myUserId)} />;
             case 'sent':
-                return <SentRequestList myUserId={myUserId} />;
+                return <SentRequestList myUserId={myUserId} onActionCompleted={() => fetchCounts(myUserId)} />;
             case 'following':
-                return <FollowingList myUserId={myUserId} />;
+                return <FollowingList myUserId={myUserId} onActionCompleted={() => fetchCounts(myUserId)} />;
             case 'followers':
-                return <FollowerList myUserId={myUserId} />;
+                return <FollowerList myUserId={myUserId} onActionCompleted={() => fetchCounts(myUserId)} />;
             default:
                 return null;
         }

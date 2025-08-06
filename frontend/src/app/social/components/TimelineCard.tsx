@@ -4,6 +4,7 @@ import { Card, Image, Row, Col } from "react-bootstrap";
 import { TimelineItem } from "../types/timeline";
 import { FaHeart, FaRegHeart, FaComment } from "react-icons/fa";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface Props {
   item: TimelineItem;
@@ -12,12 +13,14 @@ interface Props {
 export default function TimelineCard({ item }: Props) {
   const [isLiked, setIsLiked] = useState(item.isLiked);
   const [likeCount, setLikeCount] = useState(item.likeCount);
+  const router = useRouter();
 
-  const handleLikeClick = async () => {
+  const handleLikeClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     try {
       const method = isLiked ? "DELETE" : "POST";
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/likes/${item.id}`, {
+      const response = await fetch(`/api/v1/likes/${item.id}`, {
           method,
       });
 
@@ -34,10 +37,15 @@ export default function TimelineCard({ item }: Props) {
     }
   };
 
+  const handleCardClick = () => {
+    router.push(`/diaries/${item.id}`);
+  };
+
   return (
     <Card
       className="shadow-sm rounded overflow-hidden mb-4 timeline-hover"
       style={{ width: "100%", maxWidth: "360px" }}
+      onClick={handleCardClick}
     >
       {item.imageUrl && (
         <Card.Img
