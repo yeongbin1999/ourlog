@@ -178,7 +178,9 @@ export default function UserProfileCard({
             요청 취소
           </button>
         );
-      default:
+      case 'followers': // 팔로워 리스트에서는 버튼 없음
+        return null;
+      default: // 'profile'과 'following'은 이리로 들어옴
         return (
           <button
             onClick={toggleFollow}
