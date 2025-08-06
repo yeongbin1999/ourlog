@@ -20,16 +20,16 @@ export default function LoginPage() {
   const NAVER_CLIENT_ID = process.env.NEXT_PUBLIC_NAVER_CLIENT_ID || '';
   const KAKAO_CLIENT_ID = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || '';
 
-  const FRONTEND_REDIRECT_URI_BASE = process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI_BASE || 'http://localhost:3000/oauth/callback';
+  const FRONTEND_REDIRECT_URI = process.env.NEXT_PUBLIC_FRONTEND_REDIRECT_URI || 'http://localhost:3000/oauth/callback';
 
   const getOAuthUrl = (provider: string) => {
     switch (provider) {
       case 'google':
-        return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(FRONTEND_REDIRECT_URI_BASE + '/google')}&response_type=code&scope=email profile`;
+        return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(FRONTEND_REDIRECT_URI + '/google')}&response_type=code&scope=email profile`;
       case 'naver':
-        return `https://nid.naver.com/oauth2.0/authorize?client_id=${NAVER_CLIENT_ID}&redirect_uri=${encodeURIComponent(FRONTEND_REDIRECT_URI_BASE + '/naver')}&response_type=code&scope=name,email`;
+        return `https://nid.naver.com/oauth2.0/authorize?client_id=${NAVER_CLIENT_ID}&redirect_uri=${encodeURIComponent(FRONTEND_REDIRECT_URI + '/naver')}&response_type=code&scope=name,email`;
       case 'kakao':
-        return `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${encodeURIComponent(FRONTEND_REDIRECT_URI_BASE + '/kakao')}&response_type=code&scope=profile_nickname,profile_image`;
+        return `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${encodeURIComponent(FRONTEND_REDIRECT_URI + '/kakao')}&response_type=code&scope=profile_nickname,profile_image`;
       default:
         return '';
     }
