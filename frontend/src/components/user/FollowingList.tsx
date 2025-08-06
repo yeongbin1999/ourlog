@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { axiosInstance } from '@/lib/api-client';
 import UserProfileCard from './UserProfileCard';
 
 type Props = {
@@ -14,17 +14,19 @@ type FollowingUserResponse = {
   email: string;
   bio: string;
   profileImageUrl: string;
+  isFollowing: boolean;
+  followId: number;
 };
 
-// 내가 팔로우한 사람들..
 export default function FollowingList({ myUserId }: Props) {
-  const [following, setFollowing] = useState<FollowingUserResponse[]>([]);
+  const [followings, setFollowings] = useState<FollowingUserResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchFollowing = async () => {
+  const fetchFollowings = async () => {
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/followings?userId=${myUserId}`);
-      setFollowing(res.data);
+      const res = await axiosInstance.get(`/api/v1/follows/followings?userId=${myUserId}`);
+      const data = Array.isArray(res.data) ? res.data : res.data.data ?? [];
+      setFollowings(data);
     } catch (err) {
       console.error('팔로잉 목록 불러오기 실패', err);
     } finally {
@@ -33,20 +35,23 @@ export default function FollowingList({ myUserId }: Props) {
   };
 
   useEffect(() => {
-    fetchFollowing();
-  }, []);
+    if (myUserId) {
+      fetchFollowings();
+    }
+  }, [myUserId]);
 
   if (loading) return <div className="text-center mt-10">로딩 중...</div>;
-  if (following.length === 0) return <div className="text-center mt-10">팔로우한 유저가 없습니다.</div>;
+  if (followings.length === 0) return <div className="text-center mt-10">아직 팔로잉한 유저가 없습니다.</div>;
 
   return (
     <div className="space-y-6">
-      {following.map((user) => (
+      {followings.map((user) => (
         <UserProfileCard
           key={user.userId}
           userId={String(user.userId)}
           userType="following"
-          isFollowing={true}
+          followId={user.followId}
+          isFollowing={user.isFollowing}
         />
       ))}
     </div>

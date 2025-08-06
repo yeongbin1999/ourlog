@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { axiosInstance } from '@/lib/api-client';
 import UserProfileCard from './UserProfileCard';
 
 type Props = {
@@ -18,15 +18,16 @@ type FollowerUserResponse = {
   followId: number;
 };
 
-// 나를 팔로우한 사람들..
 export default function FollowerList({ myUserId }: Props) {
   const [followers, setFollowers] = useState<FollowerUserResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchFollowers = async () => {
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/followers?userId=${myUserId}`);
-      setFollowers(res.data);
+      // ← 이 부분만 'followers'로 수정!
+      const res = await axiosInstance.get(`/api/v1/follows/followers?userId=${myUserId}`);
+      const data = Array.isArray(res.data) ? res.data : res.data.data ?? [];
+      setFollowers(data);
     } catch (err) {
       console.error('팔로워 목록 불러오기 실패', err);
     } finally {
@@ -35,8 +36,10 @@ export default function FollowerList({ myUserId }: Props) {
   };
 
   useEffect(() => {
-    fetchFollowers();
-  }, []);
+    if (myUserId) {
+      fetchFollowers();
+    }
+  }, [myUserId]);
 
   if (loading) return <div className="text-center mt-10">로딩 중...</div>;
   if (followers.length === 0) return <div className="text-center mt-10">아직 팔로워가 없습니다.</div>;

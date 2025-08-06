@@ -1,6 +1,7 @@
-import { useInfiniteQuery, QueryKey } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { searchUsers } from '../generated/api/api';
-import { SearchUsersParams, UserProfileResponse } from '../generated/model';
+import { Omit } from 'utility-types'; // 필요시
+import { SearchUsersParams } from '@/generated/model/searchUsersParams';
 
 export const useSearchUsersInfinite = (params: Omit<SearchUsersParams, 'pageable'>) => {
   return useInfiniteQuery({
@@ -10,21 +11,32 @@ export const useSearchUsersInfinite = (params: Omit<SearchUsersParams, 'pageable
         keyword: params.keyword,
         pageable: { page: pageParam, size: 10 },
       });
+
+      const resData = response.data;
+
+      if (!resData || resData.fail) {
+        return {
+          content: [],
+          page: 0,
+          size: 10,
+          totalElements: 0,
+          totalPages: 0,
+          hasNext: false,
+        };
+      }
+
+      const data = resData.data;
+
       return {
-        content: response.data?.content || [],
-        page: response.data?.page || 0,
-        size: response.data?.size || 10,
-        totalElements: response.data?.totalElements || 0,
-        totalPages: response.data?.totalPages || 0,
-        hasNext: response.data?.hasNext || false,
+        content: data.content || [],
+        page: data.page || 0,
+        size: data.size || 10,
+        totalElements: data.totalElements || 0,
+        totalPages: data.totalPages || 0,
+        hasNext: data.page + 1 < data.totalPages,
       };
     },
-    getNextPageParam: (lastPage) => {
-      if (lastPage.hasNext) {
-        return lastPage.page + 1;
-      }
-      return undefined;
-    },
+    getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.page + 1 : undefined),
     initialPageParam: 0,
     enabled: !!params.keyword,
   });
