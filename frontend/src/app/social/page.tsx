@@ -12,7 +12,7 @@ export default function TimelinePage() {
 
   // timeline 데이터 가져오기
   useEffect(() => {
-    fetch("/api/v1/timeline")
+    fetch("${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/timeline")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch timeline");
         return res.json();

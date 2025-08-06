@@ -38,7 +38,7 @@ const SearchClient = () => {
     if (!keyword) return;
     setLoading(true);
     axios
-      .get(`/api/v1/users/search?keyword=${encodeURIComponent(keyword)}`)
+      .get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/search?keyword=${encodeURIComponent(keyword)}`)
       .then((res) => setResults(res.data))
       .finally(() => setLoading(false));
   }, [keyword]);

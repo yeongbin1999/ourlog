@@ -104,7 +104,7 @@ export default function DiaryForm({
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/v1/tags");
+        const res = await fetch("${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/tags");
         const json = await res.json();
 
         const tagsWithColor = json.data.map((tag: Tag) => ({
@@ -159,8 +159,8 @@ export default function DiaryForm({
     try {
       const res = await fetch(
         mode === "edit"
-          ? `http://localhost:8080/api/v1/diaries/${diaryId}`
-          : "http://localhost:8080/api/v1/diaries",
+          ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/diaries/${diaryId}`
+          : "${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/diaries",
         {
           method: mode === "edit" ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },

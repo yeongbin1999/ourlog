@@ -9,7 +9,7 @@ import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
 import { Line, LineChart, Pie, PieChart, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, TooltipProps } from "recharts"
 
 
-const BASE_URL = "http://localhost:8080/api/v1/statistics";
+const BASE_URL = "${process.env.NEXT_PUBLIC_API_BASE_URL}statistics";
 
 async function fetchCard(): Promise<StatisticsCardDto> {
     const res = await fetch(`${BASE_URL}/card`);

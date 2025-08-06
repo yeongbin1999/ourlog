@@ -40,10 +40,10 @@ export default function MyProfilePage() {
     const fetchCounts = async () => {
       try {
         const endpoints = {
-          received: `/api/v1/follows/requests?userId=${myUserId}`,
-          sent: `/api/v1/follows/sent-requests?userId=${myUserId}`,
-          following: `/api/v1/follows/followings?userId=${myUserId}`,
-          followers: `/api/v1/follows/followers?userId=${myUserId}`,
+          received: `${process.env.NEXT_PUBLIC_API_BASE_URL}follows/requests?userId=${myUserId}`,
+          sent: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/sent-requests?userId=${myUserId}`,
+          following: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/followings?userId=${myUserId}`,
+          followers: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follows/followers?userId=${myUserId}`,
         };
 
         const res = await Promise.all(
