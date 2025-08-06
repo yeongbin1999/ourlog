@@ -20,6 +20,6 @@ export interface MyProfileResponse {
   profileImageUrl: string | undefined;
   nickname: string;
   email: string;
-  userId: any;
+  userId: number;
   data?: MyProfileResponseData;
 }
