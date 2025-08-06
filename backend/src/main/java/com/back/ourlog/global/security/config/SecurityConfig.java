@@ -51,7 +51,19 @@ public class SecurityConfig {
                         // 나머지 다이어리 관련 요청은 USER만
                         .requestMatchers("/api/v1/diaries/**").hasRole("USER")
 
-                        .requestMatchers(HttpMethod.GET,"/api/v1/comments/*").permitAll()
+
+                        // Timeline 공개 API는 누구나 접근 가능..
+                        .requestMatchers(HttpMethod.GET, "/api/v1/timeline").permitAll()
+
+                        // follow 모두 로그인 필요..
+                        .requestMatchers("/api/v1/follows/**").hasRole("USER")
+
+                        // 좋아요 등록/삭제는 로그인 필수..
+                        .requestMatchers(HttpMethod.POST, "/api/v1/likes/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/likes/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/likes/count").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/api/v1/comments/**").permitAll()
                         .requestMatchers("/api/v1/comments/**").authenticated()
 
                         .requestMatchers("/api/v1/auth/logout").authenticated()
