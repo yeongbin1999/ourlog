@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from "react"
 import { Calendar, BarChart3, Star } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
 import { Line, LineChart, Pie, PieChart, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, TooltipProps } from "recharts"
 import { axiosInstance } from "@/lib/api-client"
@@ -431,14 +431,25 @@ export default function Component() {
       return { chartData, ranking, colors: dynamicOttColors };
     }, [ottGraph]);
 
-const CustomTooltip = ({ active, payload, label, highlightedLine }: TooltipProps<any, any> & { highlightedLine: string | null }) => {
+// recharts의 TooltipProps 타입 문제를 해결하기 위한 사용자 정의 타입
+interface CustomTooltipProps extends TooltipProps<number, string> {
+  highlightedLine: string | null;
+  payload?: Array<{
+    dataKey: string;
+    name: string;
+    value: number;
+    color: string;
+  }>;
+}
+
+const CustomTooltip = ({ active, payload, label, highlightedLine }: CustomTooltipProps) => {
   if (active && payload && payload.length && highlightedLine) {
     const data = payload.find((p) => p.dataKey === highlightedLine);
     if (!data) return null;
 
     return (
       <div className="bg-white p-2 border border-gray-200 rounded shadow-lg">
-        <p className="font-bold">{data.name}</p>
+        <p className="font-bold" style={{ color: data.color }}>{data.name}</p>
         <p>{`${label} : ${data.value}`}</p>
       </div>
     );
