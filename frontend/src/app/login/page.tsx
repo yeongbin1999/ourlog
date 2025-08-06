@@ -100,6 +100,13 @@ export default function LoginPage() {
           </Button>
         </form>
 
+        <p className="mt-6 text-center text-sm">
+          계정이 없으신가요?{' '}
+          <Link href="/signup" className="font-medium text-blue-500 hover:text-blue-700 underline underline-offset-2">
+            회원가입
+          </Link>
+        </p>
+
         <div className="mt-6 space-y-3">
           <Button
             className="w-full bg-red-500 hover:bg-red-600 text-white"
@@ -120,13 +127,6 @@ export default function LoginPage() {
             Kakao 로그인
           </Button>
         </div>
-
-        <p className="mt-6 text-center text-sm text-gray-600">
-          계정이 없으신가요?{' '}
-          <Link href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
-            회원가입
-          </Link>
-        </p>
       </div>
     </div>
   );
