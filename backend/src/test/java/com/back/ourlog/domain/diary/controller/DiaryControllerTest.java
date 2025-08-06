@@ -287,42 +287,42 @@ class DiaryControllerTest {
                 .andExpect(jsonPath("$.msg").value("존재하지 않는 OTT입니다."));
     }
 
-//    @Test
-//    @WithUserDetails("user1@test.com")
-//    @DisplayName("감상일기 삭제 성공")
-//    void t7() throws Exception {
-//        DiaryWriteRequestDto dto = new DiaryWriteRequestDto(
-//                "삭제 테스트",
-//                "삭제 테스트 내용",
-//                true,
-//                4.0F,
-//                ContentType.MOVIE,
-//                "tt1375666",
-//                List.of("감동"),
-//                List.of(),
-//                List.of()
-//        );
-//
-//        Diary diary = diaryService.writeWithContentSearch(dto, testUser);
-//
-//        mvc.perform(delete("/api/v1/diaries/" + diary.getId()))
-//                .andDo(print())
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.msg").value("일기 삭제 완료"))
-//                .andExpect(jsonPath("$.resultCode").value("200-0"));
-//    }
-//
-//    @Test
-//    @WithUserDetails("user1@test.com")
-//    @DisplayName("감상일기 삭제 실패 - 존재하지 않는 ID")
-//    void t8() throws Exception {
-//        int id = 9999;
-//        mvc.perform(delete("/api/v1/diaries/" + id))
-//                .andDo(print())
-//                .andExpect(status().isNotFound())
-//                .andExpect(jsonPath("$.resultCode").value("DIARY_001"))
-//                .andExpect(jsonPath("$.msg").value("존재하지 않는 다이어리입니다."));
-//    }
+    @Test
+    @WithUserDetails("user1@test.com")
+    @DisplayName("감상일기 삭제 성공")
+    void t7() throws Exception {
+        DiaryWriteRequestDto dto = new DiaryWriteRequestDto(
+                "삭제 테스트",
+                "삭제 테스트 내용",
+                true,
+                4.0F,
+                ContentType.MOVIE,
+                "tt1375666",
+                List.of("감동"),
+                List.of(),
+                List.of()
+        );
+
+        Diary diary = diaryService.writeWithContentSearch(dto, testUser);
+
+        mvc.perform(delete("/api/v1/diaries/" + diary.getId()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.msg").value("일기 삭제 완료"))
+                .andExpect(jsonPath("$.resultCode").value("200-0"));
+    }
+
+    @Test
+    @WithUserDetails("user1@test.com")
+    @DisplayName("감상일기 삭제 실패 - 존재하지 않는 ID")
+    void t8() throws Exception {
+        int id = 9999;
+        mvc.perform(delete("/api/v1/diaries/" + id))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultCode").value("DIARY_001"))
+                .andExpect(jsonPath("$.msg").value("존재하지 않는 다이어리입니다."));
+    }
 
     @Test
     @DisplayName("감상일기 조회 성공")

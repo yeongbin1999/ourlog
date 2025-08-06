@@ -6,6 +6,7 @@ import UserProfileCard from './UserProfileCard';
 
 type Props = {
   myUserId: number;
+  onActionCompleted?: () => void;
 };
 
 type FollowerUserResponse = {
@@ -18,21 +19,26 @@ type FollowerUserResponse = {
   followId: number;
 };
 
-export default function FollowerList({ myUserId }: Props) {
+export default function FollowerList({ myUserId, onActionCompleted }: Props) {
   const [followers, setFollowers] = useState<FollowerUserResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchFollowers = async () => {
+    console.log("Fetching followers...");
     try {
-      // ← 이 부분만 'followers'로 수정!
       const res = await axiosInstance.get(`/api/v1/follows/followers?userId=${myUserId}`);
-      const data = Array.isArray(res.data) ? res.data : res.data.data ?? [];
+      const data = Array.isArray(res.data) ? res.data : res.data ?? [];
       setFollowers(data);
     } catch (err) {
       console.error('팔로워 목록 불러오기 실패', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefresh = () => {
+    fetchFollowers();
+    onActionCompleted?.(); // 액션 완료 후 콜백 호출
   };
 
   useEffect(() => {
@@ -53,6 +59,7 @@ export default function FollowerList({ myUserId }: Props) {
           userType="followers"
           followId={user.followId}
           isFollowing={user.isFollowing}
+          onActionCompleted={handleRefresh}
         />
       ))}
     </div>

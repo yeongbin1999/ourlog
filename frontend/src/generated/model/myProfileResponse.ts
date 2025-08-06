@@ -6,7 +6,7 @@
  * OpenAPI spec version: beta
  */
 
-export interface MyProfileResponseData {
+export interface MyProfileResponse {
   userId?: number;
   email?: string;
   nickname?: string;
@@ -14,12 +14,4 @@ export interface MyProfileResponseData {
   bio?: string;
   followingsCount?: number;
   followersCount?: number;
-}
-
-export interface MyProfileResponse {
-  profileImageUrl: string | undefined;
-  nickname: string;
-  email: string;
-  userId: number;
-  data?: MyProfileResponseData;
 }

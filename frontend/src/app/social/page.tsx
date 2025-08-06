@@ -4,6 +4,7 @@ import { Row, Col } from "react-bootstrap";
 import { useEffect, useState } from "react";
 import TimelineCard from "../social/components/TimelineCard";
 import { TimelineItem } from "../social/types/timeline";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function TimelinePage() {
   const [items, setItems] = useState<TimelineItem[]>([]);
@@ -12,7 +13,7 @@ export default function TimelinePage() {
 
   // timeline 데이터 가져오기
   useEffect(() => {
-    fetch("${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/timeline")
+    fetch("/api/v1/timeline")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch timeline");
         return res.json();

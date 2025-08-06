@@ -8,6 +8,7 @@ import { axiosInstance } from '@/lib/api-client';
 
 type Props = {
   myUserId: number;
+  onActionCompleted?: () => void;
 };
 
 type SentUserResponse = {
@@ -19,16 +20,33 @@ type SentUserResponse = {
 };
 
 // 내가 보낸 팔로우 요청..
-export default function SentRequestList({ myUserId }: Props) {
+export default function SentRequestList({ myUserId, onActionCompleted }: Props) {
   const [sentRequests, setSentRequests] = useState<SentUserResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchSentRequests = async () => {
+    console.log("Fetching sent requests...");
     try {
       const res = await axiosInstance.get(`/api/v1/follows/sent-requests?userId=${myUserId}`);
-      setSentRequests(res.data);
+      console.log("Sent Requests API Response:", res.data); // 추가된 로그
+      const data = Array.isArray(res.data) ? res.data : res.data ?? [];
+      setSentRequests(data);
     } catch (err) {
       console.error('보낸 요청 불러오기 실패', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelRequest = async (targetUserId: number) => {
+    try {
+      await axiosInstance.delete(`/api/v1/follows/${targetUserId}?myUserId=${myUserId}`);
+      alert('요청이 취소되었습니다.');
+      fetchSentRequests(); // 리스트 갱신
+      onActionCompleted?.(); // 액션 완료 후 콜백 호출
+    } catch (err) {
+      console.error('요청 취소 실패', err);
+      alert('요청 취소 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -48,6 +66,7 @@ export default function SentRequestList({ myUserId }: Props) {
           key={user.userId}
           userId={String(user.userId)}
           userType="sent"
+          onActionCompleted={() => handleCancelRequest(user.userId)}
         />
       ))}
     </div>
