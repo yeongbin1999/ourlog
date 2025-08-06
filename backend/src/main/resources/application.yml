@@ -34,7 +34,7 @@ spring:
 
   cache:
     type: simple  # 개발/테스트용 - 메모리 캐시
-      # type: redis  # 운영용
+    # type: redis  # 운영용
     redis:
       host: localhost
       port: 6379
@@ -46,50 +46,6 @@ spring:
       port: 6379
       password: ""
       timeout: 6000ms
-
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            scope:
-              - email
-              - profile
-            redirect-uri: "{baseUrl}/api/login/oauth2/code/google"
-            authorization-grant-type: authorization_code
-            client-authentication-method: post
-          naver:
-            client-id: ${NAVER_CLIENT_ID}
-            client-secret: ${NAVER_CLIENT_SECRET}
-            scope:
-              - name
-              - email
-            redirect-uri: "{baseUrl}/api/login/oauth2/code/naver"
-            authorization-grant-type: authorization_code
-            client-authentication-method: post
-          kakao:
-            client-id: ${KAKAO_CLIENT_ID}
-            client-secret: ${KAKAO_CLIENT_SECRET}
-            scope:
-              - profile
-              - account_email
-            redirect-uri: "{baseUrl}/api/login/oauth2/code/kakao"
-            authorization-grant-type: authorization_code
-            client-authentication-method: post
-
-        provider:
-          naver:
-            authorization-uri: https://nid.naver.com/oauth2.0/authorize
-            token-uri: https://nid.naver.com/oauth2.0/token
-            user-info-uri: https://openapi.naver.com/v1/nid/me
-            user-name-attribute: response
-          kakao:
-            authorization-uri: https://kauth.kakao.com/oauth/authorize
-            token-uri: https://kauth.kakao.com/oauth/token
-            user-info-uri: https://kapi.kakao.com/v2/user/me
-            user-name-attribute: id
 
 springdoc:
   default-produces-media-type: application/json;charset=UTF-8
@@ -134,4 +90,21 @@ tmdb:
     key: ${TMDB_API_KEY}
 
 library:
-  api-key: ${Library_API_KEY}\
+  api-key: ${Library_API_KEY}
+
+oauth2:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    token-uri: https://oauth2.googleapis.com/token
+    user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+  kakao:
+    client-id: ${KAKAO_CLIENT_ID}
+    client-secret: ${KAKAO_CLIENT_SECRET}
+    token-uri: https://kauth.kakao.com/oauth/token
+    user-info-uri: https://kapi.kakao.com/v2/user/me
+  naver:
+    client-id: ${NAVER_CLIENT_ID}
+    client-secret: ${NAVER_CLIENT_SECRET}
+    token-uri: https://nid.naver.com/oauth2.0/token
+    user-info-uri: https://openapi.naver.com/v1/nid/me
