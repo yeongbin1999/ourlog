@@ -9,7 +9,7 @@ import type { UserProfileResponse } from "./userProfileResponse";
 
 export interface PageResponseUserProfileResponse {
   fail: boolean;
-  data: any;
+  data?: UserProfileResponse | UserProfileResponse[] | null;
   content?: UserProfileResponse[];
   page?: number;
   size?: number;
